@@ -67,6 +67,15 @@
         ];
         rust-analyzer = fenix-pkgs.rust-analyzer;
       };
+      ci = pkgs.callPackage (./. + "/nix/dev-shells/ci.nix") {
+        fenixRustToolchain = fenix-channel.withComponents [
+          "cargo"
+          "clippy-preview"
+          "rust-src"
+          "rustc"
+          "rustfmt-preview"
+        ];
+      };
     });
   };
 }

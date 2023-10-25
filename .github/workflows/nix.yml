@@ -1,0 +1,51 @@
+name: Check and build cmjava
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check:
+    name: Check formatting and common mistakes
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 25
+    - uses: cachix/install-nix-action@v23
+      with:
+        github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+    - run: |
+        nix develop ".#ci" --command -- \
+          commitlint \
+            --color false --verbose \
+            --from $(git rev-list --max-parents=0 HEAD | head -n 1) \
+            --to HEAD
+    - run: |
+        nix develop ".#ci" --command -- \
+          cargo fmt --check
+    - run: |
+        nix develop ".#ci" --command -- \
+          cargo clippy
+    - run: |
+        nix develop ".#ci" --command -- \
+          eclint \
+            -exclude "Cargo.lock" \
+            -exclude "flake.lock"
+
+  build_and_test:
+    name: Build and run run unit and integration tests
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - uses: cachix/install-nix-action@v23
+      with:
+        github_access_token: ${{ secrets.GITHUB_TOKEN }}
+
+    - run: |
+        nix build
