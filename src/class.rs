@@ -3,11 +3,7 @@ pub mod bytecode_classes;
 
 use std::rc::Rc;
 
-use builtin_classes::{Frame, Update};
-
-// TODO refer to OpCode from execute
-#[deprecated(note = "will be replaced with OpCode from execute")]
-pub enum OpCode {}
+use crate::executor::{Frame, OpCode, Update};
 
 pub enum Method {
     Bytecode(BytecodeMethod),
