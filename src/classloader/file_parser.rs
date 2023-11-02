@@ -1,3 +1,4 @@
+use std::path::Path;
 use std::ptr::null;
 use anyhow::Context;
 use nom::IResult;
@@ -29,7 +30,7 @@ fn parse_class_file(current_content: &[u8])->IResult<&[u8],ClassFile>{
     todo!()
 }
 
-fn parse(path_to_file: String) -> anyhow::Result<ClassFile> {
+fn parse<P: AsRef<Path>>(path_to_file: P) -> anyhow::Result<ClassFile> {
     //read input and magic number
     let content = std::fs::read(path_to_file).context("File can not be read")?;
     match parse_class_file(&content) {
