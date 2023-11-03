@@ -14,6 +14,7 @@ rustPlatform.buildRustPackage {
       "src"
       "Cargo.toml"
       "Cargo.lock"
+      "build.rs"
     ];
   };
 
