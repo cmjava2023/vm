@@ -17,6 +17,7 @@ in
         "Cargo.toml"
         "Cargo.lock"
         "build.rs"
+        "tests"
       ];
     };
 

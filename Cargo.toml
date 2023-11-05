@@ -16,3 +16,7 @@ tracing-unwrap = { version = "0.10.0", features = ["log-location"] }
 
 [build-dependencies]
 vergen = { version = "8.2.5", features = ["build", "cargo", "git", "rustc", "si", "gitoxide"] }
+
+[dev-dependencies]
+assert_cmd = "2.0.12"
+predicates = "3.0.4"
