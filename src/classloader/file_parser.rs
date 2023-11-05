@@ -1,10 +1,12 @@
-use super::{AttributeInfo, CpInfo, FieldInfo, MethodAccessFlag, MethodInfo};
-use super::{ClassFile, ReferenceKind};
+use super::{
+    CpInfo, MethodAccessFlag, RawAttributeInfo, RawFieldInfo, RawMethodInfo,
+};
+use super::{RawClassFile, ReferenceKind};
 use crate::classloader::{ClassAccessFlag, FieldAccessFlag};
 use anyhow::Context;
 use enumflags2::BitFlags;
-use nom::bytes::complete::{tag, take};
-use nom::combinator::{eof, map, map_res};
+use nom::bytes::complete::tag;
+use nom::combinator::{eof, map};
 use nom::error::ErrorKind;
 use nom::multi::{length_count, length_value, many_till};
 use nom::number::complete::{
@@ -209,22 +211,22 @@ fn parse_constant_pool(current_content: &[u8]) -> IResult<&[u8], CpInfo> {
     }
 }
 
-fn parse_attribute_info(
+pub fn parse_attribute_info(
     current_content: &[u8],
-) -> IResult<&[u8], AttributeInfo> {
+) -> IResult<&[u8], RawAttributeInfo> {
     let (current_content, name_index) = be_u16(current_content)?;
     let (current_content, attributes) =
         length_count(be_u32, be_u8)(current_content)?;
     Ok((
         current_content,
-        AttributeInfo {
+        RawAttributeInfo {
             attribute_name_index: (name_index),
             info: (attributes),
         },
     ))
 }
 
-fn parse_field_info(current_content: &[u8]) -> IResult<&[u8], FieldInfo> {
+fn parse_field_info(current_content: &[u8]) -> IResult<&[u8], RawFieldInfo> {
     let (current_content, access_flag_byte) = be_u16(current_content)?;
     let field_access_flags =
         BitFlags::<FieldAccessFlag>::from_bits(access_flag_byte).unwrap();
@@ -234,7 +236,7 @@ fn parse_field_info(current_content: &[u8]) -> IResult<&[u8], FieldInfo> {
         length_count(be_u16, parse_attribute_info)(current_content)?;
     Ok((
         current_content,
-        FieldInfo {
+        RawFieldInfo {
             access_flags: (field_access_flags),
             name_index: (name_index),
             descriptor_index: (descriptor_index),
@@ -243,7 +245,7 @@ fn parse_field_info(current_content: &[u8]) -> IResult<&[u8], FieldInfo> {
     ))
 }
 
-fn parse_method_info(current_content: &[u8]) -> IResult<&[u8], MethodInfo> {
+fn parse_method_info(current_content: &[u8]) -> IResult<&[u8], RawMethodInfo> {
     let (current_content, access_flag_byte) = be_u16(current_content)?;
     let method_access_flags =
         BitFlags::<MethodAccessFlag>::from_bits(access_flag_byte).unwrap();
@@ -253,7 +255,7 @@ fn parse_method_info(current_content: &[u8]) -> IResult<&[u8], MethodInfo> {
         length_count(be_u16, parse_attribute_info)(current_content)?;
     Ok((
         current_content,
-        MethodInfo {
+        RawMethodInfo {
             access_flags: (method_access_flags),
             name_index: (name_index),
             descriptor_index: (descriptor_index),
@@ -262,7 +264,7 @@ fn parse_method_info(current_content: &[u8]) -> IResult<&[u8], MethodInfo> {
     ))
 }
 
-fn parse_class_file(current_content: &[u8]) -> IResult<&[u8], ClassFile> {
+fn parse_class_file(current_content: &[u8]) -> IResult<&[u8], RawClassFile> {
     let current_content = tag(b"\xCA\xFE\xBA\xBE")(current_content)?.0;
     let (current_content, minor_version) = be_u16(current_content)?;
     let (current_content, major_version) = be_u16(current_content)?;
@@ -285,7 +287,7 @@ fn parse_class_file(current_content: &[u8]) -> IResult<&[u8], ClassFile> {
         length_count(be_u16, parse_attribute_info)(current_content)?;
     Ok((
         current_content,
-        ClassFile {
+        RawClassFile {
             minor_version,
             major_version,
             constant_pool,
@@ -300,7 +302,7 @@ fn parse_class_file(current_content: &[u8]) -> IResult<&[u8], ClassFile> {
     ))
 }
 
-pub fn parse<P: AsRef<Path>>(path_to_file: P) -> anyhow::Result<ClassFile> {
+pub fn parse<P: AsRef<Path>>(path_to_file: P) -> anyhow::Result<RawClassFile> {
     //read input and magic number
     let content =
         std::fs::read(path_to_file).context("File can not be read")?;

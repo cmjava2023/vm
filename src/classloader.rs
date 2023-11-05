@@ -1,4 +1,7 @@
+pub mod attribute_parser;
 pub mod file_parser;
+
+use std::usize;
 
 use enumflags2::{bitflags, BitFlags};
 
@@ -124,9 +127,72 @@ pub enum CpInfo {
 }
 
 #[derive(Debug)]
-pub struct AttributeInfo {
+pub struct RawAttributeInfo {
     attribute_name_index: u16,
     info: Vec<u8>,
+}
+
+#[derive(Debug)]
+pub struct RawMethodInfo {
+    access_flags: BitFlags<MethodAccessFlag>,
+    name_index: u16,
+    descriptor_index: u16,
+    attributes: Vec<RawAttributeInfo>,
+}
+
+#[derive(Debug)]
+pub struct RawFieldInfo {
+    access_flags: BitFlags<FieldAccessFlag>,
+    name_index: u16,
+    descriptor_index: u16,
+    attributes: Vec<RawAttributeInfo>,
+}
+
+#[derive(Debug)]
+pub struct RawClassFile {
+    minor_version: u16,
+    major_version: u16,
+    constant_pool: Vec<CpInfo>,
+    access_flags: BitFlags<ClassAccessFlag>,
+    this_class: u16,
+    super_class: u16,
+    interfaces: Vec<u16>,
+    fields: Vec<RawFieldInfo>,
+    methods: Vec<RawMethodInfo>,
+    attributes: Vec<RawAttributeInfo>,
+}
+
+impl RawClassFile {
+    pub fn get_java_cp_entry(&self, reference: usize) -> Option<&CpInfo> {
+        if reference == 0 {
+            panic!("Java CP Entries are 1 indexed");
+        }
+        self.constant_pool.get(reference - 1)
+    }
+}
+
+#[derive(Debug)]
+struct ExceptionTable {
+    start_pc: u16,
+    end_pc: u16,
+    handler_pc: u16,
+    catch_type: u16,
+}
+
+#[derive(Debug)]
+pub struct CodeAttribute {
+    max_stack: u16,
+    max_locals: u16,
+    code: Vec<u8>,
+    exception_table: Vec<ExceptionTable>,
+    attributes: Vec<AttributeInfo>,
+}
+
+#[derive(Debug)]
+pub enum AttributeInfo {
+    Code(CodeAttribute),
+    SourceFile,
+    LineNumberTable,
 }
 
 #[derive(Debug)]
@@ -147,8 +213,6 @@ pub struct FieldInfo {
 
 #[derive(Debug)]
 pub struct ClassFile {
-    minor_version: u16,
-    major_version: u16,
     constant_pool: Vec<CpInfo>,
     access_flags: BitFlags<ClassAccessFlag>,
     this_class: u16,
@@ -157,4 +221,13 @@ pub struct ClassFile {
     fields: Vec<FieldInfo>,
     methods: Vec<MethodInfo>,
     attributes: Vec<AttributeInfo>,
+}
+
+impl ClassFile {
+    pub fn get_java_cp_entry(&self, reference: usize) -> Option<&CpInfo> {
+        if reference == 0 {
+            panic!("Java CP Entries are 1 indexed");
+        }
+        self.constant_pool.get(reference - 1)
+    }
 }
