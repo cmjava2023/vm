@@ -5,7 +5,7 @@ use enumflags2::{bitflags, BitFlags};
 #[bitflags]
 #[derive(Clone, Copy, Debug)]
 #[repr(u16)]
-enum ClassAccessFlag {
+pub enum ClassAccessFlag {
     Public = 0x0001,
     Final = 0x0010,
     Super = 0x0020,
@@ -19,7 +19,7 @@ enum ClassAccessFlag {
 #[bitflags]
 #[derive(Clone, Copy, Debug)]
 #[repr(u16)]
-enum FieldAccessFlag {
+pub enum FieldAccessFlag {
     Public = 0x0001,
     Private = 0x002,
     Protected = 0x004,
@@ -34,7 +34,7 @@ enum FieldAccessFlag {
 #[bitflags]
 #[derive(Clone, Copy, Debug)]
 #[repr(u16)]
-enum MethodAccessFlag {
+pub enum MethodAccessFlag {
     Public = 0x0001,
     Private = 0x002,
     Protected = 0x004,
@@ -49,7 +49,8 @@ enum MethodAccessFlag {
     Synthetic = 0x1000,
 }
 
-enum ReferenceKind {
+#[derive(Debug)]
+pub enum ReferenceKind {
     GetField = 1,
     GetStatic = 2,
     PutField = 3,
@@ -80,7 +81,8 @@ impl TryFrom<u8> for ReferenceKind {
     }
 }
 
-enum CpInfo {
+#[derive(Debug)]
+pub enum CpInfo {
     ClassInfo {
         name_index: u16,
     },
@@ -121,26 +123,30 @@ enum CpInfo {
     },
 }
 
-struct AttributeInfo {
+#[derive(Debug)]
+pub struct AttributeInfo {
     attribute_name_index: u16,
     info: Vec<u8>,
 }
 
-struct MethodInfo {
+#[derive(Debug)]
+pub struct MethodInfo {
     access_flags: BitFlags<MethodAccessFlag>,
     name_index: u16,
     descriptor_index: u16,
     attributes: Vec<AttributeInfo>,
 }
 
-struct FieldInfo {
+#[derive(Debug)]
+pub struct FieldInfo {
     access_flags: BitFlags<FieldAccessFlag>,
     name_index: u16,
     descriptor_index: u16,
     attributes: Vec<AttributeInfo>,
 }
 
-struct ClassFile {
+#[derive(Debug)]
+pub struct ClassFile {
     minor_version: u16,
     major_version: u16,
     constant_pool: Vec<CpInfo>,

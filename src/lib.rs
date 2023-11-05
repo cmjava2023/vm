@@ -4,7 +4,7 @@ pub mod executor;
 pub fn add(left: usize, right: usize) -> usize {
     left + right
 }
-mod classloader;
+pub mod classloader;
 #[cfg(test)]
 mod tests {
     use super::*;

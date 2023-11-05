@@ -4,8 +4,7 @@ use crate::classloader::{ClassAccessFlag, FieldAccessFlag};
 use anyhow::Context;
 use enumflags2::BitFlags;
 use nom::bytes::complete::{tag, take};
-use nom::combinator::{eof, map_res};
-use nom::error::make_error;
+use nom::combinator::{eof, map, map_res};
 use nom::error::ErrorKind;
 use nom::multi::{length_count, length_value, many_till};
 use nom::number::complete::{
@@ -13,14 +12,6 @@ use nom::number::complete::{
 };
 use nom::IResult;
 use std::path::Path;
-use std::ptr::null;
-use strum::IntoEnumIterator;
-
-fn take2(mut content: &[u8]) -> &[u8] {
-    let result = take::<usize, &[u8], ()>(2usize)(content).unwrap();
-    content = result.0;
-    return result.1;
-}
 
 fn parse_utf8_code_point(current_content: &[u8]) -> IResult<&[u8], char> {
     let tag_content = current_content;
@@ -275,8 +266,10 @@ fn parse_class_file(current_content: &[u8]) -> IResult<&[u8], ClassFile> {
     let current_content = tag(b"\xCA\xFE\xBA\xBE")(current_content)?.0;
     let (current_content, minor_version) = be_u16(current_content)?;
     let (current_content, major_version) = be_u16(current_content)?;
-    let (current_content, constant_pool) =
-        length_count(be_u16, parse_constant_pool)(current_content)?;
+    let (current_content, constant_pool) = length_count(
+        map(be_u16, |cnt| cnt - 1),
+        parse_constant_pool,
+    )(current_content)?;
     let (current_content, access_flag_byte) = be_u16(current_content)?;
     let access_flags =
         BitFlags::<ClassAccessFlag>::from_bits(access_flag_byte).unwrap();
@@ -307,7 +300,7 @@ fn parse_class_file(current_content: &[u8]) -> IResult<&[u8], ClassFile> {
     ))
 }
 
-fn parse<P: AsRef<Path>>(path_to_file: P) -> anyhow::Result<ClassFile> {
+pub fn parse<P: AsRef<Path>>(path_to_file: P) -> anyhow::Result<ClassFile> {
     //read input and magic number
     let content =
         std::fs::read(path_to_file).context("File can not be read")?;
