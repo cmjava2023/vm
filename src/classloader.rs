@@ -3,7 +3,7 @@ pub mod file_parser;
 use enumflags2::{bitflags, BitFlags};
 
 #[bitflags]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 #[repr(u16)]
 enum ClassAccessFlag {
     Public = 0x0001,
@@ -17,7 +17,7 @@ enum ClassAccessFlag {
 }
 
 #[bitflags]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 #[repr(u16)]
 enum FieldAccessFlag {
     Public = 0x0001,
@@ -32,7 +32,7 @@ enum FieldAccessFlag {
 }
 
 #[bitflags]
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, Debug)]
 #[repr(u16)]
 enum MethodAccessFlag {
     Public = 0x0001,
@@ -143,14 +143,12 @@ struct FieldInfo {
 struct ClassFile {
     minor_version: u16,
     major_version: u16,
-    cp_info: Vec<CpInfo>,
+    constant_pool: Vec<CpInfo>,
     access_flags: BitFlags<ClassAccessFlag>,
     this_class: u16,
     super_class: u16,
-    interfaces_count: u16,
     interfaces: Vec<u16>,
-    field_info: Vec<FieldInfo>,
-    method_info: Vec<MethodInfo>,
-    attributes_count: u16,
+    fields: Vec<FieldInfo>,
+    methods: Vec<MethodInfo>,
     attributes: Vec<AttributeInfo>,
 }
