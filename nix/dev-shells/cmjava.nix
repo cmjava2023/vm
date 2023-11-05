@@ -21,4 +21,8 @@ mkShell {
     just
   ];
 
+  shellHook = ''
+    unset SOURCE_DATE_EPOCH
+  '';
+
 }
