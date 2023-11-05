@@ -12,11 +12,11 @@ run-release:
 
 format:
     cargo fmt --check
-    eclint -exclude "Cargo.lock" -exclude "flake.lock"
+    eclint -exclude "{Cargo.lock,flake.lock,**/*.javap}"
 
 format-fix:
     cargo fmt
-    eclint -exclude "Cargo.lock" -exclude "flake.lock" -fix
+    eclint -exclude "{Cargo.lock,flake.lock,**/*.javap}" -fix
 
 lint:
     cargo clippy
