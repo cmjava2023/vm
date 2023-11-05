@@ -1,5 +1,6 @@
 {
-  cmjava,
+  packageName,
+  pkgs,
   mkShell,
   fenixRustToolchain,
   bashInteractive,
@@ -8,20 +9,17 @@
   commitlint,
   eclint,
 }:
-
 mkShell {
-
-  inputsFrom = [ cmjava ];
+  inputsFrom = [pkgs.${packageName}];
 
   packages = [
     fenixRustToolchain
 
     bashInteractive
+
     reuse
     just
-
     commitlint
     eclint
   ];
-
 }
