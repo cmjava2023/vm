@@ -47,6 +47,7 @@
     packages = forSystems ({pkgs, fenix-channel, system, ...}: {
       ${packageName} = pkgs.callPackage (./. + "/nix/packages/${packageName}.nix") {
         inherit packageName;
+        flake-self = self;
         nix-filter = import inputs.nix-filter;
         rustPlatform = pkgs.makeRustPlatform {
           cargo = fenix-channel.toolchain;

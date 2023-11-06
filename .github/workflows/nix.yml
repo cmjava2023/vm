@@ -35,8 +35,7 @@ jobs:
     - run: |
         nix develop ".#ci" --command -- \
           eclint \
-            -exclude "Cargo.lock" \
-            -exclude "flake.lock"
+            -exclude '{Cargo.lock,flake.lock}'
 
   build_and_test:
     name: Build and run run unit and integration tests
