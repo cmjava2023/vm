@@ -40,11 +40,17 @@
 
         fenix-pkgs = fenix.packages.${system};
         fenix-channel = fenix-pkgs.complete;
-      in function { inherit system pkgs fenix-pkgs fenix-channel; });
+      in
+        function {inherit system pkgs fenix-pkgs fenix-channel;});
   in {
     formatter = forSystems ({pkgs, ...}: pkgs.alejandra);
 
-    packages = forSystems ({pkgs, fenix-channel, system, ...}: {
+    packages = forSystems ({
+      pkgs,
+      fenix-channel,
+      system,
+      ...
+    }: {
       ${packageName} = pkgs.callPackage (./. + "/nix/packages/${packageName}.nix") {
         inherit packageName;
         flake-self = self;
@@ -57,25 +63,26 @@
       default = self.packages.${system}.${packageName};
     });
 
-    devShells = forSystems ({pkgs, fenix-pkgs, fenix-channel, ...}: {
+    devShells = forSystems ({
+      pkgs,
+      fenix-pkgs,
+      fenix-channel,
+      ...
+    }: let
+      fenixRustToolchain = fenix-channel.withComponents [
+        "cargo"
+        "clippy-preview"
+        "rust-src"
+        "rustc"
+        "rustfmt-preview"
+      ];
+      rust-analyzer = fenix-pkgs.rust-analyzer;
+    in {
       default = pkgs.callPackage (./. + "/nix/dev-shells/${packageName}.nix") {
-        fenixRustToolchain = fenix-channel.withComponents [
-          "cargo"
-          "clippy-preview"
-          "rust-src"
-          "rustc"
-          "rustfmt-preview"
-        ];
-        rust-analyzer = fenix-pkgs.rust-analyzer;
+        inherit fenixRustToolchain rust-analyzer packageName;
       };
-      ci = pkgs.callPackage (./. + "/nix/dev-shells/ci.nix") {
-        fenixRustToolchain = fenix-channel.withComponents [
-          "cargo"
-          "clippy-preview"
-          "rust-src"
-          "rustc"
-          "rustfmt-preview"
-        ];
+      ci = pkgs.callPackage ./nix/dev-shells/ci.nix {
+        inherit fenixRustToolchain packageName;
       };
     });
   };

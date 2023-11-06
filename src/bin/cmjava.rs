@@ -96,7 +96,7 @@ fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
     log_setup(cli.verbose);
 
-    println!("hello world");
+    println!("Hello world!");
 
     Ok(())
 }

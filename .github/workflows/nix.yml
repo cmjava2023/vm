@@ -35,7 +35,7 @@ jobs:
     - run: |
         nix develop ".#ci" --command -- \
           eclint \
-            -exclude '{Cargo.lock,flake.lock}'
+            -exclude "{Cargo.lock,flake.lock,**/*.javap}"
 
   build_and_test:
     name: Build and run run unit and integration tests
@@ -47,4 +47,8 @@ jobs:
         github_access_token: ${{ secrets.GITHUB_TOKEN }}
 
     - run: |
-        nix build
+        nix develop ".#ci" --command -- \
+          cargo test
+    - run: |
+        nix develop ".#ci" --command -- \
+          cargo build
