@@ -8,6 +8,9 @@ on:
     branches:
       - main
 
+env:
+  RUSTFLAGS: "--deny warnings"
+
 jobs:
   check:
     name: Check formatting and common mistakes

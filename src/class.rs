@@ -39,11 +39,11 @@ pub struct BytecodeClass {
 }
 
 pub struct Field {
-    name: String,
+    pub name: String,
     // TODO flags
     // TODO attributes
     // TODO data type
-    value: FieldValue,
+    pub value: FieldValue,
 }
 
 pub enum FieldValue {

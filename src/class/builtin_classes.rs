@@ -7,7 +7,7 @@ use crate::{
 
 pub struct PrintStream {}
 
-fn println(frame: &Frame) -> Update {
+fn println(_frame: &Frame) -> Update {
     println!("replace me");
     Update::None
 }
@@ -48,12 +48,17 @@ pub struct SystemClass {
 
 impl SystemClass {
     pub fn new() -> Self {
-        let mut fields = Vec::new();
-        fields.push(Field {
+        let fields = vec![Field {
             name: "out".into(),
             value: FieldValue::Reference(None),
-        });
+        }];
         Self { fields }
+    }
+}
+
+impl Default for SystemClass {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
