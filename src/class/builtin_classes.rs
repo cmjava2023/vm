@@ -1,14 +1,9 @@
 use std::rc::Rc;
 
-use crate::class::{Class, Field, FieldValue, Method};
-
-#[deprecated(note = "use struct from executer in the future")]
-pub struct Frame {}
-
-#[deprecated(note = "use enum from executer in the future")]
-pub enum Update {
-    None,
-}
+use crate::{
+    class::{Class, Field, FieldValue, Method},
+    executor::{Frame, Update},
+};
 
 pub struct PrintStream {}
 
