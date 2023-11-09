@@ -63,6 +63,12 @@ pub enum StackValue {
     Reference(Option<Rc<ClassInstance>>),
 }
 
+#[repr(usize)]
+pub enum StackValueSize {
+    One = 1,
+    Two = 2,
+}
+
 pub struct LocalVariables {
     local_variables: Vec<VariableValue>,
 }
@@ -210,22 +216,11 @@ impl FrameStack {
     }
 
     pub fn depth(&self) -> usize {
-        self.values
-            .iter()
-            .map(|v| {
-                if matches!(v, StackValue::Long(_))
-                    || matches!(v, StackValue::Double(_))
-                {
-                    2
-                } else {
-                    1
-                }
-            })
-            .sum()
+        self.values.iter().map(|v| v.size() as usize).sum()
     }
 
     pub fn push(&mut self, value: StackValue) -> Result<(), StackValue> {
-        if self.depth() >= self.values.capacity() {
+        if self.depth() + (value.size() as usize) > self.values.capacity() {
             return Err(value);
         }
 
@@ -277,5 +272,17 @@ impl ProgramCounter {
             &self.current_op_codes[self.current_op_code],
             self.current_op_code,
         )
+    }
+}
+
+impl StackValue {
+    pub fn size(&self) -> StackValueSize {
+        if matches!(self, StackValue::Long(_))
+            || matches!(self, StackValue::Double(_))
+        {
+            StackValueSize::Two
+        } else {
+            StackValueSize::One
+        }
     }
 }
