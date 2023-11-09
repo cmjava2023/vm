@@ -16,7 +16,7 @@ pub struct Frame {
 
 #[derive(Clone)]
 pub enum VariableValue {
-    // Primitve Types
+    // Primitive Types
     //   Integral Types
     Byte(i8),
     Short(i16),
@@ -41,7 +41,7 @@ pub enum VariableValue {
 }
 
 pub enum StackValue {
-    // Primitve Types
+    // Primitive Types
     //   Integral Types
     Byte(i8),
     Short(i16),
@@ -76,7 +76,7 @@ pub struct ProgramCounter {
 }
 
 pub enum VariableValueOrValue {
-    // Primitve Types
+    // Primitive Types
     //   Integral Types
     Byte(i8),
     Short(i16),
