@@ -255,6 +255,8 @@ impl ProgramCounter {
         Ok(())
     }
 
+    // todo: fn previous() might be needed as offset as usize cannot be negative
+
     /// absolute
     pub fn set(&mut self, position: usize) -> Result<(), ProgramCounterError> {
         if self.current_op_codes.len() <= position {
