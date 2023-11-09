@@ -243,6 +243,17 @@ pub enum ProgramCounterError {
 }
 
 impl ProgramCounter {
+    pub fn new(op_codes: Vec<OpCode>) -> ProgramCounter {
+        assert!(
+            !op_codes.is_empty(),
+            "op_codes has to contain at least one op code"
+        );
+        ProgramCounter {
+            current_op_code: 0,
+            current_op_codes: op_codes,
+        }
+    }
+
     /// relative to current
     pub fn next(&mut self, offset: usize) -> Result<(), ProgramCounterError> {
         if self.current_op_codes.len() <= self.current_op_code + offset {
