@@ -190,6 +190,7 @@ dependencies = [
  "assert_cmd",
  "clap",
  "predicates",
+ "thiserror",
  "tracing",
  "tracing-error",
  "tracing-subscriber",
