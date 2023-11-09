@@ -62,6 +62,10 @@ pub struct LocalVariables {
     local_variables: Vec<VariableValue>,
 }
 
+pub struct FrameStack {
+    values: Vec<StackValue>,
+}
+
 pub enum VariableValueOrValue {
     // Primitve Types
     //   Integral Types
@@ -185,5 +189,41 @@ impl LocalVariables {
                 VariableValueOrValue::Reference(r.clone())
             },
         }
+    }
+}
+
+impl FrameStack {
+    pub fn new(max_depth: usize) -> FrameStack {
+        FrameStack {
+            values: Vec::with_capacity(max_depth),
+        }
+    }
+
+    pub fn depth(&self) -> usize {
+        self.values
+            .iter()
+            .map(|v| {
+                if matches!(v, StackValue::Long(_))
+                    || matches!(v, StackValue::Double(_))
+                {
+                    2
+                } else {
+                    1
+                }
+            })
+            .sum()
+    }
+
+    pub fn push(&mut self, value: StackValue) -> Result<(), StackValue> {
+        if self.depth() >= self.values.capacity() {
+            return Err(value);
+        }
+
+        self.values.push(value);
+        Ok(())
+    }
+
+    pub fn pop(&mut self) -> Option<StackValue> {
+        self.values.pop()
     }
 }
