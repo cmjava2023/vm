@@ -269,7 +269,10 @@ impl ProgramCounter {
 
     pub fn current(&self) -> (&OpCode, usize) {
         (
-            &self.current_op_codes[self.current_op_code],
+            (self
+                .current_op_codes
+                .get(self.current_op_code)
+                .expect("current_op_code is never out of bounds")),
             self.current_op_code,
         )
     }
