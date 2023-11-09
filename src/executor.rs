@@ -8,7 +8,10 @@ pub enum Update {
     None,
 }
 
-pub struct Frame {}
+pub struct Frame {
+    pub local_variables: LocalVariables,
+    pub operand_stack: FrameStack,
+}
 
 #[derive(Clone)]
 pub enum VariableValue {
