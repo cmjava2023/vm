@@ -2,12 +2,59 @@ use std::rc::Rc;
 
 use thiserror::Error;
 
-use crate::class::ClassInstance;
+use crate::class::{ClassInstance, Code};
 
-pub enum OpCode {}
+pub struct ExecutorFrame {
+    frame: Frame,
+    pc: ProgramCounter,
+}
+
+pub fn run(code: &Code) {
+    let mut frame_stack: Vec<ExecutorFrame> = Vec::new();
+    let mut current_frame: Frame = Frame {
+        // TODO: Change variable type into usize to get rid of unwrap
+        local_variables: LocalVariables::new(
+            code.local_variable_count.try_into().unwrap(),
+        ),
+        operand_stack: FrameStack::new(code.stack_depth.try_into().unwrap()),
+    };
+    let mut current_pc: ProgramCounter =
+        ProgramCounter::new(code.byte_code.clone());
+
+    loop {
+        match current_pc.current().0.execute(&mut current_frame) {
+            Update::None => current_pc.next(1).unwrap(),
+            Update::Return => {
+                (current_frame, current_pc) = match frame_stack.pop() {
+                    None => break,
+                    Some(frame) => (frame.frame, frame.pc),
+                };
+                current_pc.next(1).unwrap();
+            },
+        }
+    }
+}
+
+#[derive(Clone)]
+pub enum OpCode {
+    GetStatic,
+    Ldc,
+    Return,
+    InvokeVirtual,
+}
+
+impl OpCode {
+    pub fn execute(&self, _frame: &mut Frame) -> Update {
+        match self {
+            Self::Return => Update::Return,
+            _ => todo!(),
+        }
+    }
+}
 
 pub enum Update {
     None,
+    Return,
 }
 
 pub struct Frame {
