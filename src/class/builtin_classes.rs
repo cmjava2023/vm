@@ -17,7 +17,7 @@ impl Class for PrintStream {
         &[Method::Rust(println)]
     }
 
-    fn static_fields(&self) -> &[super::Field] {
+    fn static_fields(&self) -> &[Field] {
         &[]
     }
 

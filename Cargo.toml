@@ -9,6 +9,7 @@ build = "build.rs"
 [dependencies]
 anyhow = "1.0.75"
 clap = { version = "4.4.7", features = ["cargo", "derive"] }
+thiserror = "1.0.50"
 tracing = "0.1.40"
 tracing-error = "0.2.0"
 tracing-subscriber = { version = "0.3.17", features = ["time", "env-filter"] }

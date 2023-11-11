@@ -47,7 +47,7 @@ pub struct Field {
 }
 
 pub enum FieldValue {
-    // Primitve Types
+    // Primitive Types
     //   Integral Types
     Byte(i8),
     Short(i16),
@@ -104,7 +104,7 @@ impl FieldValue {
 
 pub struct BytecodeMethod {
     pub name: String,
-    // TODO paramter
+    // TODO parameter
     // TODO return type
     // TODO flags
     // TODO attributes
