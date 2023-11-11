@@ -7,7 +7,7 @@ impl Class for BytecodeClass {
         self.methods.as_slice()
     }
 
-    fn static_fields(&self) -> &[super::Field] {
+    fn static_fields(&self) -> &[Rc<super::Field>] {
         self.static_fields.as_slice()
     }
 

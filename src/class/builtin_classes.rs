@@ -17,7 +17,7 @@ impl Class for PrintStream {
         &[Method::Rust(println)]
     }
 
-    fn static_fields(&self) -> &[Field] {
+    fn static_fields(&self) -> &[Rc<Field>] {
         &[]
     }
 
@@ -43,15 +43,15 @@ impl Class for PrintStream {
 }
 
 pub struct SystemClass {
-    fields: Vec<Field>,
+    fields: Vec<Rc<Field>>,
 }
 
 impl SystemClass {
     pub fn new() -> Self {
-        let fields = vec![Field {
+        let fields = vec![Rc::new(Field {
             name: "out".into(),
             value: FieldValue::Reference(None),
-        }];
+        })];
         Self { fields }
     }
 }
@@ -67,7 +67,7 @@ impl Class for SystemClass {
         &[]
     }
 
-    fn static_fields(&self) -> &[Field] {
+    fn static_fields(&self) -> &[Rc<Field>] {
         self.fields.as_slice()
     }
 

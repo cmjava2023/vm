@@ -1,9 +1,10 @@
 pub mod builtin_classes;
 pub mod bytecode_classes;
 
+use core::fmt;
 use std::rc::Rc;
 
-use crate::executor::{Frame, OpCode, Update};
+use crate::executor::{Frame, OpCode, StackValue, Update};
 
 pub enum Method {
     Bytecode(BytecodeMethod),
@@ -14,7 +15,7 @@ pub enum Method {
 
 pub trait Class {
     fn methods(&self) -> &[Method];
-    fn static_fields(&self) -> &[Field];
+    fn static_fields(&self) -> &[Rc<Field>];
     fn instance_fields(&self) -> &[String];
     // TODO flags
     fn package(&self) -> &str;
@@ -27,7 +28,7 @@ pub trait Class {
 
 pub struct BytecodeClass {
     methods: Vec<Method>,
-    static_fields: Vec<Field>,
+    static_fields: Vec<Rc<Field>>,
     instance_fields: Vec<String>,
     // TODO flags
     package: String,
@@ -46,6 +47,7 @@ pub struct Field {
     pub value: FieldValue,
 }
 
+#[derive(Clone)]
 pub enum FieldValue {
     // Primitive Types
     //   Integral Types
@@ -62,6 +64,22 @@ pub enum FieldValue {
     // Reference Types
     // TODO different reference types (array, interface)
     Reference(Option<Rc<ClassInstance>>),
+}
+
+impl Into<StackValue> for FieldValue {
+    fn into(self) -> StackValue {
+        match self {
+            FieldValue::Byte(v) => StackValue::Byte(v),
+            FieldValue::Short(v) => StackValue::Short(v),
+            FieldValue::Int(v) => StackValue::Int(v),
+            FieldValue::Long(v) => StackValue::Long(v),
+            FieldValue::Char(v) => StackValue::Char(v),
+            FieldValue::Float(v) => StackValue::Float(v),
+            FieldValue::Double(v) => StackValue::Double(v),
+            FieldValue::Boolean(v) => StackValue::Boolean(v),
+            FieldValue::Reference(v) => StackValue::Reference(v),
+        }
+    }
 }
 
 impl FieldValue {
@@ -122,4 +140,10 @@ pub struct Code {
 pub struct ClassInstance {
     pub class: Rc<dyn Class>,
     pub instance_fields: Vec<Field>,
+}
+
+impl fmt::Debug for ClassInstance {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "instance of Class '{}'", self.class.name())
+    }
 }

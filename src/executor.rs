@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use thiserror::Error;
 
-use crate::class::{ClassInstance, Code};
+use crate::class::{ClassInstance, Code, Field};
 
 pub struct ExecutorFrame {
     frame: Frame,
@@ -37,15 +37,22 @@ pub fn run(code: &Code) {
 
 #[derive(Clone)]
 pub enum OpCode {
-    GetStatic,
+    GetStatic(Rc<Field>),
     Ldc,
     Return,
     InvokeVirtual,
 }
 
 impl OpCode {
-    pub fn execute(&self, _frame: &mut Frame) -> Update {
+    pub fn execute(&self, frame: &mut Frame) -> Update {
         match self {
+            Self::GetStatic(field) => {
+                frame
+                    .operand_stack
+                    .push(field.value.clone().into())
+                    .unwrap();
+                Update::None
+            },
             Self::Return => Update::Return,
             _ => todo!(),
         }
@@ -88,6 +95,7 @@ pub enum VariableValue {
     Reference(Option<Rc<ClassInstance>>),
 }
 
+#[derive(Debug)]
 pub enum StackValue {
     // Primitive Types
     //   Integral Types
