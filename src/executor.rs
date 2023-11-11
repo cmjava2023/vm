@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use thiserror::Error;
 
-use crate::class::{ClassInstance, Code, Field};
+use crate::class::{ClassInstance, Code, Field, FieldValue};
 
 pub struct ExecutorFrame {
     frame: Frame,
@@ -354,6 +354,22 @@ impl StackValue {
             StackValueSize::Two
         } else {
             StackValueSize::One
+        }
+    }
+}
+
+impl From<FieldValue> for StackValue {
+    fn from(value: FieldValue) -> Self {
+        match value {
+            FieldValue::Byte(v) => StackValue::Byte(v),
+            FieldValue::Short(v) => StackValue::Short(v),
+            FieldValue::Int(v) => StackValue::Int(v),
+            FieldValue::Long(v) => StackValue::Long(v),
+            FieldValue::Char(v) => StackValue::Char(v),
+            FieldValue::Float(v) => StackValue::Float(v),
+            FieldValue::Double(v) => StackValue::Double(v),
+            FieldValue::Boolean(v) => StackValue::Boolean(v),
+            FieldValue::Reference(v) => StackValue::Reference(v),
         }
     }
 }
