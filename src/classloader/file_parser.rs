@@ -1,19 +1,21 @@
-use super::{
-    CpInfo, MethodAccessFlag, RawAttributeInfo, RawFieldInfo, RawMethodInfo,
-};
-use super::{RawClassFile, ReferenceKind};
-use crate::classloader::{ClassAccessFlag, FieldAccessFlag};
+use std::path::Path;
+
 use anyhow::Context;
 use enumflags2::BitFlags;
-use nom::bytes::complete::tag;
-use nom::combinator::{eof, map};
-use nom::error::ErrorKind;
-use nom::multi::{length_count, length_value, many_till};
-use nom::number::complete::{
-    be_f32, be_f64, be_i32, be_i64, be_u16, be_u32, be_u8,
+use nom::{
+    bytes::complete::tag,
+    combinator::{eof, map},
+    error::ErrorKind,
+    multi::{length_count, length_value, many_till},
+    number::complete::{be_f32, be_f64, be_i32, be_i64, be_u16, be_u32, be_u8},
+    IResult,
 };
-use nom::IResult;
-use std::path::Path;
+
+use super::{
+    CpInfo, MethodAccessFlag, RawAttributeInfo, RawClassFile, RawFieldInfo,
+    RawMethodInfo, ReferenceKind,
+};
+use crate::classloader::{ClassAccessFlag, FieldAccessFlag};
 
 fn parse_utf8_code_point(current_content: &[u8]) -> IResult<&[u8], char> {
     let tag_content = current_content;
@@ -137,19 +139,27 @@ fn parse_constant_pool(current_content: &[u8]) -> IResult<&[u8], CpInfo> {
             ))
         },
         3 => {
-            let (current_content, int_value) = be_i32(current_content)?; //when the byteorder is not big_endian, this produces the wrong number
+            // when the byteorder is not big_endian,
+            // this produces the wrong number
+            let (current_content, int_value) = be_i32(current_content)?;
             Ok((current_content, CpInfo::IntegerInfo(int_value)))
         },
         4 => {
-            let (current_content, float_value) = be_f32(current_content)?; //when the byteorder is not big_endian, this produces the wrong number
+            // when the byteorder is not big_endian,
+            // this produces the wrong number
+            let (current_content, float_value) = be_f32(current_content)?;
             Ok((current_content, CpInfo::FloatInfo(float_value)))
         },
         5 => {
-            let (current_content, long_value) = be_i64(current_content)?; //when the byteorder is not big_endian, this produces the wrong number
+            // when the byteorder is not big_endian,
+            // this produces the wrong number
+            let (current_content, long_value) = be_i64(current_content)?;
             Ok((current_content, CpInfo::LongInfo(long_value)))
         },
         6 => {
-            let (current_content, float_value) = be_f64(current_content)?; //when the byteorder is not big_endian, this produces the wrong number
+            // when the byteorder is not big_endian,
+            // this produces the wrong number
+            let (current_content, float_value) = be_f64(current_content)?;
             Ok((current_content, CpInfo::DoubleInfo(float_value)))
         },
         12 => {
@@ -158,7 +168,7 @@ fn parse_constant_pool(current_content: &[u8]) -> IResult<&[u8], CpInfo> {
             Ok((
                 current_content,
                 CpInfo::NameAndTypeInfo {
-                    namae_index: (name_index),
+                    name_index: (name_index),
                     descriptor_index: (descriptor_index),
                 },
             ))
@@ -168,7 +178,7 @@ fn parse_constant_pool(current_content: &[u8]) -> IResult<&[u8], CpInfo> {
                 be_u16,
                 parse_utf8_from_constant_pool,
             )(current_content)?;
-            Ok((current_content, CpInfo::UTF8INFO((string))))
+            Ok((current_content, CpInfo::UTF8INFO(string)))
         },
         15 => {
             let (current_content, reference_kind) = be_u8(current_content)?;
@@ -303,7 +313,7 @@ fn parse_class_file(current_content: &[u8]) -> IResult<&[u8], RawClassFile> {
 }
 
 pub fn parse<P: AsRef<Path>>(path_to_file: P) -> anyhow::Result<RawClassFile> {
-    //read input and magic number
+    // read input and magic number
     let content =
         std::fs::read(path_to_file).context("File can not be read")?;
     match parse_class_file(&content) {

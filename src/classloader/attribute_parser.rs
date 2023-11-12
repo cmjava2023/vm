@@ -1,16 +1,15 @@
-use crate::classloader::FieldInfo;
+use nom::{
+    multi::length_count,
+    number::complete::{be_u16, be_u32, be_u8},
+    IResult,
+};
 
-use super::MethodInfo;
 use super::{
     file_parser::parse_attribute_info as parse_raw_attribute_info,
     AttributeInfo, ClassFile, CodeAttribute, CpInfo, ExceptionTable,
-    RawAttributeInfo, RawClassFile,
+    MethodInfo, RawAttributeInfo, RawClassFile,
 };
-use nom::multi::length_count;
-use nom::number::complete::{
-    be_f32, be_f64, be_i32, be_i64, be_u16, be_u32, be_u8,
-};
-use nom::IResult;
+use crate::classloader::FieldInfo;
 
 fn parse_attribute_info<'a, 'p, T, G, P>(
     raw_attribute: &'p RawAttributeInfo,
@@ -46,7 +45,7 @@ fn parse_exception_table(
 }
 
 fn parse_code_attribute<'a>(
-    raw_attribute: &'a RawAttributeInfo,
+    _raw_attribute: &'a RawAttributeInfo,
     raw_class_file: &'a RawClassFile,
 ) -> impl Fn(&[u8]) -> IResult<&[u8], CodeAttribute> + 'a {
     move |current_content: &[u8]| {
