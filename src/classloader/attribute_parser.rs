@@ -104,7 +104,7 @@ pub fn parse_attributes(class_file: RawClassFile) -> ClassFile {
     let class_attributes: Vec<AttributeInfo> = class_file
         .attributes
         .iter()
-        .map(|a| parse_attribute(&a, &class_file))
+        .map(|a| parse_attribute(a, &class_file))
         .collect();
     let methods: Vec<MethodInfo> = class_file
         .methods
@@ -116,7 +116,7 @@ pub fn parse_attributes(class_file: RawClassFile) -> ClassFile {
             attributes: (m
                 .attributes
                 .iter()
-                .map(|a| parse_attribute(&a, &class_file))
+                .map(|a| parse_attribute(a, &class_file))
                 .collect()),
         })
         .collect();
@@ -130,7 +130,7 @@ pub fn parse_attributes(class_file: RawClassFile) -> ClassFile {
             attributes: (f
                 .attributes
                 .iter()
-                .map(|a| parse_attribute(&a, &class_file))
+                .map(|a| parse_attribute(a, &class_file))
                 .collect()),
         })
         .collect();

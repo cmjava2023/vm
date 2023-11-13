@@ -251,6 +251,6 @@ fn decode_constant_pool(class_file: &ClassFile) -> Vec<RuntimeCPEntry> {
     class_file
         .constant_pool
         .iter()
-        .map(|e| decode_entry(&e, class_file))
+        .map(|e| decode_entry(e, class_file))
         .collect()
 }

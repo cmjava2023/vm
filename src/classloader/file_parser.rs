@@ -23,7 +23,7 @@ fn parse_utf8_code_point(current_content: &[u8]) -> IResult<&[u8], char> {
     if first_byte == 0b11101101 {
         let (current_content, v) = be_u8(current_content)?;
         let (current_content, w) = be_u8(current_content)?;
-        let (current_content, _) = tag(&[(0b11101101 as u8)])(current_content)?;
+        let (current_content, _) = tag(&[0b11101101_u8])(current_content)?;
         let (current_content, y) = be_u8(current_content)?;
         let (current_content, z) = be_u8(current_content)?;
         let v: u32 = v.into();
