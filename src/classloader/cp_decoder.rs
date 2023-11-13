@@ -42,6 +42,16 @@ pub enum RuntimeCPEntry {
     Resolved,
 }
 
+impl RuntimeCPEntry {
+    pub fn as_class(&self) -> Option<&str> {
+        if let RuntimeCPEntry::Class { name } = self {
+            Some(name.as_str())
+        } else {
+            None
+        }
+    }
+}
+
 fn decode_class_info(entry: &CpInfo, class_file: &ClassFile) -> String {
     let name_index =
         entry.as_class_info().expect("Cp_Info must be a class info");
@@ -247,7 +257,7 @@ fn decode_entry(entry: &CpInfo, class_file: &ClassFile) -> RuntimeCPEntry {
     }
 }
 
-fn decode_constant_pool(class_file: &ClassFile) -> Vec<RuntimeCPEntry> {
+pub fn decode_constant_pool(class_file: &ClassFile) -> Vec<RuntimeCPEntry> {
     class_file
         .constant_pool
         .iter()

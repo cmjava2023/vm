@@ -32,11 +32,11 @@ pub struct BytecodeClass {
     static_fields: Vec<Rc<Field>>,
     instance_fields: Vec<String>,
     // TODO flags
-    package: String,
-    name: String,
-    super_class: Option<Rc<dyn Class>>,
+    pub package: String,
+    pub name: String,
+    pub super_class: Option<Rc<dyn Class>>,
     // TODO how are interfaces represented?
-    interfaces: Vec<Rc<dyn std::any::Any>>,
+    pub interfaces: Vec<Rc<dyn std::any::Any>>,
     // TODO attributes
 }
 

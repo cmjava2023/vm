@@ -1,5 +1,6 @@
 #![allow(dead_code)]
 pub mod attribute_parser;
+pub mod class_creator;
 pub mod cp_decoder;
 pub mod file_parser;
 
