@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use thiserror::Error;
 
-use crate::class::{ClassInstance, Code, Field, FieldValue};
+use crate::class::{Class, ClassInstance, Code, Field, FieldValue};
 
 pub struct ExecutorFrame {
     frame: Frame,
@@ -35,17 +35,40 @@ pub fn run(code: &Code) {
     }
 }
 
+#[derive(Error, Debug)]
+pub enum RuntimeError {
+    #[error("NullPointer Exception")]
+    NullPointer,
+    #[error("Unexpected type '{actual}' (expected '{expected}')")]
+    InvalidType {
+        expected: &'static str,
+        actual: &'static str,
+    },
+}
+
 #[derive(Clone)]
 pub enum OpCode {
     GetStatic(Rc<Field>),
-    Ldc,
+    Ldc(Ldc),
     Return,
     InvokeVirtual,
+}
+
+#[derive(Clone)]
+pub enum Ldc {
+    Int(i32),
+    Float(f32),
+    String(Rc<dyn ClassInstance>),
+    Class(Rc<dyn Class>),
+    Method(Rc<dyn std::any::Any>),
 }
 
 impl OpCode {
     pub fn execute(&self, frame: &mut Frame) -> Update {
         match self {
+            Self::Ldc(Ldc::String(_s)) => {
+                todo!("java.lang.string implementation")
+            },
             Self::GetStatic(field) => {
                 frame
                     .operand_stack
@@ -92,7 +115,7 @@ pub enum VariableValue {
     Invalid,
     // Reference Types
     // TODO different reference types (array, interface)
-    Reference(Option<Rc<ClassInstance>>),
+    Reference(Option<Rc<dyn ClassInstance>>),
 }
 
 #[derive(Debug)]
@@ -115,7 +138,7 @@ pub enum StackValue {
     ReturnAddress(usize),
     // Reference Types
     // TODO different reference types (array, interface)
-    Reference(Option<Rc<ClassInstance>>),
+    Reference(Option<Rc<dyn ClassInstance>>),
 }
 
 #[repr(usize)]
@@ -157,7 +180,7 @@ pub enum VariableValueOrValue {
     Invalid,
     // Reference Types
     // TODO different reference types (array, interface)
-    Reference(Option<Rc<ClassInstance>>),
+    Reference(Option<Rc<dyn ClassInstance>>),
 }
 
 impl LocalVariables {
@@ -354,6 +377,46 @@ impl StackValue {
             StackValueSize::Two
         } else {
             StackValueSize::One
+        }
+    }
+
+    pub fn type_name(&self) -> &'static str {
+        match self {
+            StackValue::Byte(_) => "byte",
+            StackValue::Short(_) => "short",
+            StackValue::Int(_) => "int",
+            StackValue::Long(_) => "long",
+            StackValue::Char(_) => "char",
+            StackValue::Float(_) => "float",
+            StackValue::Double(_) => "double",
+            StackValue::Boolean(_) => "boolean",
+            StackValue::ReturnAddress(_) => "return_address",
+            StackValue::Reference(_) => "reference",
+        }
+    }
+}
+
+impl TryFrom<StackValue> for Rc<dyn ClassInstance> {
+    type Error = RuntimeError;
+
+    fn try_from(value: StackValue) -> Result<Self, Self::Error> {
+        match value.try_into()? {
+            Some(r) => Ok(r),
+            _ => Err(RuntimeError::NullPointer),
+        }
+    }
+}
+
+impl TryFrom<StackValue> for Option<Rc<dyn ClassInstance>> {
+    type Error = RuntimeError;
+
+    fn try_from(value: StackValue) -> Result<Self, Self::Error> {
+        match value {
+            StackValue::Reference(r) => Ok(r),
+            _ => Err(RuntimeError::InvalidType {
+                expected: "reference",
+                actual: value.type_name(),
+            }),
         }
     }
 }
