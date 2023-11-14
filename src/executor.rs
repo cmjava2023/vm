@@ -46,7 +46,7 @@ pub enum RuntimeError {
     },
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum OpCode {
     GetStatic(Rc<Field>),
     Ldc(Ldc),
@@ -54,7 +54,7 @@ pub enum OpCode {
     InvokeVirtual(Rc<Method>),
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Ldc {
     Int(i32),
     Float(f32),

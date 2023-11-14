@@ -6,7 +6,7 @@ use std::{any::Any, rc::Rc};
 
 use crate::executor::{Frame, OpCode, Update};
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum Method {
     Bytecode(BytecodeMethod),
     // TODO pass execution frame (i.e. stack and local variables)
@@ -27,6 +27,13 @@ pub trait Class {
     // TODO attributes
 }
 
+impl std::fmt::Debug for dyn Class {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "Class")
+    }
+}
+
+#[derive(Debug)]
 pub struct BytecodeClass {
     methods: Vec<Rc<Method>>,
     static_fields: Vec<Rc<Field>>,
@@ -40,6 +47,7 @@ pub struct BytecodeClass {
     // TODO attributes
 }
 
+#[derive(Debug)]
 pub struct Field {
     pub name: String,
     // TODO flags
@@ -48,7 +56,7 @@ pub struct Field {
     pub value: FieldValue,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum FieldValue {
     // Primitive Types
     //   Integral Types
@@ -105,7 +113,7 @@ impl FieldValue {
     }
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct BytecodeMethod {
     pub name: String,
     // TODO parameter
@@ -115,10 +123,10 @@ pub struct BytecodeMethod {
     pub code: Code,
 }
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub struct Code {
-    pub stack_depth: u32,
-    pub local_variable_count: u32,
+    pub stack_depth: usize,
+    pub local_variable_count: usize,
     // TODO exceptions
     // TODO attributes
     pub byte_code: Vec<OpCode>,

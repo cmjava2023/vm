@@ -1,5 +1,6 @@
 use super::{ClassFile, CpInfo, ReferenceKind};
 
+#[derive(Clone, Debug)]
 pub enum RuntimeCPEntry {
     Class {
         name: String,
@@ -40,6 +41,10 @@ pub enum RuntimeCPEntry {
         name_and_type_index: u16,
     },
     Resolved,
+}
+
+pub fn remove_cp_offset(index: usize) -> usize {
+    index - 1
 }
 
 impl RuntimeCPEntry {

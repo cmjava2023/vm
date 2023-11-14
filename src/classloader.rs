@@ -3,6 +3,7 @@ pub mod attribute_parser;
 pub mod class_creator;
 pub mod cp_decoder;
 pub mod file_parser;
+pub mod opcode_parser;
 
 use std::usize;
 
@@ -334,6 +335,17 @@ pub enum AttributeInfo {
     Code(CodeAttribute),
     SourceFile,
     LineNumberTable,
+    LocalVariableTable,
+}
+
+impl AttributeInfo {
+    pub fn as_code_attribute(&self) -> Option<&CodeAttribute> {
+        if let AttributeInfo::Code(code_attribute) = self {
+            Some(code_attribute)
+        } else {
+            None
+        }
+    }
 }
 
 #[derive(Debug)]
