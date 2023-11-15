@@ -6,6 +6,7 @@ use std::{any::Any, rc::Rc};
 
 use crate::executor::{Frame, OpCode, Update};
 
+#[derive(Clone)]
 pub enum Method {
     Bytecode(BytecodeMethod),
     // TODO pass execution frame (i.e. stack and local variables)
@@ -14,7 +15,7 @@ pub enum Method {
 }
 
 pub trait Class {
-    fn methods(&self) -> &[Method];
+    fn methods(&self) -> &[Rc<Method>];
     fn static_fields(&self) -> &[Rc<Field>];
     fn instance_fields(&self) -> &[String];
     // TODO flags
@@ -27,7 +28,7 @@ pub trait Class {
 }
 
 pub struct BytecodeClass {
-    methods: Vec<Method>,
+    methods: Vec<Rc<Method>>,
     static_fields: Vec<Rc<Field>>,
     instance_fields: Vec<String>,
     // TODO flags
@@ -104,6 +105,7 @@ impl FieldValue {
     }
 }
 
+#[derive(Clone)]
 pub struct BytecodeMethod {
     pub name: String,
     // TODO parameter
@@ -113,6 +115,7 @@ pub struct BytecodeMethod {
     pub code: Code,
 }
 
+#[derive(Clone)]
 pub struct Code {
     pub stack_depth: u32,
     pub local_variable_count: u32,

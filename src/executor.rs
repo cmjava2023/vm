@@ -2,7 +2,7 @@ use std::rc::Rc;
 
 use thiserror::Error;
 
-use crate::class::{Class, ClassInstance, Code, Field, FieldValue};
+use crate::class::{Class, ClassInstance, Code, Field, FieldValue, Method};
 
 pub struct ExecutorFrame {
     frame: Frame,
@@ -51,7 +51,7 @@ pub enum OpCode {
     GetStatic(Rc<Field>),
     Ldc(Ldc),
     Return,
-    InvokeVirtual,
+    InvokeVirtual(Rc<Method>),
 }
 
 #[derive(Clone)]
@@ -60,7 +60,7 @@ pub enum Ldc {
     Float(f32),
     String(Rc<dyn ClassInstance>),
     Class(Rc<dyn Class>),
-    Method(Rc<dyn std::any::Any>),
+    Method(Rc<Method>),
 }
 
 impl OpCode {

@@ -5,7 +5,23 @@ use crate::{
     executor::{Frame, Update},
 };
 
-pub struct PrintStream {}
+pub struct PrintStream {
+    methods: Vec<Rc<Method>>,
+}
+
+impl PrintStream {
+    pub fn new() -> PrintStream {
+        PrintStream {
+            methods: vec![Rc::new(Method::Rust(println))],
+        }
+    }
+}
+
+impl Default for PrintStream {
+    fn default() -> Self {
+        PrintStream::new()
+    }
+}
 
 fn println(frame: &mut Frame) -> Update {
     let string = frame.operand_stack.pop().expect("stack has value on top");
@@ -20,8 +36,8 @@ fn println(frame: &mut Frame) -> Update {
 }
 
 impl Class for PrintStream {
-    fn methods(&self) -> &[Method] {
-        &[Method::Rust(println)]
+    fn methods(&self) -> &[Rc<Method>] {
+        self.methods.as_slice()
     }
 
     fn static_fields(&self) -> &[Rc<Field>] {
@@ -70,7 +86,7 @@ impl Default for SystemClass {
 }
 
 impl Class for SystemClass {
-    fn methods(&self) -> &[Method] {
+    fn methods(&self) -> &[Rc<Method>] {
         &[]
     }
 
@@ -116,7 +132,7 @@ impl Default for StringClass {
 }
 
 impl Class for StringClass {
-    fn methods(&self) -> &[Method] {
+    fn methods(&self) -> &[Rc<Method>] {
         &[]
     }
 

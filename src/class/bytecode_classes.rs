@@ -3,7 +3,7 @@ use std::rc::Rc;
 use crate::class::{BytecodeClass, Class, Method};
 
 impl Class for BytecodeClass {
-    fn methods(&self) -> &[Method] {
+    fn methods(&self) -> &[Rc<Method>] {
         self.methods.as_slice()
     }
 
