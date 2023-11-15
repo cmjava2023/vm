@@ -2,12 +2,89 @@ use std::rc::Rc;
 
 use thiserror::Error;
 
-use crate::class::ClassInstance;
+use crate::class::{Class, ClassInstance, Code, Field, FieldValue, Method};
 
-pub enum OpCode {}
+pub struct ExecutorFrame {
+    frame: Frame,
+    pc: ProgramCounter,
+}
+
+pub fn run(code: &Code) {
+    let mut frame_stack: Vec<ExecutorFrame> = Vec::new();
+    let mut current_frame: Frame = Frame {
+        // TODO: Change variable type into usize to get rid of unwrap
+        local_variables: LocalVariables::new(
+            code.local_variable_count.try_into().unwrap(),
+        ),
+        operand_stack: FrameStack::new(code.stack_depth.try_into().unwrap()),
+    };
+    let mut current_pc: ProgramCounter =
+        ProgramCounter::new(code.byte_code.clone());
+
+    loop {
+        match current_pc.current().0.execute(&mut current_frame) {
+            Update::None => current_pc.next(1).unwrap(),
+            Update::Return => {
+                (current_frame, current_pc) = match frame_stack.pop() {
+                    None => break,
+                    Some(frame) => (frame.frame, frame.pc),
+                };
+                current_pc.next(1).unwrap();
+            },
+        }
+    }
+}
+
+#[derive(Error, Debug)]
+pub enum RuntimeError {
+    #[error("NullPointer Exception")]
+    NullPointer,
+    #[error("Unexpected type '{actual}' (expected '{expected}')")]
+    InvalidType {
+        expected: &'static str,
+        actual: &'static str,
+    },
+}
+
+#[derive(Clone)]
+pub enum OpCode {
+    GetStatic(Rc<Field>),
+    Ldc(Ldc),
+    Return,
+    InvokeVirtual(Rc<Method>),
+}
+
+#[derive(Clone)]
+pub enum Ldc {
+    Int(i32),
+    Float(f32),
+    String(Rc<dyn ClassInstance>),
+    Class(Rc<dyn Class>),
+    Method(Rc<Method>),
+}
+
+impl OpCode {
+    pub fn execute(&self, frame: &mut Frame) -> Update {
+        match self {
+            Self::Ldc(Ldc::String(_s)) => {
+                todo!("java.lang.string implementation")
+            },
+            Self::GetStatic(field) => {
+                frame
+                    .operand_stack
+                    .push(field.value.clone().into())
+                    .unwrap();
+                Update::None
+            },
+            Self::Return => Update::Return,
+            _ => todo!(),
+        }
+    }
+}
 
 pub enum Update {
     None,
+    Return,
 }
 
 pub struct Frame {
@@ -38,9 +115,10 @@ pub enum VariableValue {
     Invalid,
     // Reference Types
     // TODO different reference types (array, interface)
-    Reference(Option<Rc<ClassInstance>>),
+    Reference(Option<Rc<dyn ClassInstance>>),
 }
 
+#[derive(Debug)]
 pub enum StackValue {
     // Primitive Types
     //   Integral Types
@@ -60,7 +138,7 @@ pub enum StackValue {
     ReturnAddress(usize),
     // Reference Types
     // TODO different reference types (array, interface)
-    Reference(Option<Rc<ClassInstance>>),
+    Reference(Option<Rc<dyn ClassInstance>>),
 }
 
 #[repr(usize)]
@@ -102,7 +180,7 @@ pub enum VariableValueOrValue {
     Invalid,
     // Reference Types
     // TODO different reference types (array, interface)
-    Reference(Option<Rc<ClassInstance>>),
+    Reference(Option<Rc<dyn ClassInstance>>),
 }
 
 impl LocalVariables {
@@ -299,6 +377,62 @@ impl StackValue {
             StackValueSize::Two
         } else {
             StackValueSize::One
+        }
+    }
+
+    pub fn type_name(&self) -> &'static str {
+        match self {
+            StackValue::Byte(_) => "byte",
+            StackValue::Short(_) => "short",
+            StackValue::Int(_) => "int",
+            StackValue::Long(_) => "long",
+            StackValue::Char(_) => "char",
+            StackValue::Float(_) => "float",
+            StackValue::Double(_) => "double",
+            StackValue::Boolean(_) => "boolean",
+            StackValue::ReturnAddress(_) => "return_address",
+            StackValue::Reference(_) => "reference",
+        }
+    }
+}
+
+impl TryFrom<StackValue> for Rc<dyn ClassInstance> {
+    type Error = RuntimeError;
+
+    fn try_from(value: StackValue) -> Result<Self, Self::Error> {
+        match value.try_into()? {
+            Some(r) => Ok(r),
+            _ => Err(RuntimeError::NullPointer),
+        }
+    }
+}
+
+impl TryFrom<StackValue> for Option<Rc<dyn ClassInstance>> {
+    type Error = RuntimeError;
+
+    fn try_from(value: StackValue) -> Result<Self, Self::Error> {
+        match value {
+            StackValue::Reference(r) => Ok(r),
+            _ => Err(RuntimeError::InvalidType {
+                expected: "reference",
+                actual: value.type_name(),
+            }),
+        }
+    }
+}
+
+impl From<FieldValue> for StackValue {
+    fn from(value: FieldValue) -> Self {
+        match value {
+            FieldValue::Byte(v) => StackValue::Byte(v),
+            FieldValue::Short(v) => StackValue::Short(v),
+            FieldValue::Int(v) => StackValue::Int(v),
+            FieldValue::Long(v) => StackValue::Long(v),
+            FieldValue::Char(v) => StackValue::Char(v),
+            FieldValue::Float(v) => StackValue::Float(v),
+            FieldValue::Double(v) => StackValue::Double(v),
+            FieldValue::Boolean(v) => StackValue::Boolean(v),
+            FieldValue::Reference(v) => StackValue::Reference(v),
         }
     }
 }

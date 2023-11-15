@@ -3,11 +3,11 @@ use std::rc::Rc;
 use crate::class::{BytecodeClass, Class, Method};
 
 impl Class for BytecodeClass {
-    fn methods(&self) -> &[Method] {
+    fn methods(&self) -> &[Rc<Method>] {
         self.methods.as_slice()
     }
 
-    fn static_fields(&self) -> &[super::Field] {
+    fn static_fields(&self) -> &[Rc<super::Field>] {
         self.static_fields.as_slice()
     }
 

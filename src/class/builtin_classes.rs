@@ -1,23 +1,46 @@
 use std::rc::Rc;
 
 use crate::{
-    class::{Class, Field, FieldValue, Method},
+    class::{Class, ClassInstance, Field, FieldValue, Method},
     executor::{Frame, Update},
 };
 
-pub struct PrintStream {}
+pub struct PrintStream {
+    methods: Vec<Rc<Method>>,
+}
 
-fn println(_frame: &Frame) -> Update {
-    println!("replace me");
+impl PrintStream {
+    pub fn new() -> PrintStream {
+        PrintStream {
+            methods: vec![Rc::new(Method::Rust(println))],
+        }
+    }
+}
+
+impl Default for PrintStream {
+    fn default() -> Self {
+        PrintStream::new()
+    }
+}
+
+fn println(frame: &mut Frame) -> Update {
+    let string = frame.operand_stack.pop().expect("stack has value on top");
+    let string: Rc<dyn ClassInstance> = string.try_into().unwrap();
+    let b: &StringInstance = match string.as_any().downcast_ref() {
+        Some(s) => s,
+        None => panic!("stack reference is not a string"),
+    };
+    println!("{}", b.string);
+
     Update::None
 }
 
 impl Class for PrintStream {
-    fn methods(&self) -> &[Method] {
-        &[Method::Rust(println)]
+    fn methods(&self) -> &[Rc<Method>] {
+        self.methods.as_slice()
     }
 
-    fn static_fields(&self) -> &[Field] {
+    fn static_fields(&self) -> &[Rc<Field>] {
         &[]
     }
 
@@ -43,15 +66,15 @@ impl Class for PrintStream {
 }
 
 pub struct SystemClass {
-    fields: Vec<Field>,
+    fields: Vec<Rc<Field>>,
 }
 
 impl SystemClass {
     pub fn new() -> Self {
-        let fields = vec![Field {
+        let fields = vec![Rc::new(Field {
             name: "out".into(),
             value: FieldValue::Reference(None),
-        }];
+        })];
         Self { fields }
     }
 }
@@ -63,11 +86,11 @@ impl Default for SystemClass {
 }
 
 impl Class for SystemClass {
-    fn methods(&self) -> &[Method] {
+    fn methods(&self) -> &[Rc<Method>] {
         &[]
     }
 
-    fn static_fields(&self) -> &[Field] {
+    fn static_fields(&self) -> &[Rc<Field>] {
         self.fields.as_slice()
     }
 
@@ -95,3 +118,64 @@ impl Class for SystemClass {
 pub struct ObjectClass {}
 
 pub struct StringClass {}
+
+impl StringClass {
+    pub fn new() -> StringClass {
+        StringClass {}
+    }
+}
+
+impl Default for StringClass {
+    fn default() -> Self {
+        StringClass::new()
+    }
+}
+
+impl Class for StringClass {
+    fn methods(&self) -> &[Rc<Method>] {
+        &[]
+    }
+
+    fn static_fields(&self) -> &[Rc<Field>] {
+        &[]
+    }
+
+    fn instance_fields(&self) -> &[String] {
+        &[]
+    }
+
+    fn package(&self) -> &str {
+        "java/lang"
+    }
+
+    fn name(&self) -> &str {
+        "String"
+    }
+
+    fn super_class(&self) -> Option<Rc<dyn Class>> {
+        None
+    }
+
+    fn interfaces(&self) -> &[Rc<dyn std::any::Any>] {
+        &[]
+    }
+}
+
+pub struct StringInstance {
+    class: Rc<dyn Class>,
+    pub string: String,
+}
+
+impl ClassInstance for StringInstance {
+    fn class(&self) -> Rc<dyn Class> {
+        self.class.clone()
+    }
+
+    fn instance_fields(&self) -> &[Rc<Field>] {
+        &[]
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+}

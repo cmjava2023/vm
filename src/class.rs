@@ -1,20 +1,22 @@
 pub mod builtin_classes;
 pub mod bytecode_classes;
 
-use std::rc::Rc;
+use core::fmt;
+use std::{any::Any, rc::Rc};
 
 use crate::executor::{Frame, OpCode, Update};
 
+#[derive(Clone)]
 pub enum Method {
     Bytecode(BytecodeMethod),
     // TODO pass execution frame (i.e. stack and local variables)
     // TODO return value?
-    Rust(for<'a> fn(&'a Frame) -> Update),
+    Rust(for<'a> fn(&'a mut Frame) -> Update),
 }
 
 pub trait Class {
-    fn methods(&self) -> &[Method];
-    fn static_fields(&self) -> &[Field];
+    fn methods(&self) -> &[Rc<Method>];
+    fn static_fields(&self) -> &[Rc<Field>];
     fn instance_fields(&self) -> &[String];
     // TODO flags
     fn package(&self) -> &str;
@@ -26,8 +28,8 @@ pub trait Class {
 }
 
 pub struct BytecodeClass {
-    methods: Vec<Method>,
-    static_fields: Vec<Field>,
+    methods: Vec<Rc<Method>>,
+    static_fields: Vec<Rc<Field>>,
     instance_fields: Vec<String>,
     // TODO flags
     package: String,
@@ -46,6 +48,7 @@ pub struct Field {
     pub value: FieldValue,
 }
 
+#[derive(Clone)]
 pub enum FieldValue {
     // Primitive Types
     //   Integral Types
@@ -61,7 +64,7 @@ pub enum FieldValue {
     Boolean(u8),
     // Reference Types
     // TODO different reference types (array, interface)
-    Reference(Option<Rc<ClassInstance>>),
+    Reference(Option<Rc<dyn ClassInstance>>),
 }
 
 impl FieldValue {
@@ -102,6 +105,7 @@ impl FieldValue {
     }
 }
 
+#[derive(Clone)]
 pub struct BytecodeMethod {
     pub name: String,
     // TODO parameter
@@ -111,6 +115,7 @@ pub struct BytecodeMethod {
     pub code: Code,
 }
 
+#[derive(Clone)]
 pub struct Code {
     pub stack_depth: u32,
     pub local_variable_count: u32,
@@ -119,7 +124,33 @@ pub struct Code {
     pub byte_code: Vec<OpCode>,
 }
 
-pub struct ClassInstance {
+pub trait ClassInstance {
+    fn as_any(&self) -> &dyn Any;
+    fn class(&self) -> Rc<dyn Class>;
+    fn instance_fields(&self) -> &[Rc<Field>];
+}
+
+pub struct BytecodeClassInstance {
     pub class: Rc<dyn Class>,
-    pub instance_fields: Vec<Field>,
+    pub instance_fields: Vec<Rc<Field>>,
+}
+
+impl fmt::Debug for dyn ClassInstance {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "instance of Class '{}'", self.class().name())
+    }
+}
+
+impl ClassInstance for BytecodeClassInstance {
+    fn class(&self) -> Rc<dyn Class> {
+        self.class.clone()
+    }
+
+    fn instance_fields(&self) -> &[Rc<Field>] {
+        self.instance_fields.as_slice()
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 }
