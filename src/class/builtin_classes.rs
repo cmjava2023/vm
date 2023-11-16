@@ -4,7 +4,7 @@ use crate::{
     class::{
         Class, ClassInstance, Field, FieldValue, Method, RustMethodReturn,
     },
-    executor::Frame,
+    executor::{Frame, VariableValueOrValue},
 };
 
 pub struct PrintStream {
@@ -17,7 +17,7 @@ impl PrintStream {
             methods: vec![Rc::new(Method {
                 code: super::MethodCode::Rust(println),
                 name: "println".to_owned(),
-                parameter_count: 2,
+                parameter_count: 1,
             })],
         }
     }
@@ -36,8 +36,11 @@ impl Default for PrintStream {
 }
 
 fn println(frame: &mut Frame) -> RustMethodReturn {
-    let string = frame.operand_stack.pop().expect("stack has value on top");
-    let string: Rc<dyn ClassInstance> = string.try_into().unwrap();
+    let string = frame.local_variables.get(1);
+    let string: Rc<dyn ClassInstance> = match string {
+        VariableValueOrValue::Reference(s) => s.expect("null pointer"),
+        _ => panic!("local variables have reference on top"),
+    };
     let b: &StringInstance = match string.as_any().downcast_ref() {
         Some(s) => s,
         None => panic!("stack reference is not a string"),
