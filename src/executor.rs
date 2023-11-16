@@ -2,7 +2,10 @@ use std::rc::Rc;
 
 use thiserror::Error;
 
-use crate::class::{Class, ClassInstance, Code, Field, FieldValue, Method};
+use crate::{
+    class::{Class, ClassInstance, Code, Field, FieldValue, Method},
+    classloader::cp_decoder::RuntimeCPEntry,
+};
 
 pub struct ExecutorFrame {
     frame: Frame,
@@ -12,11 +15,10 @@ pub struct ExecutorFrame {
 pub fn run(code: &Code) {
     let mut frame_stack: Vec<ExecutorFrame> = Vec::new();
     let mut current_frame: Frame = Frame {
-        // TODO: Change variable type into usize to get rid of unwrap
         local_variables: LocalVariables::new(
-            code.local_variable_count.try_into().unwrap(),
+            code.local_variable_count,
         ),
-        operand_stack: FrameStack::new(code.stack_depth.try_into().unwrap()),
+        operand_stack: FrameStack::new(code.stack_depth),
     };
     let mut current_pc: ProgramCounter =
         ProgramCounter::new(code.byte_code.clone());
@@ -52,6 +54,8 @@ pub enum OpCode {
     Ldc(Ldc),
     Return,
     InvokeVirtual(Rc<Method>),
+    InvokeSpecial(RuntimeCPEntry), // Placeholder, to enable bytecode parsing
+    Aload0,
 }
 
 #[derive(Clone, Debug)]

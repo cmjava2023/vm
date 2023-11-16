@@ -55,6 +55,32 @@ impl RuntimeCPEntry {
             None
         }
     }
+
+    pub fn as_field_ref(&self) -> Option<(&str, &str, &str)> {
+        if let RuntimeCPEntry::FieldRefInfo {
+            name,
+            class,
+            descriptor,
+        } = self
+        {
+            Some((name.as_str(), class.as_str(), descriptor.as_str()))
+        } else {
+            None
+        }
+    }
+
+    pub fn as_method_ref(&self) -> Option<(&str, &str, &str)> {
+        if let RuntimeCPEntry::MethodRefInfo {
+            class,
+            name,
+            descriptor,
+        } = self
+        {
+            Some((class.as_str(), name.as_str(), descriptor.as_str()))
+        } else {
+            None
+        }
+    }
 }
 
 fn decode_class_info(entry: &CpInfo, class_file: &ClassFile) -> String {

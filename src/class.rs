@@ -7,8 +7,18 @@ use std::{any::Any, rc::Rc};
 use crate::executor::{Frame, OpCode, Update};
 
 #[derive(Debug, Clone)]
-pub enum Method {
-    Bytecode(BytecodeMethod),
+pub struct Method {
+    pub code: MethodCode,
+    pub name: String,
+    // TODO parameter
+    // TODO return type
+    // TODO flags
+    // TODO attributes
+}
+
+#[derive(Debug, Clone)]
+pub enum MethodCode {
+    Bytecode(Code),
     // TODO pass execution frame (i.e. stack and local variables)
     // TODO return value?
     Rust(for<'a> fn(&'a mut Frame) -> Update),
@@ -27,6 +37,20 @@ pub trait Class {
     // TODO attributes
 }
 
+impl dyn Class {
+    pub fn get_method(&self, method_name: &str) -> Option<Rc<Method>> {
+        self.methods()
+            .iter()
+            .find(|element| element.name == method_name).cloned()
+    }
+
+    pub fn get_static_field(&self, field_name: &str) -> Option<Rc<Field>> {
+        self.static_fields()
+            .iter()
+            .find(|element| element.name == field_name).cloned()
+    }
+}
+
 impl std::fmt::Debug for dyn Class {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
         write!(f, "Class")
@@ -35,9 +59,9 @@ impl std::fmt::Debug for dyn Class {
 
 #[derive(Debug)]
 pub struct BytecodeClass {
-    methods: Vec<Rc<Method>>,
-    static_fields: Vec<Rc<Field>>,
-    instance_fields: Vec<String>,
+    pub methods: Vec<Rc<Method>>,
+    pub static_fields: Vec<Rc<Field>>,
+    pub instance_fields: Vec<String>,
     // TODO flags
     pub package: String,
     pub name: String,
@@ -111,16 +135,6 @@ impl FieldValue {
     pub fn reference() -> Self {
         Self::Reference(None)
     }
-}
-
-#[derive(Debug, Clone)]
-pub struct BytecodeMethod {
-    pub name: String,
-    // TODO parameter
-    // TODO return type
-    // TODO flags
-    // TODO attributes
-    pub code: Code,
 }
 
 #[derive(Debug, Clone)]
