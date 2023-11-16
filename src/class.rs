@@ -41,13 +41,15 @@ impl dyn Class {
     pub fn get_method(&self, method_name: &str) -> Option<Rc<Method>> {
         self.methods()
             .iter()
-            .find(|element| element.name == method_name).cloned()
+            .find(|element| element.name == method_name)
+            .cloned()
     }
 
     pub fn get_static_field(&self, field_name: &str) -> Option<Rc<Field>> {
         self.static_fields()
             .iter()
-            .find(|element| element.name == field_name).cloned()
+            .find(|element| element.name == field_name)
+            .cloned()
     }
 }
 

@@ -15,9 +15,7 @@ pub struct ExecutorFrame {
 pub fn run(code: &Code) {
     let mut frame_stack: Vec<ExecutorFrame> = Vec::new();
     let mut current_frame: Frame = Frame {
-        local_variables: LocalVariables::new(
-            code.local_variable_count,
-        ),
+        local_variables: LocalVariables::new(code.local_variable_count),
         operand_stack: FrameStack::new(code.stack_depth),
     };
     let mut current_pc: ProgramCounter =

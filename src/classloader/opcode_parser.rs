@@ -25,7 +25,9 @@ fn parse_getstatic<'a>(
     let class = heap
         .find_class(class_name)
         .unwrap_or_else(|| panic!("Class with name  {} exists", class_name));
-    let field = class.get_static_field(name).unwrap_or_else(|| panic!("Class with name{} has method {}", class_name, name));
+    let field = class.get_static_field(name).unwrap_or_else(|| {
+        panic!("Class with name{} has method {}", class_name, name)
+    });
     Ok((current_content, OpCode::GetStatic(field)))
 }
 
@@ -67,7 +69,9 @@ fn parse_invokevirtual<'a>(
     let class = heap
         .find_class(class_name)
         .unwrap_or_else(|| panic!("Class with name  {} exists", class_name));
-    let method = class.get_method(name).unwrap_or_else(|| panic!("Class with name{} has method {}", class_name, name));
+    let method = class.get_method(name).unwrap_or_else(|| {
+        panic!("Class with name{} has method {}", class_name, name)
+    });
 
     Ok((current_content, OpCode::InvokeVirtual(method)))
 }
