@@ -1,6 +1,15 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, rc::Rc};
 
 use clap::Parser;
+use cmjava::{
+    class::{Class, MethodCode},
+    classloader::{
+        attribute_parser::parse_attributes,
+        class_creator::create_bytecode_class, file_parser::parse,
+    },
+    executor::run,
+    heap::Heap,
+};
 use tracing::Level;
 use tracing_error::ErrorLayer;
 use tracing_subscriber::{
@@ -96,7 +105,23 @@ fn main() -> anyhow::Result<()> {
     let cli = Cli::parse();
     log_setup(cli.verbose);
 
-    println!("Hello world!");
+    let mut heap = Heap::default();
+    let raw_class = parse(cli.class_file).unwrap();
+    let class = parse_attributes(raw_class);
+    let bytecode_class: Rc<dyn Class> =
+        Rc::new(create_bytecode_class(&class, &mut heap));
+    heap.add_class(
+        format!("{}/{}", bytecode_class.package(), bytecode_class.name()),
+        bytecode_class.clone(),
+    );
+
+    let main = &bytecode_class.get_method("main").unwrap().code;
+    let main = if let MethodCode::Bytecode(code) = main {
+        code
+    } else {
+        panic!("main method is not bytecode");
+    };
+    run(main);
 
     Ok(())
 }

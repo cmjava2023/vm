@@ -3,7 +3,10 @@ use std::rc::Rc;
 use thiserror::Error;
 
 use crate::{
-    class::{Class, ClassInstance, Code, Field, FieldValue, Method},
+    class::{
+        Class, ClassInstance, Code, Field, FieldValue, Method, MethodCode,
+        RustMethodReturn,
+    },
     classloader::cp_decoder::RuntimeCPEntry,
 };
 
@@ -24,6 +27,54 @@ pub fn run(code: &Code) {
     loop {
         match current_pc.current().0.execute(&mut current_frame) {
             Update::None => current_pc.next(1).unwrap(),
+            Update::MethodCall(method) => match &method.code {
+                MethodCode::Bytecode(c) => {
+                    let mut new_frame = Frame {
+                        local_variables: LocalVariables::new(
+                            c.local_variable_count,
+                        ),
+                        operand_stack: FrameStack::new(c.stack_depth),
+                    };
+                    let pc = ProgramCounter::new(c.byte_code.clone());
+
+                    prepare_parameters(
+                        &mut current_frame,
+                        &mut new_frame,
+                        method.parameter_count,
+                    );
+
+                    frame_stack.push(ExecutorFrame {
+                        frame: current_frame,
+                        pc: current_pc,
+                    });
+                    current_frame = new_frame;
+                    current_pc = pc;
+                },
+                MethodCode::Rust(code) => {
+                    let mut new_frame = Frame {
+                        // TODO this fails if we implemented rust methods
+                        // that take long/double arguments
+                        local_variables: LocalVariables::new(
+                            // TODO we call methods on oibjects,
+                            // so +1 for this in local vars
+                            method.parameter_count + 1,
+                        ),
+                        operand_stack: FrameStack::new(0),
+                    };
+
+                    prepare_parameters(
+                        &mut current_frame,
+                        &mut new_frame,
+                        method.parameter_count,
+                    );
+
+                    match code(&mut new_frame) {
+                        RustMethodReturn::Void => (),
+                    }
+
+                    current_pc.next(1).unwrap();
+                },
+            },
             Update::Return => {
                 (current_frame, current_pc) = match frame_stack.pop() {
                     None => break,
@@ -32,6 +83,23 @@ pub fn run(code: &Code) {
                 current_pc.next(1).unwrap();
             },
         }
+    }
+}
+
+fn prepare_parameters(
+    current_frame: &mut Frame,
+    new_frame: &mut Frame,
+    parameter_count: usize,
+) {
+    let mut parameters: Vec<VariableValueOrValue> = Vec::new();
+    for _ in 0..(parameter_count + 1) {
+        parameters.insert(0, current_frame.operand_stack.pop().unwrap().into());
+    }
+    let mut variable_index = 0;
+    for param in parameters.into_iter() {
+        let size = param.size() as usize;
+        new_frame.local_variables.set(variable_index, param);
+        variable_index += size;
     }
 }
 
@@ -68,9 +136,22 @@ pub enum Ldc {
 impl OpCode {
     pub fn execute(&self, frame: &mut Frame) -> Update {
         match self {
-            Self::Ldc(Ldc::String(_s)) => {
-                todo!("java.lang.string implementation")
+            Self::Ldc(Ldc::Int(i)) => {
+                frame.operand_stack.push(StackValue::Int(*i)).unwrap();
+                Update::None
             },
+            Self::Ldc(Ldc::Float(f)) => {
+                frame.operand_stack.push(StackValue::Float(*f)).unwrap();
+                Update::None
+            },
+            Self::Ldc(Ldc::String(s)) => {
+                frame
+                    .operand_stack
+                    .push(StackValue::Reference(Some(s.clone())))
+                    .unwrap();
+                Update::None
+            },
+            Self::InvokeVirtual(method) => Update::MethodCall(method.clone()),
             Self::GetStatic(field) => {
                 frame
                     .operand_stack
@@ -87,6 +168,7 @@ impl OpCode {
 pub enum Update {
     None,
     Return,
+    MethodCall(Rc<Method>),
 }
 
 pub struct Frame {
@@ -183,6 +265,18 @@ pub enum VariableValueOrValue {
     // Reference Types
     // TODO different reference types (array, interface)
     Reference(Option<Rc<dyn ClassInstance>>),
+}
+
+impl VariableValueOrValue {
+    pub fn size(&self) -> StackValueSize {
+        if matches!(self, VariableValueOrValue::Long(_))
+            || matches!(self, VariableValueOrValue::Double(_))
+        {
+            StackValueSize::Two
+        } else {
+            StackValueSize::One
+        }
+    }
 }
 
 impl LocalVariables {
@@ -435,6 +529,25 @@ impl From<FieldValue> for StackValue {
             FieldValue::Double(v) => StackValue::Double(v),
             FieldValue::Boolean(v) => StackValue::Boolean(v),
             FieldValue::Reference(v) => StackValue::Reference(v),
+        }
+    }
+}
+
+impl From<StackValue> for VariableValueOrValue {
+    fn from(value: StackValue) -> Self {
+        match value {
+            StackValue::Byte(v) => VariableValueOrValue::Byte(v),
+            StackValue::Short(v) => VariableValueOrValue::Short(v),
+            StackValue::Int(v) => VariableValueOrValue::Int(v),
+            StackValue::Long(v) => VariableValueOrValue::Long(v),
+            StackValue::Char(v) => VariableValueOrValue::Char(v),
+            StackValue::Float(v) => VariableValueOrValue::Float(v),
+            StackValue::Double(v) => VariableValueOrValue::Double(v),
+            StackValue::Boolean(v) => VariableValueOrValue::Boolean(v),
+            StackValue::ReturnAddress(v) => {
+                VariableValueOrValue::ReturnAddress(v)
+            },
+            StackValue::Reference(v) => VariableValueOrValue::Reference(v),
         }
     }
 }
