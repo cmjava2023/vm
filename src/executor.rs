@@ -55,7 +55,9 @@ pub fn run(code: &Code) {
                         // TODO this fails if we implemented rust methods
                         // that take long/double arguments
                         local_variables: LocalVariables::new(
-                            method.parameter_count,
+                            // TODO we call methods on oibjects,
+                            // so +1 for this in local vars
+                            method.parameter_count + 1,
                         ),
                         operand_stack: FrameStack::new(0),
                     };
