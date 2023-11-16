@@ -27,8 +27,7 @@ fn create_bytecode_method(
         .unwrap();
     for element in method.attributes.iter() {
         let attribute = element.as_code_attribute();
-        if attribute.is_some() {
-            let code_attribute = attribute.unwrap();
+        if let Some(code_attribute) = attribute {
             stack_depth = code_attribute.max_stack;
             local_variable_count = code_attribute.max_locals;
             (_, byte_code) = parse_opcodes(
