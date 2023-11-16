@@ -1,8 +1,10 @@
 use std::rc::Rc;
 
 use crate::{
-    class::{Class, ClassInstance, Field, FieldValue, Method},
-    executor::{Frame, Update},
+    class::{
+        Class, ClassInstance, Field, FieldValue, Method, RustMethodReturn,
+    },
+    executor::Frame,
 };
 
 pub struct PrintStream {
@@ -15,6 +17,7 @@ impl PrintStream {
             methods: vec![Rc::new(Method {
                 code: super::MethodCode::Rust(println),
                 name: "println".to_owned(),
+                parameter_count: 2,
             })],
         }
     }
@@ -32,7 +35,7 @@ impl Default for PrintStream {
     }
 }
 
-fn println(frame: &mut Frame) -> Update {
+fn println(frame: &mut Frame) -> RustMethodReturn {
     let string = frame.operand_stack.pop().expect("stack has value on top");
     let string: Rc<dyn ClassInstance> = string.try_into().unwrap();
     let b: &StringInstance = match string.as_any().downcast_ref() {
@@ -41,7 +44,7 @@ fn println(frame: &mut Frame) -> Update {
     };
     println!("{}", b.string);
 
-    Update::None
+    RustMethodReturn::Void
 }
 
 impl Class for PrintStream {

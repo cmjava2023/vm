@@ -4,12 +4,13 @@ pub mod bytecode_classes;
 use core::fmt;
 use std::{any::Any, rc::Rc};
 
-use crate::executor::{Frame, OpCode, Update};
+use crate::executor::{Frame, OpCode};
 
 #[derive(Debug, Clone)]
 pub struct Method {
     pub code: MethodCode,
     pub name: String,
+    pub parameter_count: usize,
     // TODO parameter
     // TODO return type
     // TODO flags
@@ -19,9 +20,11 @@ pub struct Method {
 #[derive(Debug, Clone)]
 pub enum MethodCode {
     Bytecode(Code),
-    // TODO pass execution frame (i.e. stack and local variables)
-    // TODO return value?
-    Rust(for<'a> fn(&'a mut Frame) -> Update),
+    Rust(for<'a> fn(&'a mut Frame) -> RustMethodReturn),
+}
+
+pub enum RustMethodReturn {
+    Void,
 }
 
 pub trait Class {
