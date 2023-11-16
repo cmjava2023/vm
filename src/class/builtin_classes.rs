@@ -15,6 +15,12 @@ impl PrintStream {
             methods: vec![Rc::new(Method::Rust(println))],
         }
     }
+
+    pub fn new_instance(self: &Rc<Self>) -> PrintStreamInstance {
+        PrintStreamInstance {
+            class: self.clone(),
+        }
+    }
 }
 
 impl Default for PrintStream {
@@ -65,23 +71,37 @@ impl Class for PrintStream {
     }
 }
 
+pub struct PrintStreamInstance {
+    class: Rc<dyn Class>,
+}
+
+impl ClassInstance for PrintStreamInstance {
+    fn class(&self) -> Rc<dyn Class> {
+        self.class.clone()
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
+    fn instance_fields(&self) -> &[Rc<Field>] {
+        &[]
+    }
+}
+
 pub struct SystemClass {
     fields: Vec<Rc<Field>>,
 }
 
 impl SystemClass {
-    pub fn new() -> Self {
+    pub fn new(print_stream_class: &Rc<PrintStream>) -> Self {
         let fields = vec![Rc::new(Field {
             name: "out".into(),
-            value: FieldValue::Reference(None),
+            value: FieldValue::Reference(Some(Rc::new(
+                print_stream_class.new_instance(),
+            ))),
         })];
         Self { fields }
-    }
-}
-
-impl Default for SystemClass {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
@@ -122,6 +142,13 @@ pub struct StringClass {}
 impl StringClass {
     pub fn new() -> StringClass {
         StringClass {}
+    }
+
+    pub fn new_instance(self: &Rc<Self>, string: String) -> StringInstance {
+        StringInstance {
+            class: self.clone(),
+            string,
+        }
     }
 }
 

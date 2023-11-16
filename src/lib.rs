@@ -1,5 +1,6 @@
 pub mod class;
 pub mod executor;
+pub mod heap;
 
 pub fn add(left: usize, right: usize) -> usize {
     left + right
