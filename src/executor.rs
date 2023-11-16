@@ -68,8 +68,20 @@ pub enum Ldc {
 impl OpCode {
     pub fn execute(&self, frame: &mut Frame) -> Update {
         match self {
-            Self::Ldc(Ldc::String(_s)) => {
-                todo!("java.lang.string implementation")
+            Self::Ldc(Ldc::Int(i)) => {
+                frame.operand_stack.push(StackValue::Int(*i)).unwrap();
+                Update::None
+            },
+            Self::Ldc(Ldc::Float(f)) => {
+                frame.operand_stack.push(StackValue::Float(*f)).unwrap();
+                Update::None
+            },
+            Self::Ldc(Ldc::String(s)) => {
+                frame
+                    .operand_stack
+                    .push(StackValue::Reference(Some(s.clone())))
+                    .unwrap();
+                Update::None
             },
             Self::GetStatic(field) => {
                 frame
