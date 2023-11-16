@@ -12,7 +12,10 @@ pub struct PrintStream {
 impl PrintStream {
     pub fn new() -> PrintStream {
         PrintStream {
-            methods: vec![Rc::new(Method::Rust(println))],
+            methods: vec![Rc::new(Method {
+                code: super::MethodCode::Rust(println),
+                name: "println".to_owned(),
+            })],
         }
     }
 

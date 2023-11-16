@@ -1,5 +1,6 @@
 use super::{ClassFile, CpInfo, ReferenceKind};
 
+#[derive(Clone, Debug)]
 pub enum RuntimeCPEntry {
     Class {
         name: String,
@@ -40,6 +41,46 @@ pub enum RuntimeCPEntry {
         name_and_type_index: u16,
     },
     Resolved,
+}
+
+pub fn remove_cp_offset(index: usize) -> usize {
+    index - 1
+}
+
+impl RuntimeCPEntry {
+    pub fn as_class(&self) -> Option<&str> {
+        if let RuntimeCPEntry::Class { name } = self {
+            Some(name.as_str())
+        } else {
+            None
+        }
+    }
+
+    pub fn as_field_ref(&self) -> Option<(&str, &str, &str)> {
+        if let RuntimeCPEntry::FieldRefInfo {
+            name,
+            class,
+            descriptor,
+        } = self
+        {
+            Some((name.as_str(), class.as_str(), descriptor.as_str()))
+        } else {
+            None
+        }
+    }
+
+    pub fn as_method_ref(&self) -> Option<(&str, &str, &str)> {
+        if let RuntimeCPEntry::MethodRefInfo {
+            class,
+            name,
+            descriptor,
+        } = self
+        {
+            Some((class.as_str(), name.as_str(), descriptor.as_str()))
+        } else {
+            None
+        }
+    }
 }
 
 fn decode_class_info(entry: &CpInfo, class_file: &ClassFile) -> String {
@@ -247,7 +288,7 @@ fn decode_entry(entry: &CpInfo, class_file: &ClassFile) -> RuntimeCPEntry {
     }
 }
 
-fn decode_constant_pool(class_file: &ClassFile) -> Vec<RuntimeCPEntry> {
+pub fn decode_constant_pool(class_file: &ClassFile) -> Vec<RuntimeCPEntry> {
     class_file
         .constant_pool
         .iter()

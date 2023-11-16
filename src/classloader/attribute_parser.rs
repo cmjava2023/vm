@@ -96,6 +96,7 @@ fn parse_attribute(
         )),
         "SourceFile" => AttributeInfo::SourceFile,
         "LineNumberTable" => AttributeInfo::LineNumberTable,
+        "LocalVariableTable" => AttributeInfo::LocalVariableTable,
         _ => panic!("Unknown Attribute {}", name),
     }
 }
