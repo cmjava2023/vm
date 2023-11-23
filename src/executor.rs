@@ -41,6 +41,7 @@ pub fn run(code: &Code) {
                         &mut current_frame,
                         &mut new_frame,
                         method.parameters.len(),
+                        method.is_static,
                     );
 
                     frame_stack.push(ExecutorFrame {
@@ -70,9 +71,8 @@ pub fn run(code: &Code) {
                         .sum();
                     let mut new_frame = Frame {
                         local_variables: LocalVariables::new(
-                            // TODO we call methods on oibjects,
-                            // so +1 for this in local vars
-                            local_variable_count + 1,
+                            // Non-Static methods receive "this" implicitly as additional parameter
+                            (if method.is_static { 0 } else { 1 }) + local_variable_count,
                         ),
                         operand_stack: FrameStack::new(0),
                     };
@@ -81,6 +81,7 @@ pub fn run(code: &Code) {
                         &mut current_frame,
                         &mut new_frame,
                         method.parameters.len(),
+                        method.is_static,
                     );
 
                     match code(&mut new_frame) {
@@ -105,9 +106,13 @@ fn prepare_parameters(
     current_frame: &mut Frame,
     new_frame: &mut Frame,
     parameter_count: usize,
+    is_static: bool,
 ) {
+    // Non-Static methods receive "this" implicitly as additional parameter
+    let real_parameter_count = (if is_static { 0 } else { 1 }) + parameter_count;
+    
     let mut parameters: Vec<VariableValueOrValue> = Vec::new();
-    for _ in 0..(parameter_count + 1) {
+    for _ in 0..real_parameter_count {
         parameters.insert(0, current_frame.operand_stack.pop().unwrap().into());
     }
     let mut variable_index = 0;

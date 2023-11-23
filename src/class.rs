@@ -33,6 +33,7 @@ pub struct Method {
     pub name: String,
     pub parameters: Vec<ArgumentKind>,
     pub return_type: Option<ArgumentKind>,
+    pub is_static: bool,
     // TODO flags
     // TODO attributes
 }

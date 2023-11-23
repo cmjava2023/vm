@@ -22,6 +22,7 @@ impl PrintStream {
                     SimpleArgumentKind::Class("java/lang/String".to_string()),
                 )],
                 return_type: None,
+                is_static: false,
             })],
         }
     }
