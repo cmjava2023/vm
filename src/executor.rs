@@ -71,8 +71,10 @@ pub fn run(code: &Code) {
                         .sum();
                     let mut new_frame = Frame {
                         local_variables: LocalVariables::new(
-                            // Non-Static methods receive "this" implicitly as additional parameter
-                            (if method.is_static { 0 } else { 1 }) + local_variable_count,
+                            // Non-Static methods receive "this"
+                            // implicitly as additional parameter
+                            (if method.is_static { 0 } else { 1 })
+                                + local_variable_count,
                         ),
                         operand_stack: FrameStack::new(0),
                     };
@@ -108,9 +110,11 @@ fn prepare_parameters(
     parameter_count: usize,
     is_static: bool,
 ) {
-    // Non-Static methods receive "this" implicitly as additional parameter
-    let real_parameter_count = (if is_static { 0 } else { 1 }) + parameter_count;
-    
+    // Non-Static methods receive "this"
+    // implicitly as additional parameter
+    let real_parameter_count =
+        (if is_static { 0 } else { 1 }) + parameter_count;
+
     let mut parameters: Vec<VariableValueOrValue> = Vec::new();
     for _ in 0..real_parameter_count {
         parameters.insert(0, current_frame.operand_stack.pop().unwrap().into());
