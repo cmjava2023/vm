@@ -89,16 +89,10 @@ pub fn create_bytecode_class(
         create_bytecode_instance_fields(class_file, &runtime_cp);
     let class: &RuntimeCPEntry =
         &runtime_cp[remove_cp_offset(class_file.this_class as usize)];
-    let class_name_option = class.as_class().unwrap().rsplit_once('/');
-
-    let mut package = "";
-    let name;
-
-    if class_name_option.is_some() {
-        (package, name) = class_name_option.unwrap();
-    } else {
-        name = class.as_class().unwrap();
-    }
+    let (package, name) = match class.as_class().unwrap().rsplit_once('/') {
+        Some(package_and_name) => package_and_name,
+        None => ("", class.as_class().unwrap()),
+    };
 
     let super_class = None;
     let interfaces = Vec::new();
