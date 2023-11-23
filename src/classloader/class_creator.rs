@@ -227,8 +227,6 @@ fn create_bytecode_method(
             byte_code,
         }),
         name: name.to_string(),
-        // TODO parse method signature and insert parameter count
-        parameter_count: parameters.len(),
         parameters,
         return_type,
     })

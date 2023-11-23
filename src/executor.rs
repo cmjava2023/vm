@@ -4,8 +4,8 @@ use thiserror::Error;
 
 use crate::{
     class::{
-        Class, ClassInstance, Code, Field, FieldValue, Method, MethodCode,
-        RustMethodReturn,
+        ArgumentKind, Class, ClassInstance, Code, Field, FieldValue, Method,
+        MethodCode, RustMethodReturn, SimpleArgumentKind,
     },
     classloader::cp_decoder::RuntimeCPEntry,
 };
@@ -40,7 +40,7 @@ pub fn run(code: &Code) {
                     prepare_parameters(
                         &mut current_frame,
                         &mut new_frame,
-                        method.parameter_count,
+                        method.parameters.len(),
                     );
 
                     frame_stack.push(ExecutorFrame {
@@ -51,13 +51,28 @@ pub fn run(code: &Code) {
                     current_pc = pc;
                 },
                 MethodCode::Rust(code) => {
+                    let local_variable_count: usize = method
+                        .parameters
+                        .iter()
+                        .map(|p| {
+                            if p == &ArgumentKind::Simple(
+                                SimpleArgumentKind::Long,
+                            ) || p
+                                == &ArgumentKind::Simple(
+                                    SimpleArgumentKind::Double,
+                                )
+                            {
+                                2
+                            } else {
+                                1
+                            }
+                        })
+                        .sum();
                     let mut new_frame = Frame {
-                        // TODO this fails if we implemented rust methods
-                        // that take long/double arguments
                         local_variables: LocalVariables::new(
                             // TODO we call methods on oibjects,
                             // so +1 for this in local vars
-                            method.parameter_count + 1,
+                            local_variable_count + 1,
                         ),
                         operand_stack: FrameStack::new(0),
                     };
@@ -65,7 +80,7 @@ pub fn run(code: &Code) {
                     prepare_parameters(
                         &mut current_frame,
                         &mut new_frame,
-                        method.parameter_count,
+                        method.parameters.len(),
                     );
 
                     match code(&mut new_frame) {

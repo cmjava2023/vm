@@ -6,7 +6,7 @@ use std::{any::Any, rc::Rc};
 
 use crate::executor::{Frame, OpCode};
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum ArgumentKind {
     Simple(SimpleArgumentKind),
     Array {
@@ -14,7 +14,7 @@ pub enum ArgumentKind {
         kind: SimpleArgumentKind,
     },
 }
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, PartialEq)]
 pub enum SimpleArgumentKind {
     Byte,
     Char,
@@ -31,7 +31,6 @@ pub enum SimpleArgumentKind {
 pub struct Method {
     pub code: MethodCode,
     pub name: String,
-    pub parameter_count: usize,
     pub parameters: Vec<ArgumentKind>,
     pub return_type: Option<ArgumentKind>,
     // TODO flags
