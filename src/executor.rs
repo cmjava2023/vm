@@ -52,6 +52,14 @@ pub fn run(code: &Code) {
                     current_pc = pc;
                 },
                 MethodCode::Rust(code) => {
+                    // Calculate number of local variable slots needed
+                    // to pass the parameters to `method`,
+                    // since for builtin-methods,
+                    // there's no java compiler which determines ahead of time
+                    // the amount of local variable slots needed
+                    // to execute the method.
+                    // Note that double/long values always occupy
+                    // two slots of local variables.
                     let local_variable_count: usize = method
                         .parameters
                         .iter()
@@ -123,6 +131,9 @@ fn prepare_parameters(
     for param in parameters.into_iter() {
         let size = param.size() as usize;
         new_frame.local_variables.set(variable_index, param);
+        // long/double values occupy two slots
+        // (the one passed to `set()` and the next one).
+        // Account for this when calculating which index to use next:
         variable_index += size;
     }
 }
@@ -292,6 +303,10 @@ pub enum VariableValueOrValue {
 }
 
 impl VariableValueOrValue {
+    /// Return how many slots this value occupies.
+    ///
+    /// This is needed, since long/doubles are treated specially
+    /// by a Java VM.
     pub fn size(&self) -> StackValueSize {
         if matches!(self, VariableValueOrValue::Long(_))
             || matches!(self, VariableValueOrValue::Double(_))
@@ -311,6 +326,8 @@ impl LocalVariables {
     }
 
     pub fn set(&mut self, index: usize, value: VariableValueOrValue) {
+        // invalid the previous slot when overwriting the second
+        // part of a long/double, to make sure it cannot be interpreted as such
         if index > 0
             && (matches!(
                 self.local_variables[index],
