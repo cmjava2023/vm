@@ -18,13 +18,11 @@ impl PrintStream {
             methods: vec![Rc::new(Method {
                 code: super::MethodCode::Rust(println),
                 name: "println".to_owned(),
-                parameter_count: 1,
-                // TODO is this the correct parameters
-                // and return type for println
                 parameters: vec![ArgumentKind::Simple(
                     SimpleArgumentKind::Class("java/lang/String".to_string()),
                 )],
                 return_type: None,
+                is_static: false,
             })],
         }
     }

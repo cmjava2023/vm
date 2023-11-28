@@ -4,8 +4,8 @@ use thiserror::Error;
 
 use crate::{
     class::{
-        Class, ClassInstance, Code, Field, FieldValue, Method, MethodCode,
-        RustMethodReturn,
+        ArgumentKind, Class, ClassInstance, Code, Field, FieldValue, Method,
+        MethodCode, RustMethodReturn, SimpleArgumentKind,
     },
     classloader::cp_decoder::RuntimeCPEntry,
 };
@@ -40,7 +40,8 @@ pub fn run(code: &Code) {
                     prepare_parameters(
                         &mut current_frame,
                         &mut new_frame,
-                        method.parameter_count,
+                        method.parameters.len(),
+                        method.is_static,
                     );
 
                     frame_stack.push(ExecutorFrame {
@@ -51,13 +52,37 @@ pub fn run(code: &Code) {
                     current_pc = pc;
                 },
                 MethodCode::Rust(code) => {
+                    // Calculate number of local variable slots needed
+                    // to pass the parameters to `method`,
+                    // since for builtin-methods,
+                    // there's no java compiler which determines ahead of time
+                    // the amount of local variable slots needed
+                    // to execute the method.
+                    // Note that double/long values always occupy
+                    // two slots of local variables.
+                    let local_variable_count: usize = method
+                        .parameters
+                        .iter()
+                        .map(|p| {
+                            if p == &ArgumentKind::Simple(
+                                SimpleArgumentKind::Long,
+                            ) || p
+                                == &ArgumentKind::Simple(
+                                    SimpleArgumentKind::Double,
+                                )
+                            {
+                                2
+                            } else {
+                                1
+                            }
+                        })
+                        .sum();
                     let mut new_frame = Frame {
-                        // TODO this fails if we implemented rust methods
-                        // that take long/double arguments
                         local_variables: LocalVariables::new(
-                            // TODO we call methods on oibjects,
-                            // so +1 for this in local vars
-                            method.parameter_count + 1,
+                            // Non-Static methods receive "this"
+                            // implicitly as additional parameter
+                            (if method.is_static { 0 } else { 1 })
+                                + local_variable_count,
                         ),
                         operand_stack: FrameStack::new(0),
                     };
@@ -65,7 +90,8 @@ pub fn run(code: &Code) {
                     prepare_parameters(
                         &mut current_frame,
                         &mut new_frame,
-                        method.parameter_count,
+                        method.parameters.len(),
+                        method.is_static,
                     );
 
                     match code(&mut new_frame) {
@@ -90,15 +116,24 @@ fn prepare_parameters(
     current_frame: &mut Frame,
     new_frame: &mut Frame,
     parameter_count: usize,
+    is_static: bool,
 ) {
+    // Non-Static methods receive "this"
+    // implicitly as additional parameter
+    let real_parameter_count =
+        (if is_static { 0 } else { 1 }) + parameter_count;
+
     let mut parameters: Vec<VariableValueOrValue> = Vec::new();
-    for _ in 0..(parameter_count + 1) {
+    for _ in 0..real_parameter_count {
         parameters.insert(0, current_frame.operand_stack.pop().unwrap().into());
     }
     let mut variable_index = 0;
     for param in parameters.into_iter() {
         let size = param.size() as usize;
         new_frame.local_variables.set(variable_index, param);
+        // long/double values occupy two slots
+        // (the one passed to `set()` and the next one).
+        // Account for this when calculating which index to use next:
         variable_index += size;
     }
 }
@@ -268,6 +303,10 @@ pub enum VariableValueOrValue {
 }
 
 impl VariableValueOrValue {
+    /// Return how many slots this value occupies.
+    ///
+    /// This is needed, since long/doubles are treated specially
+    /// by a Java VM.
     pub fn size(&self) -> StackValueSize {
         if matches!(self, VariableValueOrValue::Long(_))
             || matches!(self, VariableValueOrValue::Double(_))
@@ -287,6 +326,8 @@ impl LocalVariables {
     }
 
     pub fn set(&mut self, index: usize, value: VariableValueOrValue) {
+        // invalid the previous slot when overwriting the second
+        // part of a long/double, to make sure it cannot be interpreted as such
         if index > 0
             && (matches!(
                 self.local_variables[index],

@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use super::cp_decoder::RuntimeCPEntry;
+use super::{cp_decoder::RuntimeCPEntry, MethodAccessFlag};
 use crate::{
     class::{
         ArgumentKind, BytecodeClass, Code, Field, Method, MethodCode,
@@ -227,10 +227,9 @@ fn create_bytecode_method(
             byte_code,
         }),
         name: name.to_string(),
-        // TODO parse method signature and insert parameter count
-        parameter_count: parameters.len(),
         parameters,
         return_type,
+        is_static: method.access_flags.contains(MethodAccessFlag::Static),
     })
 }
 
