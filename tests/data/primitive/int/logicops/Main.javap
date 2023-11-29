@@ -1,0 +1,109 @@
+Classfile /home/florian/Documents/fh/WS23_24/Compilerbau/vm/main/tests/data/primitive/int/logicops/Main.class
+  Last modified 29.11.2023; size 574 bytes
+  MD5 checksum 31811bb8280447de1b5933d8a032c994
+  Compiled from "Main.java"
+public class org.cmjava2023.Main
+  minor version: 0
+  major version: 52
+  flags: ACC_PUBLIC, ACC_SUPER
+Constant pool:
+   #1 = Methodref          #3.#26         // java/lang/Object."<init>":()V
+   #2 = Class              #27            // org/cmjava2023/Main
+   #3 = Class              #28            // java/lang/Object
+   #4 = Utf8               <init>
+   #5 = Utf8               ()V
+   #6 = Utf8               Code
+   #7 = Utf8               LineNumberTable
+   #8 = Utf8               LocalVariableTable
+   #9 = Utf8               this
+  #10 = Utf8               Lorg/cmjava2023/Main;
+  #11 = Utf8               main
+  #12 = Utf8               ([Ljava/lang/String;)V
+  #13 = Utf8               args
+  #14 = Utf8               [Ljava/lang/String;
+  #15 = Utf8               i
+  #16 = Utf8               I
+  #17 = Utf8               two
+  #18 = Utf8               i2
+  #19 = Utf8               i3
+  #20 = Utf8               i4
+  #21 = Utf8               i5
+  #22 = Utf8               i6
+  #23 = Utf8               i7
+  #24 = Utf8               SourceFile
+  #25 = Utf8               Main.java
+  #26 = NameAndType        #4:#5          // "<init>":()V
+  #27 = Utf8               org/cmjava2023/Main
+  #28 = Utf8               java/lang/Object
+{
+  public org.cmjava2023.Main();
+    descriptor: ()V
+    flags: ACC_PUBLIC
+    Code:
+      stack=1, locals=1, args_size=1
+         0: aload_0
+         1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+         4: return
+      LineNumberTable:
+        line 3: 0
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       5     0  this   Lorg/cmjava2023/Main;
+
+  public static void main(java.lang.String[]);
+    descriptor: ([Ljava/lang/String;)V
+    flags: ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=2, locals=9, args_size=1
+         0: iconst_4
+         1: istore_1
+         2: iconst_2
+         3: istore_2
+         4: iload_1
+         5: iconst_2
+         6: iand
+         7: istore_3
+         8: iload_1
+         9: iconst_2
+        10: ior
+        11: istore        4
+        13: iload_2
+        14: iconst_1
+        15: ishl
+        16: istore        5
+        18: iload_2
+        19: iconst_1
+        20: ishr
+        21: istore        6
+        23: iload_2
+        24: iconst_1
+        25: iushr
+        26: istore        7
+        28: iload_3
+        29: iconst_2
+        30: ixor
+        31: istore        8
+        33: return
+      LineNumberTable:
+        line 5: 0
+        line 6: 2
+        line 8: 4
+        line 10: 8
+        line 12: 13
+        line 14: 18
+        line 16: 23
+        line 18: 28
+        line 19: 33
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0      34     0  args   [Ljava/lang/String;
+            2      32     1     i   I
+            4      30     2   two   I
+            8      26     3    i2   I
+           13      21     4    i3   I
+           18      16     5    i4   I
+           23      11     6    i5   I
+           28       6     7    i6   I
+           33       1     8    i7   I
+}
+SourceFile: "Main.java"
