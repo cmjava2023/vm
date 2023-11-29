@@ -5,7 +5,7 @@ use crate::{
         builtin_classes::StringInstance, ArgumentKind, Class, ClassInstance,
         Field, Method, MethodCode, RustMethodReturn, SimpleArgumentKind,
     },
-    executor::{Frame, VariableValueOrValue},
+    executor::{local_variables::VariableValueOrValue, Frame},
 };
 
 pub struct PrintStream {

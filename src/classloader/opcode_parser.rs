@@ -9,7 +9,7 @@ use crate::{
         cp_decoder::{remove_cp_offset, RuntimeCPEntry},
         ClassFile,
     },
-    executor::{Ldc, OpCode},
+    executor::{op_code::Ldc, OpCode},
     heap::Heap,
 };
 
