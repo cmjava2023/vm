@@ -22,7 +22,8 @@ pub enum OpCode {
     Return,
     InvokeVirtual(Rc<Method>),
     InvokeSpecial(RuntimeCPEntry), // Placeholder, to enable bytecode parsing
-    Aload0,
+    /// Load reference from `index` in local variable array to stack.
+    Aload(usize),
     // value to push onto stack
     Bipush(u8),
     I2b,
