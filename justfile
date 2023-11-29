@@ -32,3 +32,9 @@ compile javaSource:
 
 javap javaClass:
     javap -verbose -l -private -s -sysinfo -constants "{{ javaClass }}"
+
+opcodes:
+    cat $(find ./tests/data -type f -name *.javap -printf '%p ') | \
+        grep -E "       [0-9]+: .*" | \
+        awk -F " " '{print $2}' | \
+        sort | uniq
