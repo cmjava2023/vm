@@ -11,11 +11,10 @@ use nom::{
     IResult,
 };
 
-use super::{
-    CpInfo, MethodAccessFlag, RawAttributeInfo, RawClassFile, RawFieldInfo,
-    RawMethodInfo, ReferenceKind,
+use crate::classloader::{
+    raw::{RawAttributeInfo, RawClassFile, RawFieldInfo, RawMethodInfo},
+    ClassAccessFlag, CpInfo, FieldAccessFlag, MethodAccessFlag, ReferenceKind,
 };
-use crate::classloader::{ClassAccessFlag, FieldAccessFlag};
 
 fn parse_utf8_code_point(current_content: &[u8]) -> IResult<&[u8], char> {
     let tag_content = current_content;

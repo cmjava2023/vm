@@ -1,3 +1,4 @@
+pub mod access_flags;
 pub mod builtin_classes;
 pub mod bytecode_classes;
 

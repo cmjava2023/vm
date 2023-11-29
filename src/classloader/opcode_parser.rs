@@ -4,9 +4,11 @@ use nom::{
     IResult,
 };
 
-use super::cp_decoder::RuntimeCPEntry;
 use crate::{
-    classloader::{cp_decoder::remove_cp_offset, ClassFile},
+    classloader::{
+        cp_decoder::{remove_cp_offset, RuntimeCPEntry},
+        ClassFile,
+    },
     executor::{Ldc, OpCode},
     heap::Heap,
 };

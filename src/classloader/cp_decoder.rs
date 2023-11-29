@@ -1,4 +1,4 @@
-use super::{ClassFile, CpInfo, ReferenceKind};
+use crate::classloader::{ClassFile, CpInfo, ReferenceKind};
 
 #[derive(Clone, Debug)]
 pub enum RuntimeCPEntry {
