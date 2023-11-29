@@ -24,7 +24,7 @@ pub enum OpCode {
     InvokeSpecial(RuntimeCPEntry), // Placeholder, to enable bytecode parsing
     /// Load reference from `index` in local variable array to stack.
     Aload(usize),
-    // value to push onto stack
+    /// Value to push onto stack
     Bipush(u8),
     I2b,
     I2c,
@@ -34,12 +34,12 @@ pub enum OpCode {
     I2s,
     Iadd,
     Iand,
-    // value to push onto stack
+    /// Value to push onto stack
     Iconst(i32),
     Idiv,
     Iinc,
-    // Iload_ are converted,
-    // index into local variables
+    /// Iload_ are converted,
+    /// index into local variables
     Iload(usize),
     Imul,
     Ineg,
@@ -47,20 +47,20 @@ pub enum OpCode {
     Irem,
     Ishl,
     Ishr,
-    // Istore_ are converted,
-    // index into local variables
+    /// Istore_ are converted,
+    /// index into local variables
     Istore(usize),
     Isub,
     Iushr,
     Ixor,
-    // Lstore_ are converted,
-    // index into local variables
+    /// Lstore_ are converted,
+    /// index into local variables
     Lstore(usize),
-    // Fstore_ are converted,
-    // index into local variables
+    /// Fstore_ are converted,
+    /// index into local variables
     Fstore(usize),
-    // Dstore_ are converted,
-    // index into local variables
+    /// Dstore_ are converted,
+    /// index into local variables
     Dstore(usize),
 }
 

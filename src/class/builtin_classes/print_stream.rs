@@ -44,11 +44,11 @@ fn println(frame: &mut Frame) -> RustMethodReturn {
     let string = frame.local_variables.get(1);
     let string: Rc<dyn ClassInstance> = match string {
         VariableValueOrValue::Reference(s) => s.expect("null pointer"),
-        _ => panic!("local variables have reference on top"),
+        _ => panic!("local variables have string to print at index 1"),
     };
     let b: &StringInstance = match string.as_any().downcast_ref() {
         Some(s) => s,
-        None => panic!("stack reference is not a string"),
+        None => panic!("paramter is not a string but {:?}", string),
     };
     println!("{}", b.string);
 

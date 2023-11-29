@@ -138,26 +138,18 @@ fn parse_constant_pool(current_content: &[u8]) -> IResult<&[u8], CpInfo> {
             ))
         },
         3 => {
-            // when the byteorder is not big_endian,
-            // this produces the wrong number
             let (current_content, int_value) = be_i32(current_content)?;
             Ok((current_content, CpInfo::IntegerInfo(int_value)))
         },
         4 => {
-            // when the byteorder is not big_endian,
-            // this produces the wrong number
             let (current_content, float_value) = be_f32(current_content)?;
             Ok((current_content, CpInfo::FloatInfo(float_value)))
         },
         5 => {
-            // when the byteorder is not big_endian,
-            // this produces the wrong number
             let (current_content, long_value) = be_i64(current_content)?;
             Ok((current_content, CpInfo::LongInfo(long_value)))
         },
         6 => {
-            // when the byteorder is not big_endian,
-            // this produces the wrong number
             let (current_content, float_value) = be_f64(current_content)?;
             Ok((current_content, CpInfo::DoubleInfo(float_value)))
         },

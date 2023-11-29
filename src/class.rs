@@ -80,7 +80,7 @@ impl dyn Class {
 
 impl std::fmt::Debug for dyn Class {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "Class")
+        write!(f, "Class '{}/{}'", self.package(), self.name())
     }
 }
 
