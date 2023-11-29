@@ -233,7 +233,7 @@ impl OpCode {
                 Update::None
             },
             Self::Return => Update::Return,
-            _ => todo!(),
+            _ => todo!("Missing OpCode implementation for: {:?}", self),
         }
     }
 }
