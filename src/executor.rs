@@ -157,6 +157,44 @@ pub enum OpCode {
     InvokeVirtual(Rc<Method>),
     InvokeSpecial(RuntimeCPEntry), // Placeholder, to enable bytecode parsing
     Aload0,
+    // value to push onto stack
+    Bipush(u8),
+    I2b,
+    I2c,
+    I2d,
+    I2f,
+    I2l,
+    I2s,
+    Iadd,
+    Iand,
+    // value to push onto stack
+    Iconst(i32),
+    Idiv,
+    Iinc,
+    // Iload_ are converted,
+    // index into local variables
+    Iload(usize),
+    Imul,
+    Ineg,
+    Ior,
+    Irem,
+    Ishl,
+    Ishr,
+    // Istore_ are converted,
+    // index into local variables
+    Istore(usize),
+    Isub,
+    Iushr,
+    Ixor,
+    // Lstore_ are converted,
+    // index into local variables
+    Lstore(usize),
+    // Fstore_ are converted,
+    // index into local variables
+    Fstore(usize),
+    // Dstore_ are converted,
+    // index into local variables
+    Dstore(usize),
 }
 
 #[derive(Clone, Debug)]
@@ -195,7 +233,7 @@ impl OpCode {
                 Update::None
             },
             Self::Return => Update::Return,
-            _ => todo!(),
+            _ => todo!("Missing OpCode implementation for: {:?}", self),
         }
     }
 }
