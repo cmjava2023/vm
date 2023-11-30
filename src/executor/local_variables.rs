@@ -4,6 +4,7 @@ use crate::{
     class::ClassInstance,
     executor::frame_stack::{StackValue, StackValueSize},
 };
+use crate::executor::RuntimeError;
 
 #[derive(Clone)]
 pub enum VariableValue {
@@ -85,6 +86,39 @@ impl VariableValueOrValue {
             StackValueSize::Two
         } else {
             StackValueSize::One
+        }
+    }
+
+    pub fn as_computation_int(&self) -> Result<i32, RuntimeError> {
+        // int computional types according to
+        // https://docs.oracle.com/javase/specs/jvms/se8/html
+        // /jvms-2.html#jvms-2.11.1-320
+        Ok(match *self {
+            VariableValueOrValue::Boolean(b) => b.into(),
+            VariableValueOrValue::Byte(b) => b.into(),
+            VariableValueOrValue::Char(c) => c.into(),
+            VariableValueOrValue::Short(s) => s.into(),
+            VariableValueOrValue::Int(i) => i,
+            _ => Err(RuntimeError::InvalidType {
+                expected: "int (computational type",
+                actual: self.type_name(),
+            })?,
+        })
+    }
+
+    pub fn type_name(&self) -> &'static str {
+        match self {
+            VariableValueOrValue::Byte(_) => "byte",
+            VariableValueOrValue::Short(_) => "short",
+            VariableValueOrValue::Int(_) => "int",
+            VariableValueOrValue::Long(_) => "long",
+            VariableValueOrValue::Char(_) => "char",
+            VariableValueOrValue::Float(_) => "float",
+            VariableValueOrValue::Double(_) => "double",
+            VariableValueOrValue::Boolean(_) => "boolean",
+            VariableValueOrValue::ReturnAddress(_) => "return_address",
+            VariableValueOrValue::Reference(_) => "reference",
+            VariableValueOrValue::Invalid => "invalid!",
         }
     }
 }

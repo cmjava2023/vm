@@ -166,10 +166,7 @@ fn println_float(frame: &mut Frame) -> RustMethodReturn {
 
 fn println_int(frame: &mut Frame) -> RustMethodReturn {
     let int = frame.local_variables.get(1);
-    let int: i32 = match int {
-        VariableValueOrValue::Int(i) => i,
-        _ => panic!("local variables have int to print at index 1"),
-    };
+    let int: i32 = int.as_computation_int().unwrap();
     println!("{}", int);
 
     RustMethodReturn::Void
