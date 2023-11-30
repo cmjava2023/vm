@@ -47,6 +47,9 @@ pub enum OpCode {
     /// Iload_ are converted,
     /// index into local variables
     Iload(usize),
+    Fload(usize),
+    Dload(usize),
+    Lload(usize),
     Imul,
     Ineg,
     Ior,
@@ -119,7 +122,12 @@ impl OpCode {
                     .set(*index, frame.operand_stack.pop().unwrap().into());
                 Update::None
             },
-            Self::Iload(index) => {
+            // note: split this into multiple cases,
+            // in case the types are supposed to be verifiedcccccclh
+            Self::Dload(index)
+            | Self::Fload(index)
+            | Self::Iload(index)
+            | Self::Lload(index) => {
                 frame
                     .operand_stack
                     .push(frame.local_variables.get(*index).into())
