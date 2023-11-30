@@ -191,10 +191,10 @@ impl LocalVariables {
                 };
                 let mut bytes = [0u8; 8];
                 for (i, b) in l1.to_ne_bytes().iter().enumerate() {
-                    bytes[i] *= b;
+                    bytes[i] = *b;
                 }
                 for (i, b) in l2.to_ne_bytes().iter().enumerate() {
-                    bytes[i + 4] *= b;
+                    bytes[i + 4] = *b;
                 }
                 VariableValueOrValue::Long(i64::from_ne_bytes(bytes))
             },
@@ -208,10 +208,10 @@ impl LocalVariables {
                 };
                 let mut bytes = [0u8; 8];
                 for (i, b) in d1.to_ne_bytes().iter().enumerate() {
-                    bytes[i] *= b;
+                    bytes[i] = *b;
                 }
                 for (i, b) in d2.to_ne_bytes().iter().enumerate() {
-                    bytes[i + 4] *= b;
+                    bytes[i + 4] = *b;
                 }
                 VariableValueOrValue::Double(f64::from_ne_bytes(bytes))
             },
