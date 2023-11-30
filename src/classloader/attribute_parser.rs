@@ -4,12 +4,12 @@ use nom::{
     IResult,
 };
 
-use super::{
+use crate::classloader::{
     file_parser::parse_attribute_info as parse_raw_attribute_info,
-    AttributeInfo, ClassFile, CodeAttribute, CpInfo, ExceptionTable,
-    MethodInfo, RawAttributeInfo, RawClassFile,
+    raw::{RawAttributeInfo, RawClassFile},
+    AttributeInfo, ClassFile, CodeAttribute, CpInfo, ExceptionTable, FieldInfo,
+    MethodInfo,
 };
-use crate::classloader::FieldInfo;
 
 fn parse_attribute_info<'a, 'p, T, G, P>(
     raw_attribute: &'p RawAttributeInfo,

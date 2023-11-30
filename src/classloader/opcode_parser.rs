@@ -4,10 +4,12 @@ use nom::{
     IResult,
 };
 
-use super::cp_decoder::RuntimeCPEntry;
 use crate::{
-    classloader::{cp_decoder::remove_cp_offset, ClassFile},
-    executor::{Ldc, OpCode},
+    classloader::{
+        cp_decoder::{remove_cp_offset, RuntimeCPEntry},
+        ClassFile,
+    },
+    executor::{op_code::Ldc, OpCode},
     heap::Heap,
 };
 
@@ -104,8 +106,13 @@ pub fn parse_opcodes<'a>(
                 opcodes.push(opcode);
                 current_content = new_content;
             },
-            42 => {
-                opcodes.push(OpCode::Aload0);
+            41 => {
+                let (new_content, index) = be_u8(current_content)?;
+                current_content = new_content;
+                opcodes.push(OpCode::Aload(index.into()));
+            },
+            42 | 43 | 44 | 45 => {
+                opcodes.push(OpCode::Aload((opcode - 42).into()));
             },
             177 => {
                 opcodes.push(OpCode::Return);

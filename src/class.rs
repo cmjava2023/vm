@@ -1,10 +1,11 @@
+pub mod access_flags;
 pub mod builtin_classes;
 pub mod bytecode_classes;
 
 use core::fmt;
 use std::{any::Any, rc::Rc};
 
-use crate::executor::{Frame, OpCode};
+use crate::executor::{frame_stack::StackValue, Frame, OpCode, RuntimeError};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ArgumentKind {
@@ -79,7 +80,7 @@ impl dyn Class {
 
 impl std::fmt::Debug for dyn Class {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "Class")
+        write!(f, "Class '{}/{}'", self.package(), self.name())
     }
 }
 
@@ -178,27 +179,33 @@ pub trait ClassInstance {
     fn instance_fields(&self) -> &[Rc<Field>];
 }
 
-pub struct BytecodeClassInstance {
-    pub class: Rc<dyn Class>,
-    pub instance_fields: Vec<Rc<Field>>,
-}
-
 impl fmt::Debug for dyn ClassInstance {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "instance of Class '{}'", self.class().name())
     }
 }
 
-impl ClassInstance for BytecodeClassInstance {
-    fn class(&self) -> Rc<dyn Class> {
-        self.class.clone()
-    }
+impl TryFrom<StackValue> for Rc<dyn ClassInstance> {
+    type Error = RuntimeError;
 
-    fn instance_fields(&self) -> &[Rc<Field>] {
-        self.instance_fields.as_slice()
+    fn try_from(value: StackValue) -> Result<Self, Self::Error> {
+        match value.try_into()? {
+            Some(r) => Ok(r),
+            _ => Err(RuntimeError::NullPointer),
+        }
     }
+}
 
-    fn as_any(&self) -> &dyn Any {
-        self
+impl TryFrom<StackValue> for Option<Rc<dyn ClassInstance>> {
+    type Error = RuntimeError;
+
+    fn try_from(value: StackValue) -> Result<Self, Self::Error> {
+        match value {
+            StackValue::Reference(r) => Ok(r),
+            _ => Err(RuntimeError::InvalidType {
+                expected: "reference",
+                actual: value.type_name(),
+            }),
+        }
     }
 }

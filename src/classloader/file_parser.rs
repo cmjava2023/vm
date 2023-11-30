@@ -11,11 +11,10 @@ use nom::{
     IResult,
 };
 
-use super::{
-    CpInfo, MethodAccessFlag, RawAttributeInfo, RawClassFile, RawFieldInfo,
-    RawMethodInfo, ReferenceKind,
+use crate::classloader::{
+    raw::{RawAttributeInfo, RawClassFile, RawFieldInfo, RawMethodInfo},
+    ClassAccessFlag, CpInfo, FieldAccessFlag, MethodAccessFlag, ReferenceKind,
 };
-use crate::classloader::{ClassAccessFlag, FieldAccessFlag};
 
 fn parse_utf8_code_point(current_content: &[u8]) -> IResult<&[u8], char> {
     let tag_content = current_content;
@@ -139,26 +138,18 @@ fn parse_constant_pool(current_content: &[u8]) -> IResult<&[u8], CpInfo> {
             ))
         },
         3 => {
-            // when the byteorder is not big_endian,
-            // this produces the wrong number
             let (current_content, int_value) = be_i32(current_content)?;
             Ok((current_content, CpInfo::IntegerInfo(int_value)))
         },
         4 => {
-            // when the byteorder is not big_endian,
-            // this produces the wrong number
             let (current_content, float_value) = be_f32(current_content)?;
             Ok((current_content, CpInfo::FloatInfo(float_value)))
         },
         5 => {
-            // when the byteorder is not big_endian,
-            // this produces the wrong number
             let (current_content, long_value) = be_i64(current_content)?;
             Ok((current_content, CpInfo::LongInfo(long_value)))
         },
         6 => {
-            // when the byteorder is not big_endian,
-            // this produces the wrong number
             let (current_content, float_value) = be_f64(current_content)?;
             Ok((current_content, CpInfo::DoubleInfo(float_value)))
         },
