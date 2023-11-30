@@ -1,6 +1,6 @@
 use ::std::rc::Rc;
 use nom::{
-    number::complete::{be_u16, be_u8},
+    number::complete::{be_i8, be_u16, be_u8},
     IResult,
 };
 
@@ -100,19 +100,118 @@ pub fn parse_opcodes<'a>(
         let opcode;
         (current_content, opcode) = be_u8(current_content)?;
         match opcode {
+            2..=8 => opcodes.push(OpCode::Iconst(-1 + (i32::from(opcode) - 2))),
+            16 => {
+                let (new_content, byte_value) = be_u8(current_content)?;
+                current_content = new_content;
+                opcodes.push(OpCode::Bipush(byte_value));
+            },
             18 => {
                 let (new_content, opcode) =
                     parse_ldc(current_content, class_file, runtime_cp, heap)?;
                 opcodes.push(opcode);
                 current_content = new_content;
             },
+            21 => {
+                let (new_content, index) = be_u8(current_content)?;
+                current_content = new_content;
+                opcodes.push(OpCode::Iload(index.into()));
+            },
+            26..=29 => opcodes.push(OpCode::Iload((opcode - 26).into())),
             41 => {
                 let (new_content, index) = be_u8(current_content)?;
                 current_content = new_content;
                 opcodes.push(OpCode::Aload(index.into()));
             },
-            42 | 43 | 44 | 45 => {
+            42..=45 => {
                 opcodes.push(OpCode::Aload((opcode - 42).into()));
+            },
+            54 => {
+                let (new_content, index) = be_u8(current_content)?;
+                current_content = new_content;
+                opcodes.push(OpCode::Istore(index.into()));
+            },
+            55 => {
+                let (new_content, index) = be_u8(current_content)?;
+                current_content = new_content;
+                opcodes.push(OpCode::Lstore(index.into()));
+            },
+            56 => {
+                let (new_content, index) = be_u8(current_content)?;
+                current_content = new_content;
+                opcodes.push(OpCode::Fstore(index.into()));
+            },
+            57 => {
+                let (new_content, index) = be_u8(current_content)?;
+                current_content = new_content;
+                opcodes.push(OpCode::Dstore(index.into()));
+            },
+            59..=62 => opcodes.push(OpCode::Istore((opcode - 59).into())),
+            63..=66 => opcodes.push(OpCode::Lstore((opcode - 63).into())),
+            67..=70 => opcodes.push(OpCode::Istore((opcode - 67).into())),
+            71..=74 => opcodes.push(OpCode::Dstore((opcode - 71).into())),
+            96 => {
+                opcodes.push(OpCode::Iadd);
+            },
+            100 => {
+                opcodes.push(OpCode::Isub);
+            },
+            104 => {
+                opcodes.push(OpCode::Imul);
+            },
+            108 => {
+                opcodes.push(OpCode::Idiv);
+            },
+            112 => {
+                opcodes.push(OpCode::Irem);
+            },
+            116 => {
+                opcodes.push(OpCode::Ineg);
+            },
+            120 => {
+                opcodes.push(OpCode::Ishl);
+            },
+            122 => {
+                opcodes.push(OpCode::Ishr);
+            },
+            124 => {
+                opcodes.push(OpCode::Iushr);
+            },
+            126 => {
+                opcodes.push(OpCode::Iand);
+            },
+            128 => {
+                opcodes.push(OpCode::Ior);
+            },
+            130 => {
+                opcodes.push(OpCode::Ixor);
+            },
+            132 => {
+                let (new_content, index) = be_u8(current_content)?;
+                let (new_content, constant) = be_i8(new_content)?;
+                current_content = new_content;
+                opcodes.push(OpCode::Iinc {
+                    index: index.into(),
+                    constant: constant.into(),
+                });
+            },
+            133 => {
+                opcodes.push(OpCode::I2l);
+            },
+            134 => {
+                opcodes.push(OpCode::I2f);
+            },
+            135 => {
+                opcodes.push(OpCode::I2d);
+            },
+            145 => {
+                opcodes.push(OpCode::I2b);
+            },
+            146 => {
+                opcodes.push(OpCode::I2c);
+            },
+            147 => {
+                opcodes.push(OpCode::I2s);
             },
             177 => {
                 opcodes.push(OpCode::Return);
