@@ -17,5 +17,29 @@ public class Main {
         short s = (short) i;
         // iload without index
         int force_load = s;
+
+        System.out.println("i:");
+        System.out.println(i);
+
+        System.out.println("b:");
+        System.out.println(b);
+
+        System.out.println("c:");
+        System.out.println(c);
+
+        System.out.println("d:");
+        System.out.println(d);
+
+        System.out.println("f:");
+        System.out.println(f);
+
+        System.out.println("l:");
+        System.out.println(l);
+
+        System.out.println("s:");
+        System.out.println(s);
+
+        System.out.println("force_load:");
+        System.out.println(force_load);
     }
 }
