@@ -37,7 +37,10 @@ pub enum OpCode {
     /// Value to push onto stack
     Iconst(i32),
     Idiv,
-    Iinc,
+    Iinc {
+        index: usize,
+        constant: i32,
+    },
     /// Iload_ are converted,
     /// index into local variables
     Iload(usize),
