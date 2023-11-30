@@ -10,11 +10,18 @@ pub enum StackValue {
     Short(i16),
     Int(i32),
     Long(i64),
+    // UTF-16 encoded Unicode Code point in the Basic Multilingual Plane
     Char(u16),
     //    Floating-Point Types
     Float(f32),
     Double(f64),
     //    Other
+    /// Encodes false as 0, true as 1.
+    ///
+    /// This is according to [the Java VM Spec](
+    /// https://docs.oracle.com/javase/specs/jvms/se8/html/
+    /// jvms-2.html#jvms-2.3.4
+    /// )
     Boolean(u8),
     /// used for in-method jumps,
     /// therefor an offset works.
