@@ -63,10 +63,18 @@ pub trait Class {
 }
 
 impl dyn Class {
-    pub fn get_method(&self, method_name: &str) -> Option<Rc<Method>> {
+    pub fn get_method(
+        &self,
+        method_name: &str,
+        method_descriptor: (Vec<ArgumentKind>, Option<ArgumentKind>),
+    ) -> Option<Rc<Method>> {
         self.methods()
             .iter()
-            .find(|element| element.name == method_name)
+            .find(|element| {
+                element.name == method_name
+                    && element.parameters == method_descriptor.0
+                    && element.return_type == method_descriptor.1
+            })
             .cloned()
     }
 
@@ -115,11 +123,18 @@ pub enum FieldValue {
     Short(i16),
     Int(i32),
     Long(i64),
+    // UTF-16 encoded Unicode Code point in the Basic Multilingual Plane
     Char(u16),
     //    Floating-Point Types
     Float(f32),
     Double(f64),
     //    Other
+    /// Encodes false as 0, true as 1.
+    ///
+    /// This is according to [the Java VM Spec](
+    /// https://docs.oracle.com/javase/specs/jvms/se8/html/
+    /// jvms-2.html#jvms-2.3.4
+    /// )
     Boolean(u8),
     // Reference Types
     // TODO different reference types (array, interface)

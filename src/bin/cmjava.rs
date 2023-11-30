@@ -2,7 +2,7 @@ use std::{path::PathBuf, rc::Rc};
 
 use clap::Parser;
 use cmjava::{
-    class::{Class, MethodCode},
+    class::{ArgumentKind, Class, MethodCode, SimpleArgumentKind},
     classloader::{
         attribute_parser::parse_attributes,
         class_creator::create_bytecode_class, file_parser::parse,
@@ -115,7 +115,17 @@ fn main() -> anyhow::Result<()> {
         bytecode_class.clone(),
     );
 
-    let main = &bytecode_class.get_method("main").unwrap().code;
+    let main_descriptor = (
+        vec![ArgumentKind::Array {
+            dimensions: 1,
+            kind: SimpleArgumentKind::Class("java/lang/String".to_string()),
+        }],
+        None,
+    );
+    let main = &bytecode_class
+        .get_method("main", main_descriptor)
+        .unwrap()
+        .code;
     let main = if let MethodCode::Bytecode(code) = main {
         code
     } else {
