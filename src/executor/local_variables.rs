@@ -2,9 +2,11 @@ use std::rc::Rc;
 
 use crate::{
     class::ClassInstance,
-    executor::frame_stack::{StackValue, StackValueSize},
+    executor::{
+        frame_stack::{StackValue, StackValueSize},
+        RuntimeError,
+    },
 };
-use crate::executor::RuntimeError;
 
 #[derive(Clone)]
 pub enum VariableValue {
