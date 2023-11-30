@@ -6,6 +6,7 @@ use nom::{
 
 use crate::{
     classloader::{
+        class_creator::signature_parser::parse_method_arguments,
         cp_decoder::{remove_cp_offset, RuntimeCPEntry},
         ClassFile,
     },
@@ -65,13 +66,14 @@ fn parse_invokevirtual<'a>(
 ) -> IResult<&'a [u8], OpCode> {
     let (current_content, cp_ref) = be_u16(current_content)?;
     let cp_entry = &runtime_cp[remove_cp_offset(cp_ref as usize)];
-    let (class_name, name, _) = cp_entry
+    let (class_name, name, descriptor) = cp_entry
         .as_method_ref()
         .unwrap_or_else(|| panic!("CPEntry {:?} is MethodRefInfo", cp_entry));
     let class = heap
         .find_class(class_name)
         .unwrap_or_else(|| panic!("Class with name  {} exists", class_name));
-    let method = class.get_method(name).unwrap_or_else(|| {
+    let descriptor = parse_method_arguments(descriptor);
+    let method = class.get_method(name, descriptor).unwrap_or_else(|| {
         panic!("Class with name{} has method {}", class_name, name)
     });
 
