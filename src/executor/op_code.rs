@@ -190,13 +190,13 @@ impl OpCode {
                 Update::None
             },
             Self::Iadd => {
-                let op1 = frame
+                let op2 = frame
                     .operand_stack
                     .pop()
                     .unwrap()
                     .as_computation_int()
                     .unwrap();
-                let op2 = frame
+                let op1 = frame
                     .operand_stack
                     .pop()
                     .unwrap()
@@ -214,13 +214,13 @@ impl OpCode {
                 Update::None
             },
             Self::Iand => {
-                let op1 = frame
+                let op2 = frame
                     .operand_stack
                     .pop()
                     .unwrap()
                     .as_computation_int()
                     .unwrap();
-                let op2 = frame
+                let op1 = frame
                     .operand_stack
                     .pop()
                     .unwrap()
@@ -242,13 +242,13 @@ impl OpCode {
                 Update::None
             },
             Self::Idiv => {
-                let op1 = frame
+                let op2 = frame
                     .operand_stack
                     .pop()
                     .unwrap()
                     .as_computation_int()
                     .unwrap();
-                let op2 = frame
+                let op1 = frame
                     .operand_stack
                     .pop()
                     .unwrap()
@@ -282,13 +282,13 @@ impl OpCode {
                 Update::None
             },
             Self::Imul => {
-                let op1 = frame
+                let op2 = frame
                     .operand_stack
                     .pop()
                     .unwrap()
                     .as_computation_int()
                     .unwrap();
-                let op2 = frame
+                let op1 = frame
                     .operand_stack
                     .pop()
                     .unwrap()
@@ -316,13 +316,13 @@ impl OpCode {
                 Update::None
             },
             Self::Ior => {
-                let op1 = frame
+                let op2 = frame
                     .operand_stack
                     .pop()
                     .unwrap()
                     .as_computation_int()
                     .unwrap();
-                let op2 = frame
+                let op1 = frame
                     .operand_stack
                     .pop()
                     .unwrap()
@@ -336,13 +336,13 @@ impl OpCode {
                 Update::None
             },
             Self::Irem => {
-                let op1 = frame
+                let op2 = frame
                     .operand_stack
                     .pop()
                     .unwrap()
                     .as_computation_int()
                     .unwrap();
-                let op2 = frame
+                let op1 = frame
                     .operand_stack
                     .pop()
                     .unwrap()
@@ -356,13 +356,13 @@ impl OpCode {
                 Update::None
             },
             Self::Ishl => {
-                let op1 = frame
+                let op2 = frame
                     .operand_stack
                     .pop()
                     .unwrap()
                     .as_computation_int()
                     .unwrap();
-                let op2 = frame
+                let op1 = frame
                     .operand_stack
                     .pop()
                     .unwrap()
@@ -376,13 +376,13 @@ impl OpCode {
                 Update::None
             },
             Self::Ishr => {
-                let op1 = frame
+                let op2 = frame
                     .operand_stack
                     .pop()
                     .unwrap()
                     .as_computation_int()
                     .unwrap();
-                let op2 = frame
+                let op1 = frame
                     .operand_stack
                     .pop()
                     .unwrap()
@@ -396,13 +396,13 @@ impl OpCode {
                 Update::None
             },
             Self::Iushr => {
-                let op1 = frame
+                let op2 = frame
                     .operand_stack
                     .pop()
                     .unwrap()
                     .as_computation_int()
                     .unwrap();
-                let op2 = frame
+                let op1 = frame
                     .operand_stack
                     .pop()
                     .unwrap()
@@ -418,13 +418,13 @@ impl OpCode {
                 Update::None
             },
             Self::Isub => {
-                let op1 = frame
+                let op2 = frame
                     .operand_stack
                     .pop()
                     .unwrap()
                     .as_computation_int()
                     .unwrap();
-                let op2 = frame
+                let op1 = frame
                     .operand_stack
                     .pop()
                     .unwrap()
@@ -438,13 +438,13 @@ impl OpCode {
                 Update::None
             },
             Self::Ixor => {
-                let op1 = frame
+                let op2 = frame
                     .operand_stack
                     .pop()
                     .unwrap()
                     .as_computation_int()
                     .unwrap();
-                let op2 = frame
+                let op1 = frame
                     .operand_stack
                     .pop()
                     .unwrap()
