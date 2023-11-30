@@ -120,8 +120,8 @@ fn println_boolean(frame: &mut Frame) -> RustMethodReturn {
         _ => panic!("local variables have boolean to print at index 1"),
     };
     match boolean {
-        0 => println!("true"),
-        1 => println!("false"),
+        0 => println!("false"),
+        1 => println!("true"),
         _ => panic!("invalid boolean value encoding: '{}'", boolean),
     }
 
