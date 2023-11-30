@@ -35,6 +35,7 @@ pub struct LocalVariables {
     local_variables: Vec<VariableValue>,
 }
 
+#[derive(Debug)]
 pub enum VariableValueOrValue {
     // Primitive Types
     //   Integral Types

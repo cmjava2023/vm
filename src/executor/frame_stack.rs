@@ -1,6 +1,9 @@
 use std::rc::Rc;
 
-use crate::class::{ClassInstance, FieldValue};
+use crate::{
+    class::{ClassInstance, FieldValue},
+    executor::{local_variables::VariableValueOrValue, RuntimeError},
+};
 
 #[derive(Debug)]
 pub enum StackValue {
@@ -56,6 +59,23 @@ impl StackValue {
             StackValue::Reference(_) => "reference",
         }
     }
+
+    pub fn as_computation_int(&self) -> Result<i32, RuntimeError> {
+        // int computional types according to
+        // https://docs.oracle.com/javase/specs/jvms/se8/html
+        // /jvms-2.html#jvms-2.11.1-320
+        Ok(match *self {
+            StackValue::Boolean(b) => b.into(),
+            StackValue::Byte(b) => b.into(),
+            StackValue::Char(c) => c.into(),
+            StackValue::Short(s) => s.into(),
+            StackValue::Int(i) => i,
+            _ => Err(RuntimeError::InvalidType {
+                expected: "int (computational type",
+                actual: self.type_name(),
+            })?,
+        })
+    }
 }
 
 pub struct FrameStack {
@@ -99,6 +119,28 @@ impl From<FieldValue> for StackValue {
             FieldValue::Double(v) => StackValue::Double(v),
             FieldValue::Boolean(v) => StackValue::Boolean(v),
             FieldValue::Reference(v) => StackValue::Reference(v),
+        }
+    }
+}
+
+impl From<VariableValueOrValue> for StackValue {
+    fn from(value: VariableValueOrValue) -> Self {
+        match value {
+            VariableValueOrValue::Byte(b) => StackValue::Byte(b),
+            VariableValueOrValue::Short(s) => StackValue::Short(s),
+            VariableValueOrValue::Int(i) => StackValue::Int(i),
+            VariableValueOrValue::Long(l) => StackValue::Long(l),
+            VariableValueOrValue::Char(c) => StackValue::Char(c),
+            VariableValueOrValue::Float(f) => StackValue::Float(f),
+            VariableValueOrValue::Double(d) => StackValue::Double(d),
+            VariableValueOrValue::Boolean(b) => StackValue::Boolean(b),
+            VariableValueOrValue::Reference(r) => StackValue::Reference(r),
+            VariableValueOrValue::ReturnAddress(a) => {
+                StackValue::ReturnAddress(a)
+            },
+            VariableValueOrValue::Invalid => {
+                panic!("cannot convert invalid local variable value")
+            },
         }
     }
 }
