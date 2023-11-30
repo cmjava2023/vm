@@ -102,9 +102,9 @@ pub fn parse_opcodes<'a>(
         match opcode {
             2..=8 => opcodes.push(OpCode::Iconst(-1 + (i32::from(opcode) - 2))),
             16 => {
-                let (new_content, byte_value) = be_u8(current_content)?;
+                let (new_content, byte_value) = be_i8(current_content)?;
                 current_content = new_content;
-                opcodes.push(OpCode::Bipush(byte_value));
+                opcodes.push(OpCode::Bipush(byte_value.into()));
             },
             18 => {
                 let (new_content, opcode) =
@@ -117,12 +117,30 @@ pub fn parse_opcodes<'a>(
                 current_content = new_content;
                 opcodes.push(OpCode::Iload(index.into()));
             },
-            26..=29 => opcodes.push(OpCode::Iload((opcode - 26).into())),
-            41 => {
+            22 => {
+                let (new_content, index) = be_u8(current_content)?;
+                current_content = new_content;
+                opcodes.push(OpCode::Lload(index.into()));
+            },
+            23 => {
+                let (new_content, index) = be_u8(current_content)?;
+                current_content = new_content;
+                opcodes.push(OpCode::Fload(index.into()));
+            },
+            24 => {
+                let (new_content, index) = be_u8(current_content)?;
+                current_content = new_content;
+                opcodes.push(OpCode::Dload(index.into()));
+            },
+            25 => {
                 let (new_content, index) = be_u8(current_content)?;
                 current_content = new_content;
                 opcodes.push(OpCode::Aload(index.into()));
             },
+            26..=29 => opcodes.push(OpCode::Iload((opcode - 26).into())),
+            30..=33 => opcodes.push(OpCode::Lload((opcode - 30).into())),
+            34..=37 => opcodes.push(OpCode::Fload((opcode - 34).into())),
+            38..=41 => opcodes.push(OpCode::Dload((opcode - 38).into())),
             42..=45 => {
                 opcodes.push(OpCode::Aload((opcode - 42).into()));
             },
