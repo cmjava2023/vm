@@ -1,0 +1,193 @@
+Classfile /home/florian/Documents/fh/WS23_24/Compilerbau/vm/main/tests/data/primitive/float/conversions/Main.class
+  Last modified 03.12.2023; size 1035 bytes
+  MD5 checksum 94b0ab86b5807426c80935a46355254e
+  Compiled from "Main.java"
+public class org.cmjava2023.Main
+  minor version: 0
+  major version: 52
+  flags: ACC_PUBLIC, ACC_SUPER
+Constant pool:
+   #1 = Methodref          #17.#42        // java/lang/Object."<init>":()V
+   #2 = Float              10.0f
+   #3 = Fieldref           #43.#44        // java/lang/System.out:Ljava/io/PrintStream;
+   #4 = String             #45            // f:
+   #5 = Methodref          #46.#47        // java/io/PrintStream.println:(Ljava/lang/String;)V
+   #6 = Methodref          #46.#48        // java/io/PrintStream.println:(F)V
+   #7 = String             #49            // d:
+   #8 = Methodref          #46.#50        // java/io/PrintStream.println:(D)V
+   #9 = String             #51            // l:
+  #10 = Methodref          #46.#52        // java/io/PrintStream.println:(J)V
+  #11 = String             #53            // i:
+  #12 = Methodref          #46.#54        // java/io/PrintStream.println:(I)V
+  #13 = String             #55            // force_load:
+  #14 = String             #56            // force_store:
+  #15 = String             #57            // force_const:
+  #16 = Class              #58            // org/cmjava2023/Main
+  #17 = Class              #59            // java/lang/Object
+  #18 = Utf8               <init>
+  #19 = Utf8               ()V
+  #20 = Utf8               Code
+  #21 = Utf8               LineNumberTable
+  #22 = Utf8               LocalVariableTable
+  #23 = Utf8               this
+  #24 = Utf8               Lorg/cmjava2023/Main;
+  #25 = Utf8               main
+  #26 = Utf8               ([Ljava/lang/String;)V
+  #27 = Utf8               args
+  #28 = Utf8               [Ljava/lang/String;
+  #29 = Utf8               f
+  #30 = Utf8               F
+  #31 = Utf8               d
+  #32 = Utf8               D
+  #33 = Utf8               l
+  #34 = Utf8               J
+  #35 = Utf8               i
+  #36 = Utf8               I
+  #37 = Utf8               force_store
+  #38 = Utf8               force_load
+  #39 = Utf8               force_const
+  #40 = Utf8               SourceFile
+  #41 = Utf8               Main.java
+  #42 = NameAndType        #18:#19        // "<init>":()V
+  #43 = Class              #60            // java/lang/System
+  #44 = NameAndType        #61:#62        // out:Ljava/io/PrintStream;
+  #45 = Utf8               f:
+  #46 = Class              #63            // java/io/PrintStream
+  #47 = NameAndType        #64:#65        // println:(Ljava/lang/String;)V
+  #48 = NameAndType        #64:#66        // println:(F)V
+  #49 = Utf8               d:
+  #50 = NameAndType        #64:#67        // println:(D)V
+  #51 = Utf8               l:
+  #52 = NameAndType        #64:#68        // println:(J)V
+  #53 = Utf8               i:
+  #54 = NameAndType        #64:#69        // println:(I)V
+  #55 = Utf8               force_load:
+  #56 = Utf8               force_store:
+  #57 = Utf8               force_const:
+  #58 = Utf8               org/cmjava2023/Main
+  #59 = Utf8               java/lang/Object
+  #60 = Utf8               java/lang/System
+  #61 = Utf8               out
+  #62 = Utf8               Ljava/io/PrintStream;
+  #63 = Utf8               java/io/PrintStream
+  #64 = Utf8               println
+  #65 = Utf8               (Ljava/lang/String;)V
+  #66 = Utf8               (F)V
+  #67 = Utf8               (D)V
+  #68 = Utf8               (J)V
+  #69 = Utf8               (I)V
+{
+  public org.cmjava2023.Main();
+    descriptor: ()V
+    flags: ACC_PUBLIC
+    Code:
+      stack=1, locals=1, args_size=1
+         0: aload_0
+         1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+         4: return
+      LineNumberTable:
+        line 3: 0
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       5     0  this   Lorg/cmjava2023/Main;
+
+  public static void main(java.lang.String[]);
+    descriptor: ([Ljava/lang/String;)V
+    flags: ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=3, locals=10, args_size=1
+         0: ldc           #2                  // float 10.0f
+         2: fstore_1
+         3: fload_1
+         4: f2d
+         5: dstore_2
+         6: fload_1
+         7: f2l
+         8: lstore        4
+        10: fload_1
+        11: f2i
+        12: istore        6
+        14: fload_1
+        15: fstore        7
+        17: fload         7
+        19: fstore        8
+        21: fconst_1
+        22: fstore        9
+        24: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        27: ldc           #4                  // String f:
+        29: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        32: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        35: fload_1
+        36: invokevirtual #6                  // Method java/io/PrintStream.println:(F)V
+        39: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        42: ldc           #7                  // String d:
+        44: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        47: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        50: dload_2
+        51: invokevirtual #8                  // Method java/io/PrintStream.println:(D)V
+        54: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        57: ldc           #9                  // String l:
+        59: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        62: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        65: lload         4
+        67: invokevirtual #10                 // Method java/io/PrintStream.println:(J)V
+        70: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        73: ldc           #11                 // String i:
+        75: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        78: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        81: iload         6
+        83: invokevirtual #12                 // Method java/io/PrintStream.println:(I)V
+        86: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        89: ldc           #13                 // String force_load:
+        91: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        94: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        97: fload         8
+        99: invokevirtual #6                  // Method java/io/PrintStream.println:(F)V
+       102: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+       105: ldc           #14                 // String force_store:
+       107: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+       110: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+       113: fload         7
+       115: invokevirtual #6                  // Method java/io/PrintStream.println:(F)V
+       118: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+       121: ldc           #15                 // String force_const:
+       123: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+       126: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+       129: fload         9
+       131: invokevirtual #6                  // Method java/io/PrintStream.println:(F)V
+       134: return
+      LineNumberTable:
+        line 5: 0
+        line 7: 3
+        line 9: 6
+        line 11: 10
+        line 17: 14
+        line 18: 17
+        line 21: 21
+        line 23: 24
+        line 24: 32
+        line 26: 39
+        line 27: 47
+        line 29: 54
+        line 30: 62
+        line 32: 70
+        line 33: 78
+        line 35: 86
+        line 36: 94
+        line 38: 102
+        line 39: 110
+        line 41: 118
+        line 42: 126
+        line 43: 134
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0     135     0  args   [Ljava/lang/String;
+            3     132     1     f   F
+            6     129     2     d   D
+           10     125     4     l   J
+           14     121     6     i   I
+           17     118     7 force_store   F
+           21     114     8 force_load   F
+           24     111     9 force_const   F
+}
+SourceFile: "Main.java"

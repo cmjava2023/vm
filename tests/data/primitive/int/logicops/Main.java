@@ -3,7 +3,9 @@ package org.cmjava2023;
 public class Main {
     public static void main(String[] args) {
         int i = 4;
+        // bipush
         int eight = 8;
+        int sipush = 257;
         // iand
         int i2 = i & 2;
         // ior
