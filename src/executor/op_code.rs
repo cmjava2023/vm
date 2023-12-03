@@ -1,4 +1,4 @@
-use std::{ops::Neg, rc::Rc};
+use std::{any::Any, ops::Neg, rc::Rc};
 
 use crate::{
     class::{Class, ClassInstance, Field, Method},
@@ -16,28 +16,133 @@ pub enum Ldc {
     String(Rc<dyn ClassInstance>),
     Class(Rc<dyn Class>),
     Method(Rc<Method>),
+    Long(i64),
+    Double(f64),
+}
+
+#[derive(Clone, Debug)]
+pub enum OffsetDirection {
+    Forward,
+    Backward,
+}
+
+#[derive(Clone, Debug)]
+pub enum FloatCmp {
+    Pg,
+    Pl,
+}
+
+#[derive(Clone, Debug)]
+pub enum Dup {
+    Dup,
+    X1,
+    X2,
+}
+
+#[derive(Clone, Debug)]
+pub enum ArrayType {
+    Boolean = 4,
+    Char = 5,
+    Float = 6,
+    Double = 7,
+    Byte = 8,
+    Short = 9,
+    Int = 10,
+    Long = 11,
 }
 
 #[derive(Clone, Debug)]
 pub enum OpCode {
+    Aalod,
+    Aastore,
+    AconstNull,
     /// Load reference from `index` in local variable array to stack.
     Aload(usize),
+    AnewArray(Rc<dyn Any>),
+    Areturn,
+    ArrayLength,
+    /// Store reference to `index` in local variable array from stack.
+    Astore(usize),
+    Athrow,
+    Baload,
+    Bastore,
     /// Value to push onto stack
     Bipush(i32),
+    Calod,
+    Castore,
+    Checkcast(Rc<dyn Any>),
+    D2f,
+    D2i,
+    D2l,
+    Dadd,
+    Daload,
+    Dastore,
+    Dcmp(FloatCmp),
+    Dconst(f64),
+    Ddiv,
     Dload(usize),
+    Dmul,
+    Dneg,
+    Drem,
+    Dreturn,
     /// Dstore_ are converted,
     /// index into local variables
     Dstore(usize),
+    Dsub,
+    Dup(Dup),
+    Dup2(Dup),
+    F2d,
+    F2i,
+    F2l,
+    Fadd,
+    Faload,
+    Fastore,
+    Fcmp(FloatCmp),
+    Fconst(f32),
+    Fdiv,
     Fload(usize),
+    Fmul,
+    Fneg,
+    Frem,
+    Freturn,
     /// Fstore_ are converted,
     /// index into local variables
     Fstore(usize),
+    Fsub,
+    // TODO(FW): how are instance fields stored
+    // to resolve them at execution time
+    GetField(Rc<dyn Any>),
     GetStatic(Rc<Field>),
+    Goto(usize, OffsetDirection),
+    I2b,
+    I2c,
+    I2d,
+    I2f,
+    I2l,
+    I2s,
     Iadd,
+    Iaload,
     Iand,
+    Iastore,
     /// Value to push onto stack
     Iconst(i32),
     Idiv,
+    IfacmpNe(usize, OffsetDirection),
+    IfacmpEq(usize, OffsetDirection),
+    IficmpEq(usize, OffsetDirection),
+    IficmpNe(usize, OffsetDirection),
+    IficmpLt(usize, OffsetDirection),
+    IficmpGe(usize, OffsetDirection),
+    IficmpGt(usize, OffsetDirection),
+    IficmpLe(usize, OffsetDirection),
+    IfEq(usize, OffsetDirection),
+    IfNe(usize, OffsetDirection),
+    IfLt(usize, OffsetDirection),
+    IfGe(usize, OffsetDirection),
+    IfGt(usize, OffsetDirection),
+    IfLe(usize, OffsetDirection),
+    IfNonNull(usize, OffsetDirection),
+    IfNull(usize, OffsetDirection),
     Iinc {
         index: usize,
         constant: i32,
@@ -47,10 +152,15 @@ pub enum OpCode {
     Iload(usize),
     Imul,
     Ineg,
+    InstanceOf(Rc<dyn Any>),
+    InvokeDynamic(Rc<dyn Any>),
+    InvokeInterface(Rc<dyn Any>),
     InvokeSpecial(RuntimeCPEntry), // Placeholder, to enable bytecode parsing
+    InvokeStatic(Rc<Method>),
     InvokeVirtual(Rc<Method>),
     Ior,
     Irem,
+    Ireturn,
     Ishl,
     Ishr,
     /// Istore_ are converted,
@@ -59,18 +169,62 @@ pub enum OpCode {
     Isub,
     Iushr,
     Ixor,
-    I2b,
-    I2c,
-    I2d,
-    I2f,
-    I2l,
-    I2s,
+    Jsr(usize, OffsetDirection),
+    L2d,
+    Ldf,
+    L2i,
+    Ladd,
+    Laload,
+    Land,
+    Lastore,
+    Lcmp,
+    Lconst(i64),
     Ldc(Ldc),
+    Ldiv,
     Lload(usize),
+    Lmul,
+    Lneg,
+    // unsupported for now
+    Lookupswitch,
+    Lor,
+    Lrem,
+    Lreturn,
+    Lshl,
+    Lshr,
     /// Lstore_ are converted,
     /// index into local variables
     Lstore(usize),
+    Lsub,
+    Lushr,
+    Lxor,
+    // definitely unsupported
+    Monitorenter,
+    // definitely unsupported
+    Monitorexit,
+    MultiAnewArray {
+        reference_kind: Rc<dyn Any>,
+        dimensions: u8,
+    },
+    New(Rc<dyn Any>),
+    NewArray(ArrayType),
+    Nop,
+    Pop,
+    Pop2,
+    // TODO(FW): how are instance fields stored
+    // to resolve them at execution time
+    PutField(Rc<dyn Any>),
+    PutStatic(Rc<Field>),
+    Ret(usize),
     Return,
+    Saload,
+    Sastore,
+    Sipush(i16),
+    Swap,
+    // unsupported for now
+    Tableswitch,
+    // Wide: not needed,
+    // since it only effects how indicies are parsed from the byteocde.
+    // This has already happened for any values represented by this enum.
 }
 
 impl OpCode {
