@@ -8,7 +8,8 @@ public class Main {
         // idiv
         int i3 = i2 / 2;
         // iinc
-        int i4 = i2++;
+        int i4 = i2;
+        i4++;
         // imul
         int i5 = i2 * 2;
         // ineg
@@ -17,5 +18,29 @@ public class Main {
         int i7 = i2 % 10;
         // isub
         int i8 = i - i;
+
+        System.out.println("i:");
+        System.out.println(i);
+
+        System.out.println("i2:");
+        System.out.println(i2);
+
+        System.out.println("i3:");
+        System.out.println(i3);
+
+        System.out.println("i4:");
+        System.out.println(i4);
+
+        System.out.println("i5:");
+        System.out.println(i5);
+
+        System.out.println("i6:");
+        System.out.println(i6);
+
+        System.out.println("i7:");
+        System.out.println(i7);
+
+        System.out.println("i8:");
+        System.out.println(i8);
     }
 }

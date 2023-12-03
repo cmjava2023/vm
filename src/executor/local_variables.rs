@@ -2,7 +2,10 @@ use std::rc::Rc;
 
 use crate::{
     class::ClassInstance,
-    executor::frame_stack::{StackValue, StackValueSize},
+    executor::{
+        frame_stack::{StackValue, StackValueSize},
+        RuntimeError,
+    },
 };
 
 #[derive(Clone)]
@@ -87,6 +90,39 @@ impl VariableValueOrValue {
             StackValueSize::One
         }
     }
+
+    pub fn as_computation_int(&self) -> Result<i32, RuntimeError> {
+        // int computional types according to
+        // https://docs.oracle.com/javase/specs/jvms/se8/html
+        // /jvms-2.html#jvms-2.11.1-320
+        Ok(match *self {
+            VariableValueOrValue::Boolean(b) => b.into(),
+            VariableValueOrValue::Byte(b) => b.into(),
+            VariableValueOrValue::Char(c) => c.into(),
+            VariableValueOrValue::Short(s) => s.into(),
+            VariableValueOrValue::Int(i) => i,
+            _ => Err(RuntimeError::InvalidType {
+                expected: "int (computational type",
+                actual: self.type_name(),
+            })?,
+        })
+    }
+
+    pub fn type_name(&self) -> &'static str {
+        match self {
+            VariableValueOrValue::Byte(_) => "byte",
+            VariableValueOrValue::Short(_) => "short",
+            VariableValueOrValue::Int(_) => "int",
+            VariableValueOrValue::Long(_) => "long",
+            VariableValueOrValue::Char(_) => "char",
+            VariableValueOrValue::Float(_) => "float",
+            VariableValueOrValue::Double(_) => "double",
+            VariableValueOrValue::Boolean(_) => "boolean",
+            VariableValueOrValue::ReturnAddress(_) => "return_address",
+            VariableValueOrValue::Reference(_) => "reference",
+            VariableValueOrValue::Invalid => "invalid!",
+        }
+    }
 }
 
 impl LocalVariables {
@@ -157,10 +193,10 @@ impl LocalVariables {
                 };
                 let mut bytes = [0u8; 8];
                 for (i, b) in l1.to_ne_bytes().iter().enumerate() {
-                    bytes[i] *= b;
+                    bytes[i] = *b;
                 }
                 for (i, b) in l2.to_ne_bytes().iter().enumerate() {
-                    bytes[i + 4] *= b;
+                    bytes[i + 4] = *b;
                 }
                 VariableValueOrValue::Long(i64::from_ne_bytes(bytes))
             },
@@ -174,10 +210,10 @@ impl LocalVariables {
                 };
                 let mut bytes = [0u8; 8];
                 for (i, b) in d1.to_ne_bytes().iter().enumerate() {
-                    bytes[i] *= b;
+                    bytes[i] = *b;
                 }
                 for (i, b) in d2.to_ne_bytes().iter().enumerate() {
-                    bytes[i + 4] *= b;
+                    bytes[i + 4] = *b;
                 }
                 VariableValueOrValue::Double(f64::from_ne_bytes(bytes))
             },
