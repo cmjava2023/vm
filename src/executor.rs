@@ -152,6 +152,11 @@ fn prepare_parameters(
 pub enum RuntimeError {
     #[error("NullPointer Exception")]
     NullPointer,
+    #[error(
+        "array index out of bounds: \
+the len is {length} but the index is {index}"
+    )]
+    ArrayIndexOutOfBounds { length: usize, index: usize },
     #[error("Unexpected type '{actual}' (expected '{expected}')")]
     InvalidType {
         expected: &'static str,

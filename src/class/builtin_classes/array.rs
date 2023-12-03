@@ -1,0 +1,283 @@
+use std::rc::Rc;
+
+use crate::{
+    class::{Class, ClassInstance, Field},
+    executor::RuntimeError,
+};
+
+pub type ObjectArray = Array<ObjectArrayKind>;
+pub type ObjectArrayInstance = ArrayInstance<ObjectArrayKind>;
+
+pub struct ObjectArrayKind {
+    array_class_name: String,
+}
+
+impl ObjectArrayKind {
+    pub fn new(class: Rc<dyn Class>) -> ObjectArrayKind {
+        ObjectArrayKind {
+            array_class_name: format!(
+                "[L{}/{};",
+                class.package(),
+                class.name()
+            ),
+        }
+    }
+}
+
+impl ArrayKind for ObjectArrayKind {
+    type Value = Option<Rc<dyn ClassInstance>>;
+
+    fn class_name(&self) -> &str {
+        &self.array_class_name
+    }
+
+    fn default_val(&self) -> Self::Value {
+        None
+    }
+}
+
+pub type ByteArray = Array<ByteArrayKind>;
+pub type ByteArrayInstance = ArrayInstance<ByteArrayKind>;
+#[derive(Default)]
+pub struct ByteArrayKind {}
+
+impl ArrayKind for ByteArrayKind {
+    type Value = i8;
+
+    fn class_name(&self) -> &str {
+        "[B"
+    }
+
+    fn default_val(&self) -> Self::Value {
+        0
+    }
+}
+
+pub type BoolArray = Array<BoolArrayKind>;
+pub type BoolArrayInstance = ArrayInstance<BoolArrayKind>;
+pub struct BoolArrayKind {}
+
+impl ArrayKind for BoolArrayKind {
+    type Value = bool;
+
+    fn class_name(&self) -> &str {
+        "[Z"
+    }
+
+    fn default_val(&self) -> Self::Value {
+        false
+    }
+}
+
+pub type CharArray = Array<CharArrayKind>;
+pub type CharArrayInstance = ArrayInstance<CharArrayKind>;
+pub struct CharArrayKind {}
+
+impl ArrayKind for CharArrayKind {
+    type Value = u16;
+
+    fn class_name(&self) -> &str {
+        "[C"
+    }
+
+    fn default_val(&self) -> Self::Value {
+        0
+    }
+}
+
+pub type DoubleArray = Array<DoubleArrayKind>;
+pub type DoubleArrayInstance = ArrayInstance<DoubleArrayKind>;
+pub struct DoubleArrayKind {}
+
+impl ArrayKind for DoubleArrayKind {
+    type Value = f64;
+
+    fn class_name(&self) -> &str {
+        "[C"
+    }
+
+    fn default_val(&self) -> Self::Value {
+        0.0
+    }
+}
+
+pub type FloatArray = Array<FloatArrayKind>;
+pub type FloatArrayInstance = ArrayInstance<FloatArrayKind>;
+pub struct FloatArrayKind {}
+
+impl ArrayKind for FloatArrayKind {
+    type Value = f64;
+
+    fn class_name(&self) -> &str {
+        "[C"
+    }
+
+    fn default_val(&self) -> Self::Value {
+        0.0
+    }
+}
+
+pub type IntArray = Array<IntArrayKind>;
+pub type IntArrayInstance = ArrayInstance<IntArrayKind>;
+pub struct IntArrayKind {}
+
+impl ArrayKind for IntArrayKind {
+    type Value = i32;
+
+    fn class_name(&self) -> &str {
+        "[I"
+    }
+
+    fn default_val(&self) -> Self::Value {
+        0
+    }
+}
+
+pub type LongArray = Array<LongArrayKind>;
+pub type LongArrayInstance = ArrayInstance<LongArrayKind>;
+pub struct LongArrayKind {}
+
+impl ArrayKind for LongArrayKind {
+    type Value = i64;
+
+    fn class_name(&self) -> &str {
+        "[J"
+    }
+
+    fn default_val(&self) -> Self::Value {
+        0
+    }
+}
+
+pub type ShortArray = Array<ShortArrayKind>;
+pub type ShortArrayInstance = ArrayInstance<ShortArrayKind>;
+pub struct ShortArrayKind {}
+
+impl ArrayKind for ShortArrayKind {
+    type Value = i16;
+
+    fn class_name(&self) -> &str {
+        "[S"
+    }
+
+    fn default_val(&self) -> Self::Value {
+        0
+    }
+}
+
+pub trait ArrayKind {
+    type Value: Clone;
+
+    fn class_name(&self) -> &str;
+
+    fn default_val(&self) -> Self::Value;
+}
+
+pub struct Array<K> {
+    kind: K,
+}
+
+pub struct ArrayInstance<K: ArrayKind> {
+    class: Rc<Array<K>>,
+    values: Vec<K::Value>,
+}
+
+impl<K: ArrayKind + Default> Default for Array<K> {
+    fn default() -> Self {
+        Array::new(K::default())
+    }
+}
+
+impl<K: ArrayKind> Array<K> {
+    pub fn new(kind: K) -> Array<K> {
+        Array { kind }
+    }
+
+    pub fn new_instance(self: &Rc<Self>, length: usize) -> ArrayInstance<K> {
+        ArrayInstance {
+            class: self.clone(),
+            values: vec![self.kind.default_val(); length],
+        }
+    }
+}
+
+impl<K: ArrayKind> Class for Array<K> {
+    fn methods(&self) -> &[Rc<crate::class::Method>] {
+        &[]
+    }
+
+    fn static_fields(&self) -> &[Rc<crate::class::Field>] {
+        &[]
+    }
+
+    fn instance_fields(&self) -> &[String] {
+        &[]
+    }
+
+    fn package(&self) -> &str {
+        ""
+    }
+
+    fn name(&self) -> &str {
+        self.kind.class_name()
+    }
+
+    fn super_class(&self) -> Option<Rc<dyn Class>> {
+        None
+    }
+
+    fn interfaces(&self) -> &[Rc<dyn std::any::Any>] {
+        &[]
+    }
+}
+
+impl<K: ArrayKind + 'static> ClassInstance for ArrayInstance<K> {
+    fn class(&self) -> Rc<dyn Class> {
+        self.class.clone()
+    }
+
+    fn as_any(&self) -> &dyn std::any::Any {
+        self
+    }
+
+    fn instance_fields(&self) -> &[Rc<Field>] {
+        &[]
+    }
+}
+
+impl<K: ArrayKind> ArrayInstance<K> {
+    pub fn length(&self) -> usize {
+        // java arrays have a fixed length,
+        // use the underlying vector's capacity
+        // to store that information
+        self.values.capacity()
+    }
+
+    pub fn set(
+        &mut self,
+        index: usize,
+        value: K::Value,
+    ) -> Result<(), RuntimeError> {
+        if index > self.values.capacity() {
+            return Err(RuntimeError::ArrayIndexOutOfBounds {
+                length: self.values.capacity(),
+                index,
+            });
+        }
+
+        self.values[index] = value;
+
+        Ok(())
+    }
+
+    pub fn get(&self, index: usize) -> Result<&K::Value, RuntimeError> {
+        if index > self.values.capacity() {
+            return Err(RuntimeError::ArrayIndexOutOfBounds {
+                length: self.values.capacity(),
+                index,
+            });
+        }
+
+        Ok(&self.values[index])
+    }
+}
