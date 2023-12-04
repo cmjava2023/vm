@@ -218,7 +218,7 @@ pub fn parse_opcodes<'a>(
                 opcodes.push(OpCode::Daload);
             },
             50 => {
-                opcodes.push(OpCode::Aalod);
+                opcodes.push(OpCode::Aaload);
             },
             51 => {
                 opcodes.push(OpCode::Baload);

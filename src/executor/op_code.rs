@@ -1,7 +1,10 @@
 use std::{any::Any, ops::Neg, rc::Rc};
 
 use crate::{
-    class::{Class, ClassInstance, Field, Method},
+    class::{
+        builtin_classes::array::ObjectArrayInstance,
+        Class, ClassInstance, Field, Method,
+    },
     classloader::cp_decoder::RuntimeCPEntry,
     executor::{
         frame_stack::StackValue, local_variables::VariableValueOrValue, Frame,
@@ -70,7 +73,7 @@ impl ArrayType {
 
 #[derive(Clone, Debug)]
 pub enum OpCode {
-    Aalod,
+    Aaload,
     Aastore,
     AconstNull,
     /// Load reference from `index` in local variable array to stack.
@@ -247,6 +250,47 @@ pub enum OpCode {
 impl OpCode {
     pub fn execute(&self, frame: &mut Frame) -> Update {
         match self {
+            Self::Aaload => {
+                let index = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let array: Rc<dyn ClassInstance> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                match array.as_any().downcast_ref::<ObjectArrayInstance>() {
+                    Some(obj_array) => {
+                        let obj =
+                            obj_array.get(index.try_into().unwrap()).unwrap();
+                        frame
+                            .operand_stack
+                            .push(StackValue::Reference(obj.clone()))
+                            .unwrap();
+                    },
+                    None => panic!(
+                        "Expected array on top of the stack, got: {:?}",
+                        array
+                    ),
+                }
+                Update::None
+            },
+            Self::Aastore => {
+                let value: Option<Rc<dyn ClassInstance>> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let index = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let array: Rc<dyn ClassInstance> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let array: &ObjectArrayInstance =
+                    array.as_ref().try_into().unwrap();
+                array.set(index.try_into().unwrap(), value).unwrap();
+                Update::None
+            },
             Self::Aload(index) => {
                 frame
                     .operand_stack

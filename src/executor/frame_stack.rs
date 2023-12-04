@@ -1,7 +1,9 @@
 use std::rc::Rc;
 
 use crate::{
-    class::{ClassInstance, FieldValue},
+    class::{
+        ClassInstance, FieldValue,
+    },
     executor::{local_variables::VariableValueOrValue, RuntimeError},
 };
 

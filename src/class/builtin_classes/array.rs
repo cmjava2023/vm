@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{cell::RefCell, rc::Rc};
 
 use crate::{
     class::{Class, ClassInstance, Field},
@@ -179,7 +179,7 @@ pub struct Array<K> {
 
 pub struct ArrayInstance<K: ArrayKind> {
     class: Rc<Array<K>>,
-    values: Vec<K::Value>,
+    values: RefCell<Vec<K::Value>>,
 }
 
 impl<K: ArrayKind + Default> Default for Array<K> {
@@ -196,7 +196,7 @@ impl<K: ArrayKind> Array<K> {
     pub fn new_instance(self: &Rc<Self>, length: usize) -> ArrayInstance<K> {
         ArrayInstance {
             class: self.clone(),
-            values: vec![self.kind.default_val(); length],
+            values: RefCell::new(vec![self.kind.default_val(); length]),
         }
     }
 }
@@ -250,34 +250,50 @@ impl<K: ArrayKind> ArrayInstance<K> {
         // java arrays have a fixed length,
         // use the underlying vector's capacity
         // to store that information
-        self.values.capacity()
+        self.values.borrow().capacity()
     }
 
     pub fn set(
-        &mut self,
+        &self,
         index: usize,
         value: K::Value,
     ) -> Result<(), RuntimeError> {
-        if index > self.values.capacity() {
+        if index > self.values.borrow().capacity() {
             return Err(RuntimeError::ArrayIndexOutOfBounds {
-                length: self.values.capacity(),
+                length: self.values.borrow().capacity(),
                 index,
             });
         }
 
-        self.values[index] = value;
+        self.values.borrow_mut()[index] = value;
 
         Ok(())
     }
 
-    pub fn get(&self, index: usize) -> Result<&K::Value, RuntimeError> {
-        if index > self.values.capacity() {
+    pub fn get(&self, index: usize) -> Result<K::Value, RuntimeError> {
+        if index > self.values.borrow().capacity() {
             return Err(RuntimeError::ArrayIndexOutOfBounds {
-                length: self.values.capacity(),
+                length: self.values.borrow().capacity(),
                 index,
             });
         }
 
-        Ok(&self.values[index])
+        Ok(self.values.borrow()[index].clone())
+    }
+}
+
+impl<'a, K: ArrayKind + 'static> TryFrom<&'a dyn ClassInstance>
+    for &'a ArrayInstance<K>
+{
+    type Error = RuntimeError;
+
+    fn try_from(array: &'a dyn ClassInstance) -> Result<Self, Self::Error> {
+        match array.as_any().downcast_ref::<ArrayInstance<K>>() {
+            Some(array) => Ok(array),
+            None => Err(RuntimeError::InvalidType {
+                expected: "array",
+                actual: "unknown",
+            }),
+        }
     }
 }
