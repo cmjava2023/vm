@@ -44,30 +44,25 @@ fn parse_ldc<'a>(
     heap: &mut Heap,
     wide: bool,
 ) -> IResult<&'a [u8], OpCode> {
-    let cp_ref;
-    let mut return_content = current_content;
-    if wide {
-        let (new_content, new_ref) = be_u16(return_content)?;
-        return_content = new_content;
-        cp_ref = new_ref;
+    let (current_content, cp_ref) = if wide {
+        be_u16(current_content)?
     } else {
-        let (new_content, new_ref) = be_u8(return_content)?;
-        return_content = new_content;
-        cp_ref = new_ref.into();
-    }
+        let (new_content, new_ref) = be_u8(current_content)?;
+        (new_content, new_ref.into())
+    };
 
     let cp_entry = &runtime_cp[remove_cp_offset(cp_ref as usize)];
 
     match cp_entry {
         RuntimeCPEntry::StringInfo(value) => Ok((
-            return_content,
+            current_content,
             OpCode::Ldc(Ldc::String(Rc::new(heap.new_string(value.clone())))),
         )),
         RuntimeCPEntry::IntegerInfo(value) => {
-            Ok((return_content, OpCode::Ldc(Ldc::Int(*value))))
+            Ok((current_content, OpCode::Ldc(Ldc::Int(*value))))
         },
         RuntimeCPEntry::FloatInfo(value) => {
-            Ok((return_content, OpCode::Ldc(Ldc::Float(*value))))
+            Ok((current_content, OpCode::Ldc(Ldc::Float(*value))))
         },
         _ => panic!("{:?} Unsupported Type for Ldc ", cp_entry),
     }
@@ -118,8 +113,8 @@ pub fn parse_opcodes<'a>(
         (current_content, opcode) = be_u8(current_content)?;
         match opcode {
             2..=8 => opcodes.push(OpCode::Iconst(-1 + (i32::from(opcode) - 2))),
-            9 | 10 => opcodes.push(OpCode::Fconst(f32::from(opcode) - 13_f32)),
-            11..=13 => opcodes.push(OpCode::Dconst(f64::from(opcode) - 14_f64)),
+            9 | 10 => opcodes.push(OpCode::Lconst(i64::from(opcode) - 13)),
+            11..=13 => opcodes.push(OpCode::Fconst(f32::from(opcode) - 14_f32)),
             14 | 15 => opcodes.push(OpCode::Dconst(f64::from(opcode) - 14_f64)),
             16 => {
                 let (new_content, byte_value) = be_i8(current_content)?;
