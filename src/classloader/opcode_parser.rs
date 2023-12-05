@@ -113,8 +113,8 @@ pub fn parse_opcodes<'a>(
         (current_content, opcode) = be_u8(current_content)?;
         match opcode {
             2..=8 => opcodes.push(OpCode::Iconst(-1 + (i32::from(opcode) - 2))),
-            9 | 10 => opcodes.push(OpCode::Lconst(i64::from(opcode) - 13)),
-            11..=13 => opcodes.push(OpCode::Fconst(f32::from(opcode) - 14_f32)),
+            9 | 10 => opcodes.push(OpCode::Lconst(i64::from(opcode) - 9)),
+            11..=13 => opcodes.push(OpCode::Fconst(f32::from(opcode) - 11_f32)),
             14 | 15 => opcodes.push(OpCode::Dconst(f64::from(opcode) - 14_f64)),
             16 => {
                 let (new_content, byte_value) = be_i8(current_content)?;
