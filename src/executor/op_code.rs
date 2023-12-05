@@ -2,7 +2,12 @@ use std::{any::Any, ops::Neg, rc::Rc};
 
 use crate::{
     class::{
-        builtin_classes::array::{ObjectArray, ObjectArrayInstance},
+        builtin_classes::array::{
+            BoolArrayInstance, ByteArrayInstance, CharArrayInstance,
+            DoubleArrayInstance, FloatArrayInstance, IntArrayInstance,
+            LongArrayInstance, ObjectArray, ObjectArrayInstance,
+            ShortArrayInstance,
+        },
         Class, ClassInstance, Field, Method,
     },
     classloader::cp_decoder::RuntimeCPEntry,
@@ -378,6 +383,77 @@ impl OpCode {
 
                 Update::None
             },
+
+            Self::ArrayLength => {
+                let stack_value: Rc<dyn ClassInstance> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+
+                let length = if let Ok(array) =
+                    TryInto::<&ObjectArrayInstance>::try_into(
+                        stack_value.as_ref(),
+                    ) {
+                    array.length()
+                } else if let Ok(array) =
+                    TryInto::<&BoolArrayInstance>::try_into(
+                        stack_value.as_ref(),
+                    )
+                {
+                    array.length()
+                } else if let Ok(array) =
+                    TryInto::<&ByteArrayInstance>::try_into(
+                        stack_value.as_ref(),
+                    )
+                {
+                    array.length()
+                } else if let Ok(array) =
+                    TryInto::<&CharArrayInstance>::try_into(
+                        stack_value.as_ref(),
+                    )
+                {
+                    array.length()
+                } else if let Ok(array) =
+                    TryInto::<&DoubleArrayInstance>::try_into(
+                        stack_value.as_ref(),
+                    )
+                {
+                    array.length()
+                } else if let Ok(array) =
+                    TryInto::<&FloatArrayInstance>::try_into(
+                        stack_value.as_ref(),
+                    )
+                {
+                    array.length()
+                } else if let Ok(array) =
+                    TryInto::<&LongArrayInstance>::try_into(
+                        stack_value.as_ref(),
+                    )
+                {
+                    array.length()
+                } else if let Ok(array) =
+                    TryInto::<&IntArrayInstance>::try_into(stack_value.as_ref())
+                {
+                    array.length()
+                } else if let Ok(array) =
+                    TryInto::<&ShortArrayInstance>::try_into(
+                        stack_value.as_ref(),
+                    )
+                {
+                    array.length()
+                } else {
+                    panic!(
+                        "expected array on top of stack, got: {:?}",
+                        stack_value
+                    )
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Int(length.try_into().unwrap()))
+                    .unwrap();
+
+                Update::None
+            },
+
             Self::Bipush(v) => {
                 frame.operand_stack.push(StackValue::Int(*v)).unwrap();
                 Update::None
