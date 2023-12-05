@@ -171,7 +171,7 @@ pub enum OpCode {
     Ixor,
     Jsr(usize, OffsetDirection),
     L2d,
-    Ldf,
+    L2f,
     L2i,
     Ladd,
     Laload,
