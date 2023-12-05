@@ -131,7 +131,7 @@ fn main() -> anyhow::Result<()> {
     } else {
         panic!("main method is not bytecode");
     };
-    run(main);
+    run(main, &mut heap);
 
     Ok(())
 }

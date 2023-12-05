@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{any::Any, rc::Rc};
 
 use crate::class::{Class, ClassInstance, Field, Method};
 
@@ -50,6 +50,10 @@ impl Class for StringClass {
 
     fn interfaces(&self) -> &[Rc<dyn std::any::Any>] {
         &[]
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 

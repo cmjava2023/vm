@@ -60,6 +60,8 @@ pub trait Class {
     // TODO how are interfaces represented?
     fn interfaces(&self) -> &[Rc<dyn std::any::Any>];
     // TODO attributes
+
+    fn as_any(&self) -> &dyn Any;
 }
 
 impl dyn Class {

@@ -1,4 +1,4 @@
-use std::{cell::RefCell, rc::Rc};
+use std::{any::Any, cell::RefCell, rc::Rc};
 
 use crate::{
     class::{Class, ClassInstance, Field},
@@ -185,17 +185,17 @@ pub struct Array<K> {
 }
 
 pub struct ArrayInstance<K: ArrayKind> {
-    class: Rc<Array<K>>,
+    class: Rc<dyn Class>,
     values: RefCell<Vec<K::Value>>,
 }
 
-impl<K: ArrayKind + Default> Default for Array<K> {
+impl<K: ArrayKind + Default + 'static> Default for Array<K> {
     fn default() -> Self {
         Array::new(K::default())
     }
 }
 
-impl<K: ArrayKind> Array<K> {
+impl<K: ArrayKind + 'static> Array<K> {
     pub fn new(kind: K) -> Array<K> {
         Array { kind }
     }
@@ -206,9 +206,25 @@ impl<K: ArrayKind> Array<K> {
             values: RefCell::new(vec![self.kind.default_val(); length]),
         }
     }
+
+    /// self and cls must be the same!
+    #[allow(clippy::needless_arbitrary_self_type)]
+    pub fn new_instance_from_ref(
+        self: &Self,
+        length: usize,
+        cls: Rc<dyn Class>,
+    ) -> Result<ArrayInstance<K>, RuntimeError> {
+        // make sure that self and cls really are equal
+        let _cls_ref: &Self = cls.as_ref().try_into()?;
+
+        Ok(ArrayInstance {
+            class: cls,
+            values: RefCell::new(vec![self.kind.default_val(); length]),
+        })
+    }
 }
 
-impl<K: ArrayKind> Class for Array<K> {
+impl<K: ArrayKind + 'static> Class for Array<K> {
     fn methods(&self) -> &[Rc<crate::class::Method>] {
         &[]
     }
@@ -235,6 +251,10 @@ impl<K: ArrayKind> Class for Array<K> {
 
     fn interfaces(&self) -> &[Rc<dyn std::any::Any>] {
         &[]
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 
@@ -296,6 +316,20 @@ impl<'a, K: ArrayKind + 'static> TryFrom<&'a dyn ClassInstance>
 
     fn try_from(array: &'a dyn ClassInstance) -> Result<Self, Self::Error> {
         match array.as_any().downcast_ref::<ArrayInstance<K>>() {
+            Some(array) => Ok(array),
+            None => Err(RuntimeError::InvalidType {
+                expected: "array",
+                actual: "unknown",
+            }),
+        }
+    }
+}
+
+impl<'a, K: ArrayKind + 'static> TryFrom<&'a dyn Class> for &'a Array<K> {
+    type Error = RuntimeError;
+
+    fn try_from(array: &'a dyn Class) -> Result<Self, Self::Error> {
+        match array.as_any().downcast_ref::<Array<K>>() {
             Some(array) => Ok(array),
             None => Err(RuntimeError::InvalidType {
                 expected: "array",
