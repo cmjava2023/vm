@@ -10,6 +10,19 @@ use crate::{
 };
 
 #[derive(Clone, Debug)]
+pub enum ArrayReferenceKinds {
+    Boolean,
+    Byte,
+    Char,
+    Double,
+    Float,
+    Long,
+    Int,
+    Short,
+    Object(Rc<dyn Class>),
+}
+
+#[derive(Clone, Debug)]
 pub enum Ldc {
     Int(i32),
     Float(f32),
@@ -58,7 +71,7 @@ pub enum OpCode {
     AconstNull,
     /// Load reference from `index` in local variable array to stack.
     Aload(usize),
-    AnewArray(Rc<dyn Any>),
+    AnewArray(ArrayReferenceKinds),
     Areturn,
     ArrayLength,
     /// Store reference to `index` in local variable array from stack.
@@ -202,7 +215,7 @@ pub enum OpCode {
     // definitely unsupported
     Monitorexit,
     MultiAnewArray {
-        reference_kind: Rc<dyn Any>,
+        reference_kind: ArrayReferenceKinds,
         dimensions: u8,
     },
     New(Rc<dyn Any>),
