@@ -650,14 +650,14 @@ pub fn parse_opcodes<'a>(
             },
             180 => {
                 todo!(
-                    "GetField(Rc<dyn Any>), needs information
-                    on how to resolve fields at execution time"
+                    "GetField(Rc<dyn Any>), needs information \
+on how to resolve fields at execution time"
                 )
             },
             181 => {
                 todo!(
-                    "PutField(Rc<dyn Any>), needs information
-                    on how to resolve fields at execution time"
+                    "PutField(Rc<dyn Any>), needs information \
+on how to resolve fields at execution time"
                 )
             },
             182 => {
@@ -691,20 +691,20 @@ pub fn parse_opcodes<'a>(
             },
             185 => {
                 todo!(
-                    "InvokeInterface(Rc<dyn Any>), needs information
-                    on how to resolve Interface at execution time"
+                    "InvokeInterface(Rc<dyn Any>), needs information \
+on how to resolve Interface at execution time"
                 )
             },
             186 => {
                 todo!(
-                    "InvokeDynamic(Rc<dyn Any>),, needs information
-                    on how to resolve at execution time"
+                    "InvokeDynamic(Rc<dyn Any>),, needs information \
+on how to resolve at execution time"
                 )
             },
             187 => {
                 todo!(
-                    "New(Rc<dyn Any>), needs information
-                    on how to resolve at execution time"
+                    "New(Rc<dyn Any>), needs information \
+on how to resolve at execution time"
                 )
             },
             188 => {
@@ -714,8 +714,8 @@ pub fn parse_opcodes<'a>(
             },
             189 => {
                 todo!(
-                    "AnewArray(Rc<dyn Any>),, needs information
-                    on how to resolve at execution time"
+                    "AnewArray(Rc<dyn Any>),, needs information \
+on how to resolve at execution time"
                 )
             },
             190 => {
@@ -726,14 +726,14 @@ pub fn parse_opcodes<'a>(
             },
             192 => {
                 todo!(
-                    "Checkcast(Rc<dyn Any>), needs information
-                     on how to resolve at execution time"
+                    "Checkcast(Rc<dyn Any>), needs information \
+on how to resolve at execution time"
                 )
             },
             193 => {
                 todo!(
-                    "InstanceOf(Rc<dyn Any>), needs information
-                     on how to resolve at execution time"
+                    "InstanceOf(Rc<dyn Any>), needs information \
+on how to resolve at execution time"
                 )
             },
             194 => {
