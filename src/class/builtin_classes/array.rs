@@ -55,6 +55,7 @@ impl ArrayKind for ByteArrayKind {
 
 pub type BoolArray = Array<BoolArrayKind>;
 pub type BoolArrayInstance = ArrayInstance<BoolArrayKind>;
+#[derive(Default)]
 pub struct BoolArrayKind {}
 
 impl ArrayKind for BoolArrayKind {
@@ -71,6 +72,7 @@ impl ArrayKind for BoolArrayKind {
 
 pub type CharArray = Array<CharArrayKind>;
 pub type CharArrayInstance = ArrayInstance<CharArrayKind>;
+#[derive(Default)]
 pub struct CharArrayKind {}
 
 impl ArrayKind for CharArrayKind {
@@ -87,6 +89,7 @@ impl ArrayKind for CharArrayKind {
 
 pub type DoubleArray = Array<DoubleArrayKind>;
 pub type DoubleArrayInstance = ArrayInstance<DoubleArrayKind>;
+#[derive(Default)]
 pub struct DoubleArrayKind {}
 
 impl ArrayKind for DoubleArrayKind {
@@ -103,6 +106,7 @@ impl ArrayKind for DoubleArrayKind {
 
 pub type FloatArray = Array<FloatArrayKind>;
 pub type FloatArrayInstance = ArrayInstance<FloatArrayKind>;
+#[derive(Default)]
 pub struct FloatArrayKind {}
 
 impl ArrayKind for FloatArrayKind {
@@ -119,6 +123,7 @@ impl ArrayKind for FloatArrayKind {
 
 pub type IntArray = Array<IntArrayKind>;
 pub type IntArrayInstance = ArrayInstance<IntArrayKind>;
+#[derive(Default)]
 pub struct IntArrayKind {}
 
 impl ArrayKind for IntArrayKind {
@@ -135,6 +140,7 @@ impl ArrayKind for IntArrayKind {
 
 pub type LongArray = Array<LongArrayKind>;
 pub type LongArrayInstance = ArrayInstance<LongArrayKind>;
+#[derive(Default)]
 pub struct LongArrayKind {}
 
 impl ArrayKind for LongArrayKind {
@@ -151,6 +157,7 @@ impl ArrayKind for LongArrayKind {
 
 pub type ShortArray = Array<ShortArrayKind>;
 pub type ShortArrayInstance = ArrayInstance<ShortArrayKind>;
+#[derive(Default)]
 pub struct ShortArrayKind {}
 
 impl ArrayKind for ShortArrayKind {

@@ -2,8 +2,8 @@ use std::{any::Any, ops::Neg, rc::Rc};
 
 use crate::{
     class::{
-        builtin_classes::array::ObjectArrayInstance,
-        Class, ClassInstance, Field, Method,
+        builtin_classes::array::ObjectArrayInstance, Class, ClassInstance,
+        Field, Method,
     },
     classloader::cp_decoder::RuntimeCPEntry,
     executor::{
@@ -91,7 +91,11 @@ pub enum OpCode {
     AconstNull,
     /// Load reference from `index` in local variable array to stack.
     Aload(usize),
-    AnewArray(ArrayReferenceKinds),
+    // "[[I"
+    // ArrayObject::new(ArrayObject::new(IntArray))
+    //
+    // executor: ArrayObject::new(anewarray_conent).new_instance()
+    AnewArray(Rc<dyn Class>),
     Areturn,
     ArrayLength,
     /// Store reference to `index` in local variable array from stack.
