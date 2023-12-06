@@ -1109,6 +1109,32 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Lastore => {
+                let value: StackValue = frame.operand_stack.pop().unwrap();
+                let index = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let array: Rc<dyn ClassInstance> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+
+                let value = if let StackValue::Long(value) = value {
+                    value
+                } else {
+                    panic!(
+                        "Expected long value on top of the stack, \
+got: {:?}",
+                        value
+                    );
+                };
+                let array: &LongArrayInstance =
+                    array.as_ref().try_into().unwrap();
+                array.set(index.try_into().unwrap(), value).unwrap();
+                Update::None
+            },
+
             Self::Ldc(Ldc::Int(i)) => {
                 frame.operand_stack.push(StackValue::Int(*i)).unwrap();
                 Update::None
