@@ -96,7 +96,7 @@ impl ArrayKind for DoubleArrayKind {
     type Value = f64;
 
     fn class_name(&self) -> &str {
-        "[C"
+        "[D"
     }
 
     fn default_val(&self) -> Self::Value {
@@ -113,7 +113,7 @@ impl ArrayKind for FloatArrayKind {
     type Value = f64;
 
     fn class_name(&self) -> &str {
-        "[C"
+        "[F"
     }
 
     fn default_val(&self) -> Self::Value {
