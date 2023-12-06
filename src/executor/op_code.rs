@@ -493,7 +493,12 @@ got: {:?}",
             },
 
             Self::Bastore => {
-                let value: StackValue = frame.operand_stack.pop().unwrap();
+                let value: i32 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
                 let index = frame
                     .operand_stack
                     .pop()
@@ -503,26 +508,27 @@ got: {:?}",
                 let array: Rc<dyn ClassInstance> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
 
-                match value {
-                    StackValue::Byte(byte_value) => {
-                        let array: &ByteArrayInstance =
-                            array.as_ref().try_into().unwrap();
-                        array
-                            .set(index.try_into().unwrap(), byte_value)
-                            .unwrap();
-                    },
-                    StackValue::Boolean(bool_value) => {
-                        let array: &BoolArrayInstance =
-                            array.as_ref().try_into().unwrap();
-                        array
-                            .set(index.try_into().unwrap(), bool_value == 1)
-                            .unwrap();
-                    },
-                    _ => panic!(
-                        "Expected byte or bool value on top of the stack, \
+                if let Some(byte_array) =
+                    array.as_any().downcast_ref::<ByteArrayInstance>()
+                {
+                    byte_array
+                        .set(
+                            index.try_into().unwrap(),
+                            value.try_into().unwrap(),
+                        )
+                        .unwrap();
+                } else if let Some(bool_array) =
+                    array.as_any().downcast_ref::<BoolArrayInstance>()
+                {
+                    bool_array
+                        .set(index.try_into().unwrap(), value == 1)
+                        .unwrap();
+                } else {
+                    panic!(
+                        "Expected byte or bool array on top of the stack, \
 got: {:?}",
-                        value
-                    ),
+                        array
+                    )
                 }
 
                 Update::None
@@ -562,19 +568,14 @@ got: {:?}",
                 let array: Rc<dyn ClassInstance> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
 
-                let char_value = if let StackValue::Char(char_value) = value {
-                    char_value
-                } else {
-                    panic!(
-                        "Expected char value on top of the stack, \
-got: {:?}",
-                        value
-                    );
-                };
+                let char_value = value.as_computation_int().unwrap();
                 let char_array: &CharArrayInstance =
                     array.as_ref().try_into().unwrap();
                 char_array
-                    .set(index.try_into().unwrap(), char_value)
+                    .set(
+                        index.try_into().unwrap(),
+                        char_value.try_into().unwrap(),
+                    )
                     .unwrap();
                 Update::None
             },
@@ -754,15 +755,7 @@ got: {:?}",
                 let array: Rc<dyn ClassInstance> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
 
-                let value = if let StackValue::Int(value) = value {
-                    value
-                } else {
-                    panic!(
-                        "Expected int value on top of the stack, \
-got: {:?}",
-                        value
-                    );
-                };
+                let value = value.as_computation_int().unwrap();
                 let array: &IntArrayInstance =
                     array.as_ref().try_into().unwrap();
                 array.set(index.try_into().unwrap(), value).unwrap();
@@ -1292,18 +1285,12 @@ got: {:?}",
                 let array: Rc<dyn ClassInstance> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
 
-                let value = if let StackValue::Short(value) = value {
-                    value
-                } else {
-                    panic!(
-                        "Expected short value on top of the stack, \
-got: {:?}",
-                        value
-                    );
-                };
+                let value = value.as_computation_int().unwrap();
                 let array: &ShortArrayInstance =
                     array.as_ref().try_into().unwrap();
-                array.set(index.try_into().unwrap(), value).unwrap();
+                array
+                    .set(index.try_into().unwrap(), value.try_into().unwrap())
+                    .unwrap();
                 Update::None
             },
 
