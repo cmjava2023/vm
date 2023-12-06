@@ -1171,6 +1171,32 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Sastore => {
+                let value: StackValue = frame.operand_stack.pop().unwrap();
+                let index = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let array: Rc<dyn ClassInstance> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+
+                let value = if let StackValue::Short(value) = value {
+                    value
+                } else {
+                    panic!(
+                        "Expected short value on top of the stack, \
+got: {:?}",
+                        value
+                    );
+                };
+                let array: &ShortArrayInstance =
+                    array.as_ref().try_into().unwrap();
+                array.set(index.try_into().unwrap(), value).unwrap();
+                Update::None
+            },
+
             _ => todo!("Missing OpCode implementation for: {:?}", self),
         }
     }
