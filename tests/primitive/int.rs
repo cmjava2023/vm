@@ -45,7 +45,9 @@ fn logicops() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin("cmjava")?;
 
     cmd.arg("tests/data/primitive/int/logicops/Main.class");
-    cmd.assert().failure();
+    cmd.assert()
+        .failure()
+        .stderr(predicate::str::contains("Missing OpCode implementation"));
     // failure caused by recent sipush inclusion in test case
     // uncomment when sipush is supported
     // .success()
