@@ -742,6 +742,32 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Iastore => {
+                let value: StackValue = frame.operand_stack.pop().unwrap();
+                let index = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let array: Rc<dyn ClassInstance> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+
+                let value = if let StackValue::Int(value) = value {
+                    value
+                } else {
+                    panic!(
+                        "Expected int value on top of the stack, \
+got: {:?}",
+                        value
+                    );
+                };
+                let array: &IntArrayInstance =
+                    array.as_ref().try_into().unwrap();
+                array.set(index.try_into().unwrap(), value).unwrap();
+                Update::None
+            },
+
             Self::Iand => {
                 let op2 = frame
                     .operand_stack
