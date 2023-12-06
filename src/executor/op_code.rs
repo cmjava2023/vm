@@ -665,6 +665,32 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Fastore => {
+                let value: StackValue = frame.operand_stack.pop().unwrap();
+                let index = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let array: Rc<dyn ClassInstance> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+
+                let value = if let StackValue::Float(value) = value {
+                    value
+                } else {
+                    panic!(
+                        "Expected float value on top of the stack, \
+got: {:?}",
+                        value
+                    );
+                };
+                let array: &FloatArrayInstance =
+                    array.as_ref().try_into().unwrap();
+                array.set(index.try_into().unwrap(), value).unwrap();
+                Update::None
+            },
+
             Self::GetStatic(field) => {
                 frame
                     .operand_stack
