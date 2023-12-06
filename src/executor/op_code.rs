@@ -532,6 +532,24 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Caload => {
+                let index = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let array: Rc<dyn ClassInstance> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let char_array: &CharArrayInstance =
+                    array.as_ref().try_into().unwrap();
+
+                let obj = char_array.get(index.try_into().unwrap()).unwrap();
+                frame.operand_stack.push(StackValue::Char(obj)).unwrap();
+
+                Update::None
+            },
+
             // note: split this into multiple cases,
             // in case the types are supposed to be verified
             Self::Dload(index)
