@@ -40,6 +40,7 @@ pub enum Dup {
 }
 
 #[derive(Clone, Debug)]
+#[repr(u8)]
 pub enum ArrayType {
     Boolean = 4,
     Char = 5,
@@ -49,6 +50,22 @@ pub enum ArrayType {
     Short = 9,
     Int = 10,
     Long = 11,
+}
+
+impl ArrayType {
+    pub fn from_int(value: u8) -> ArrayType {
+        match value {
+            4 => ArrayType::Boolean,
+            5 => ArrayType::Char,
+            6 => ArrayType::Float,
+            7 => ArrayType::Double,
+            8 => ArrayType::Byte,
+            9 => ArrayType::Short,
+            10 => ArrayType::Int,
+            11 => ArrayType::Long,
+            _ => panic!("{} is not a valid ArrayType", value),
+        }
+    }
 }
 
 #[derive(Clone, Debug)]
@@ -68,7 +85,7 @@ pub enum OpCode {
     Bastore,
     /// Value to push onto stack
     Bipush(i32),
-    Calod,
+    Caload,
     Castore,
     Checkcast(Rc<dyn Any>),
     D2f,
