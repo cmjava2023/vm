@@ -639,7 +639,8 @@ got: {:?}",
 
             // note: split this into multiple cases,
             // in case the types are supposed to be verified
-            Self::Dstore(index)
+            Self::Astore(index)
+            | Self::Dstore(index)
             | Self::Fstore(index)
             | Self::Istore(index)
             | Self::Lstore(index) => {
