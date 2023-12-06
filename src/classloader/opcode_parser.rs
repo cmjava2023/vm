@@ -18,6 +18,77 @@ use crate::{
     heap::Heap,
 };
 
+fn parse_wide<'a>(current_content: &'a [u8]) -> IResult<&'a [u8], OpCode> {
+    let (mut current_content, opcode) = be_u8(current_content)?;
+    match opcode {
+        21 => {
+            let (new_content, index) = be_u16(current_content)?;
+            current_content = new_content;
+            Ok((current_content, OpCode::Iload(index.into())))
+        }
+        22 => {
+            let (new_content, index) = be_u16(current_content)?;
+            current_content = new_content;
+            Ok((current_content, OpCode::Lload(index.into())))
+        }
+        23 => {
+            let (new_content, index) = be_u16(current_content)?;
+            current_content = new_content;
+            Ok((current_content, OpCode::Fload(index.into())))
+        }
+        24 => {
+            let (new_content, index) = be_u16(current_content)?;
+            current_content = new_content;
+            Ok((current_content, OpCode::Dload(index.into())))
+        }
+        25 => {
+            let (new_content, index) = be_u16(current_content)?;
+            current_content = new_content;
+            Ok((current_content, OpCode::Aload(index.into())))
+        }
+        54 => {
+            let (new_content, index) = be_u16(current_content)?;
+            current_content = new_content;
+            Ok((current_content, OpCode::Istore(index.into())))
+        }
+        55 => {
+            let (new_content, index) = be_u16(current_content)?;
+            current_content = new_content;
+            Ok((current_content, OpCode::Lstore(index.into())))
+        }
+        56 => {
+            let (new_content, index) = be_u16(current_content)?;
+            current_content = new_content;
+            Ok((current_content, OpCode::Fstore(index.into())))
+        }
+        57 => {
+            let (new_content, index) = be_u16(current_content)?;
+            current_content = new_content;
+            Ok((current_content, OpCode::Dstore(index.into())))
+        }
+        58 => {
+            let (new_content, index) = be_u16(current_content)?;
+            current_content = new_content;
+            Ok((current_content, OpCode::Astore(index.into())))
+        }
+        132 => {
+            let (new_content, index) = be_u16(current_content)?;
+            let (new_content, constant) = be_i16(new_content)?;
+                current_content = new_content;
+                Ok((current_content, OpCode::Iinc {
+                    index: index.into(),
+                    constant: constant.into(),
+                }))
+        },
+        169 => {
+            let (new_content, index) = be_u16(current_content)?;
+            current_content = new_content;
+            Ok((current_content,OpCode::Ret(index.into())))
+        },
+        _ => panic!(" OpCode {} is not supported with the wide Opcode", opcode)
+    }
+}
+
 fn parse_static_field<'a>(
     current_content: &'a [u8],
     _class_file: &ClassFile,
@@ -743,7 +814,9 @@ on how to resolve at execution time"
                 opcodes.push(OpCode::Monitorexit);
             },
             196 => {
-                todo!("Opcode wide is not implemented yet")
+                let (new_content, opcode) = parse_wide(current_content)?;
+                current_content = new_content;
+                opcodes.push(opcode);
             },
             197 => {
                 todo!("MultiAnewArray")
