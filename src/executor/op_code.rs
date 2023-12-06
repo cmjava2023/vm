@@ -699,6 +699,24 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Iaload => {
+                let index = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let array: Rc<dyn ClassInstance> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let array: &IntArrayInstance =
+                    array.as_ref().try_into().unwrap();
+
+                let obj = array.get(index.try_into().unwrap()).unwrap();
+                frame.operand_stack.push(StackValue::Int(obj)).unwrap();
+
+                Update::None
+            },
+
             Self::Iadd => {
                 let op2 = frame
                     .operand_stack
