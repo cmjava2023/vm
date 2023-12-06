@@ -491,6 +491,42 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Bastore => {
+                let value: StackValue = frame.operand_stack.pop().unwrap();
+                let index = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let array: Rc<dyn ClassInstance> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+
+                match value {
+                    StackValue::Byte(byte_value) => {
+                        let array: &ByteArrayInstance =
+                            array.as_ref().try_into().unwrap();
+                        array
+                            .set(index.try_into().unwrap(), byte_value)
+                            .unwrap();
+                    },
+                    StackValue::Boolean(bool_value) => {
+                        let array: &BoolArrayInstance =
+                            array.as_ref().try_into().unwrap();
+                        array
+                            .set(index.try_into().unwrap(), bool_value == 1)
+                            .unwrap();
+                    },
+                    _ => panic!(
+                        "Expected byte or bool value on top of the stack, \
+got: {:?}",
+                        value
+                    ),
+                }
+
+                Update::None
+            },
+
             Self::Bipush(v) => {
                 frame.operand_stack.push(StackValue::Int(*v)).unwrap();
                 Update::None
