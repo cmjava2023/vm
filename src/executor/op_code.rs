@@ -596,6 +596,32 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Dastore => {
+                let value: StackValue = frame.operand_stack.pop().unwrap();
+                let index = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let array: Rc<dyn ClassInstance> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+
+                let value = if let StackValue::Double(value) = value {
+                    value
+                } else {
+                    panic!(
+                        "Expected double value on top of the stack, \
+got: {:?}",
+                        value
+                    );
+                };
+                let array: &DoubleArrayInstance =
+                    array.as_ref().try_into().unwrap();
+                array.set(index.try_into().unwrap(), value).unwrap();
+                Update::None
+            },
+
             // note: split this into multiple cases,
             // in case the types are supposed to be verified
             Self::Dload(index)
