@@ -650,6 +650,13 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Dup(Dup::Dup) => {
+                let val = frame.operand_stack.pop().unwrap();
+                frame.operand_stack.push(val.clone()).unwrap();
+                frame.operand_stack.push(val).unwrap();
+                Update::None
+            },
+
             Self::Faload => {
                 let index = frame
                     .operand_stack
@@ -691,6 +698,7 @@ got: {:?}",
                 let array: &FloatArrayInstance =
                     array.as_ref().try_into().unwrap();
                 array.set(index.try_into().unwrap(), value).unwrap();
+
                 Update::None
             },
 
