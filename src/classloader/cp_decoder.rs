@@ -41,6 +41,8 @@ pub enum RuntimeCPEntry {
         name_and_type_index: u16,
     },
     Resolved,
+    // long/double values take up two slots
+    Reserved,
 }
 
 pub fn remove_cp_offset(index: usize) -> usize {
@@ -285,6 +287,7 @@ fn decode_entry(entry: &CpInfo, class_file: &ClassFile) -> RuntimeCPEntry {
             bootstrap_method_attr_index: _,
             name_and_type_index: _,
         } => todo!(),
+        CpInfo::Reserved => RuntimeCPEntry::Reserved,
     }
 }
 

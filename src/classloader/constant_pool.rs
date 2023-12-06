@@ -24,6 +24,8 @@ pub enum CpInfo {
     FloatInfo(f32),
     LongInfo(i64),
     DoubleInfo(f64),
+    // long/double values count as two slots
+    Reserved,
     NameAndTypeInfo {
         name_index: u16,
         descriptor_index: u16,

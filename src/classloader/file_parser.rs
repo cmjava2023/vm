@@ -4,7 +4,7 @@ use anyhow::Context;
 use enumflags2::BitFlags;
 use nom::{
     bytes::complete::tag,
-    combinator::{eof, map},
+    combinator::eof,
     error::ErrorKind,
     multi::{length_count, length_value, many_till},
     number::complete::{be_f32, be_f64, be_i32, be_i64, be_u16, be_u32, be_u8},
@@ -79,7 +79,7 @@ fn parse_utf8_from_constant_pool(
     Ok((current_content, code_points.iter().collect()))
 }
 
-fn parse_constant_pool(current_content: &[u8]) -> IResult<&[u8], CpInfo> {
+fn parse_constant_pool_item(current_content: &[u8]) -> IResult<&[u8], CpInfo> {
     let tag_content = current_content;
     let (current_content, tag) = be_u8(current_content)?;
     match tag {
@@ -265,14 +265,44 @@ fn parse_method_info(current_content: &[u8]) -> IResult<&[u8], RawMethodInfo> {
     ))
 }
 
+fn parse_constant_pool(current_content: &[u8]) -> IResult<&[u8], Vec<CpInfo>> {
+    let mut items = Vec::new();
+
+    let (current_content, mut count) = be_u16(current_content)?;
+    // cp length is given as item count + 1
+    count -= 1;
+
+    let mut current_content = current_content;
+    let mut index = 0;
+    while index < count {
+        let cp_item = {
+            let (new_content, cp_item) =
+                parse_constant_pool_item(current_content)?;
+            current_content = new_content;
+            cp_item
+        };
+
+        let takes_two_slots = matches!(cp_item, CpInfo::LongInfo(_))
+            || matches!(cp_item, CpInfo::DoubleInfo(_));
+
+        items.push(cp_item);
+        if takes_two_slots {
+            items.push(CpInfo::Reserved);
+            index += 1;
+        }
+
+        index += 1;
+    }
+
+    Ok((current_content, items))
+}
+
 fn parse_class_file(current_content: &[u8]) -> IResult<&[u8], RawClassFile> {
     let current_content = tag(b"\xCA\xFE\xBA\xBE")(current_content)?.0;
     let (current_content, minor_version) = be_u16(current_content)?;
     let (current_content, major_version) = be_u16(current_content)?;
-    let (current_content, constant_pool) = length_count(
-        map(be_u16, |cnt| cnt - 1),
-        parse_constant_pool,
-    )(current_content)?;
+    let (current_content, constant_pool) =
+        parse_constant_pool(current_content)?;
     let (current_content, access_flag_byte) = be_u16(current_content)?;
     let access_flags =
         BitFlags::<ClassAccessFlag>::from_bits(access_flag_byte).unwrap();
