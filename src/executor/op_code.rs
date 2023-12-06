@@ -1151,6 +1151,72 @@ got: {:?}",
                 Update::None
             },
 
+            Self::NewArray(array_type) => {
+                let size = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+
+                let array: Rc<dyn ClassInstance> = match array_type {
+                    ArrayType::Boolean => {
+                        let array =
+                            heap.new_boolean_array(size.try_into().unwrap());
+                        Rc::new(array)
+                    },
+
+                    ArrayType::Char => {
+                        let array =
+                            heap.new_char_array(size.try_into().unwrap());
+                        Rc::new(array)
+                    },
+
+                    ArrayType::Float => {
+                        let array =
+                            heap.new_float_array(size.try_into().unwrap());
+                        Rc::new(array)
+                    },
+
+                    ArrayType::Double => {
+                        let array =
+                            heap.new_double_array(size.try_into().unwrap());
+                        Rc::new(array)
+                    },
+
+                    ArrayType::Byte => {
+                        let array =
+                            heap.new_byte_array(size.try_into().unwrap());
+                        Rc::new(array)
+                    },
+
+                    ArrayType::Short => {
+                        let array =
+                            heap.new_short_array(size.try_into().unwrap());
+                        Rc::new(array)
+                    },
+
+                    ArrayType::Int => {
+                        let array =
+                            heap.new_int_array(size.try_into().unwrap());
+                        Rc::new(array)
+                    },
+
+                    ArrayType::Long => {
+                        let array =
+                            heap.new_long_array(size.try_into().unwrap());
+                        Rc::new(array)
+                    },
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Reference(Some(array)))
+                    .unwrap();
+
+                Update::None
+            },
+
             Self::Return => Update::Return,
 
             Self::Saload => {
