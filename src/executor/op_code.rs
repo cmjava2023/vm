@@ -550,6 +550,34 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Castore => {
+                let value: StackValue = frame.operand_stack.pop().unwrap();
+                let index = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let array: Rc<dyn ClassInstance> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+
+                let char_value = if let StackValue::Char(char_value) = value {
+                    char_value
+                } else {
+                    panic!(
+                        "Expected char value on top of the stack, \
+got: {:?}",
+                        value
+                    );
+                };
+                let char_array: &CharArrayInstance =
+                    array.as_ref().try_into().unwrap();
+                char_array
+                    .set(index.try_into().unwrap(), char_value)
+                    .unwrap();
+                Update::None
+            },
+
             // note: split this into multiple cases,
             // in case the types are supposed to be verified
             Self::Dload(index)
