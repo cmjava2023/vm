@@ -1153,6 +1153,24 @@ got: {:?}",
 
             Self::Return => Update::Return,
 
+            Self::Saload => {
+                let index = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let array: Rc<dyn ClassInstance> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let array: &ShortArrayInstance =
+                    array.as_ref().try_into().unwrap();
+
+                let obj = array.get(index.try_into().unwrap()).unwrap();
+                frame.operand_stack.push(StackValue::Short(obj)).unwrap();
+
+                Update::None
+            },
+
             _ => todo!("Missing OpCode implementation for: {:?}", self),
         }
     }
