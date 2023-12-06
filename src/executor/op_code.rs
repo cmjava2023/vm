@@ -292,7 +292,8 @@ impl OpCode {
                             .unwrap();
                     },
                     None => panic!(
-                        "Expected array on top of the stack, got: {:?}",
+                        "Expected object array or multidimensional array \
+on top of the stack, got: {:?}",
                         array
                     ),
                 }
@@ -450,6 +451,42 @@ impl OpCode {
                     .operand_stack
                     .push(StackValue::Int(length.try_into().unwrap()))
                     .unwrap();
+
+                Update::None
+            },
+
+            Self::Baload => {
+                let index = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let array: Rc<dyn ClassInstance> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+
+                if let Some(byte_array) =
+                    array.as_any().downcast_ref::<ByteArrayInstance>()
+                {
+                    let obj =
+                        byte_array.get(index.try_into().unwrap()).unwrap();
+                    frame.operand_stack.push(StackValue::Byte(obj)).unwrap();
+                } else if let Some(bool_array) =
+                    array.as_any().downcast_ref::<BoolArrayInstance>()
+                {
+                    let obj =
+                        bool_array.get(index.try_into().unwrap()).unwrap();
+                    frame
+                        .operand_stack
+                        .push(StackValue::Boolean(if obj { 1 } else { 0 }))
+                        .unwrap();
+                } else {
+                    panic!(
+                        "Expected byte or bool array on top of the stack, \
+got: {:?}",
+                        array
+                    )
+                }
 
                 Update::None
             },
