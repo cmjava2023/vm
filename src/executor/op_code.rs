@@ -1091,6 +1091,24 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Laload => {
+                let index = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let array: Rc<dyn ClassInstance> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let array: &LongArrayInstance =
+                    array.as_ref().try_into().unwrap();
+
+                let obj = array.get(index.try_into().unwrap()).unwrap();
+                frame.operand_stack.push(StackValue::Long(obj)).unwrap();
+
+                Update::None
+            },
+
             Self::Ldc(Ldc::Int(i)) => {
                 frame.operand_stack.push(StackValue::Int(*i)).unwrap();
                 Update::None
