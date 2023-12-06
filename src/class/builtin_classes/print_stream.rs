@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{any::Any, rc::Rc};
 
 use crate::{
     class::{
@@ -210,6 +210,10 @@ impl Class for PrintStream {
 
     fn interfaces(&self) -> &[Rc<dyn std::any::Any>] {
         &[]
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }
 

@@ -18,6 +18,7 @@ use crate::{
         local_variables::{LocalVariables, VariableValueOrValue},
         program_counter::ProgramCounter,
     },
+    heap::Heap,
 };
 
 pub struct ExecutorFrame {
@@ -25,7 +26,7 @@ pub struct ExecutorFrame {
     pc: ProgramCounter,
 }
 
-pub fn run(code: &Code) {
+pub fn run(code: &Code, heap: &mut Heap) {
     let mut frame_stack: Vec<ExecutorFrame> = Vec::new();
     let mut current_frame: Frame = Frame {
         local_variables: LocalVariables::new(code.local_variable_count),
@@ -35,7 +36,7 @@ pub fn run(code: &Code) {
         ProgramCounter::new(code.byte_code.clone());
 
     loop {
-        match current_pc.current().0.execute(&mut current_frame) {
+        match current_pc.current().0.execute(&mut current_frame, heap) {
             Update::None => current_pc.next(1).unwrap(),
             Update::MethodCall(method) => match &method.code {
                 MethodCode::Bytecode(c) => {
@@ -152,6 +153,11 @@ fn prepare_parameters(
 pub enum RuntimeError {
     #[error("NullPointer Exception")]
     NullPointer,
+    #[error(
+        "array index out of bounds: \
+the len is {length} but the index is {index}"
+    )]
+    ArrayIndexOutOfBounds { length: usize, index: usize },
     #[error("Unexpected type '{actual}' (expected '{expected}')")]
     InvalidType {
         expected: &'static str,

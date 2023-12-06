@@ -1,4 +1,4 @@
-use std::rc::Rc;
+use std::{any::Any, rc::Rc};
 
 use crate::class::{
     builtin_classes::PrintStream, Class, Field, FieldValue, Method,
@@ -47,5 +47,9 @@ impl Class for SystemClass {
 
     fn interfaces(&self) -> &[Rc<dyn std::any::Any>] {
         &[]
+    }
+
+    fn as_any(&self) -> &dyn Any {
+        self
     }
 }

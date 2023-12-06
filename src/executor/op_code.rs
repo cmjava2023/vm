@@ -1,13 +1,35 @@
 use std::{any::Any, ops::Neg, rc::Rc};
 
 use crate::{
-    class::{Class, ClassInstance, Field, Method},
+    class::{
+        builtin_classes::array::{
+            BoolArrayInstance, ByteArrayInstance, CharArrayInstance,
+            DoubleArrayInstance, FloatArrayInstance, IntArrayInstance,
+            LongArrayInstance, ObjectArray, ObjectArrayInstance,
+            ShortArrayInstance,
+        },
+        Class, ClassInstance, Field, Method,
+    },
     classloader::cp_decoder::RuntimeCPEntry,
     executor::{
         frame_stack::StackValue, local_variables::VariableValueOrValue, Frame,
         Update,
     },
+    heap::Heap,
 };
+
+#[derive(Clone, Debug)]
+pub enum ArrayReferenceKinds {
+    Boolean,
+    Byte,
+    Char,
+    Double,
+    Float,
+    Long,
+    Int,
+    Short,
+    Object(Rc<dyn Class>),
+}
 
 #[derive(Clone, Debug)]
 pub enum Ldc {
@@ -70,12 +92,16 @@ impl ArrayType {
 
 #[derive(Clone, Debug)]
 pub enum OpCode {
-    Aalod,
+    Aaload,
     Aastore,
     AconstNull,
     /// Load reference from `index` in local variable array to stack.
     Aload(usize),
-    AnewArray(Rc<dyn Any>),
+    // "[[I"
+    // ArrayObject::new(ArrayObject::new(IntArray))
+    //
+    // executor: ArrayObject::new(anewarray_conent).new_instance()
+    AnewArray(Rc<dyn Class>),
     Areturn,
     ArrayLength,
     /// Store reference to `index` in local variable array from stack.
@@ -219,7 +245,7 @@ pub enum OpCode {
     // definitely unsupported
     Monitorexit,
     MultiAnewArray {
-        reference_kind: Rc<dyn Any>,
+        reference_kind: ArrayReferenceKinds,
         dimensions: u8,
     },
     New(Rc<dyn Any>),
@@ -245,13 +271,186 @@ pub enum OpCode {
 }
 
 impl OpCode {
-    pub fn execute(&self, frame: &mut Frame) -> Update {
+    pub fn execute(&self, frame: &mut Frame, heap: &mut Heap) -> Update {
         match self {
+            Self::Aaload => {
+                let index = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let array: Rc<dyn ClassInstance> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                match array.as_any().downcast_ref::<ObjectArrayInstance>() {
+                    Some(obj_array) => {
+                        let obj =
+                            obj_array.get(index.try_into().unwrap()).unwrap();
+                        frame
+                            .operand_stack
+                            .push(StackValue::Reference(obj.clone()))
+                            .unwrap();
+                    },
+                    None => panic!(
+                        "Expected array on top of the stack, got: {:?}",
+                        array
+                    ),
+                }
+                Update::None
+            },
+            Self::Aastore => {
+                let value: Option<Rc<dyn ClassInstance>> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let index = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let array: Rc<dyn ClassInstance> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let array: &ObjectArrayInstance =
+                    array.as_ref().try_into().unwrap();
+                array.set(index.try_into().unwrap(), value).unwrap();
+                Update::None
+            },
             Self::Aload(index) => {
                 frame
                     .operand_stack
                     .push(frame.local_variables.get(*index).into())
                     .unwrap();
+                Update::None
+            },
+            Self::AnewArray(scalar_class) => {
+                let size = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+
+                // get underlying component class for array
+                let array_cls = if scalar_class.name().starts_with('[') {
+                    // array
+                    let (array_dim, kind) =
+                        scalar_class.name().rsplit_once('[').unwrap();
+                    let scalar_class = match kind {
+                        "L" => {
+                            let cls_name = &kind[1..kind.len() - 1];
+                            ArrayReferenceKinds::Object(
+                                heap.find_class(cls_name).unwrap().clone(),
+                            )
+                        },
+                        "Z" => ArrayReferenceKinds::Boolean,
+                        "B" => ArrayReferenceKinds::Byte,
+                        "C" => ArrayReferenceKinds::Char,
+                        "D" => ArrayReferenceKinds::Double,
+                        "F" => ArrayReferenceKinds::Float,
+                        "J" => ArrayReferenceKinds::Long,
+                        "I" => ArrayReferenceKinds::Int,
+                        "S" => ArrayReferenceKinds::Short,
+                        _ => panic!(
+                            "unexpected array class name: {}",
+                            scalar_class.name()
+                        ),
+                    };
+
+                    // +1 for removed dim in rsplit
+                    // +1 for implicit dim in op-code anewarray
+                    let dim = array_dim.len() + 2;
+
+                    heap.find_array_class(scalar_class, dim.try_into().unwrap())
+                } else {
+                    // object
+                    heap.find_array_class(
+                        ArrayReferenceKinds::Object(scalar_class.clone()),
+                        1,
+                    )
+                }
+                .unwrap();
+
+                // construct new array and put on stack
+                let array_cls_for_ref = array_cls.clone();
+                let array_ref: &ObjectArray =
+                    array_cls_for_ref.as_ref().try_into().unwrap();
+                let array_inst = array_ref
+                    .new_instance_from_ref(size.try_into().unwrap(), array_cls)
+                    .unwrap();
+                frame
+                    .operand_stack
+                    .push(StackValue::Reference(Some(Rc::new(array_inst))))
+                    .unwrap();
+
+                Update::None
+            },
+
+            Self::ArrayLength => {
+                let stack_value: Rc<dyn ClassInstance> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+
+                let length = if let Ok(array) =
+                    TryInto::<&ObjectArrayInstance>::try_into(
+                        stack_value.as_ref(),
+                    ) {
+                    array.length()
+                } else if let Ok(array) =
+                    TryInto::<&BoolArrayInstance>::try_into(
+                        stack_value.as_ref(),
+                    )
+                {
+                    array.length()
+                } else if let Ok(array) =
+                    TryInto::<&ByteArrayInstance>::try_into(
+                        stack_value.as_ref(),
+                    )
+                {
+                    array.length()
+                } else if let Ok(array) =
+                    TryInto::<&CharArrayInstance>::try_into(
+                        stack_value.as_ref(),
+                    )
+                {
+                    array.length()
+                } else if let Ok(array) =
+                    TryInto::<&DoubleArrayInstance>::try_into(
+                        stack_value.as_ref(),
+                    )
+                {
+                    array.length()
+                } else if let Ok(array) =
+                    TryInto::<&FloatArrayInstance>::try_into(
+                        stack_value.as_ref(),
+                    )
+                {
+                    array.length()
+                } else if let Ok(array) =
+                    TryInto::<&LongArrayInstance>::try_into(
+                        stack_value.as_ref(),
+                    )
+                {
+                    array.length()
+                } else if let Ok(array) =
+                    TryInto::<&IntArrayInstance>::try_into(stack_value.as_ref())
+                {
+                    array.length()
+                } else if let Ok(array) =
+                    TryInto::<&ShortArrayInstance>::try_into(
+                        stack_value.as_ref(),
+                    )
+                {
+                    array.length()
+                } else {
+                    panic!(
+                        "expected array on top of stack, got: {:?}",
+                        stack_value
+                    )
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Int(length.try_into().unwrap()))
+                    .unwrap();
+
                 Update::None
             },
 

@@ -1,3 +1,4 @@
+pub mod array;
 pub mod print_stream;
 pub mod string;
 pub mod system;

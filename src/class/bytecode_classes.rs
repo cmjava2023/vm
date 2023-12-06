@@ -30,6 +30,10 @@ impl Class for BytecodeClass {
     fn interfaces(&self) -> &[Rc<dyn std::any::Any>] {
         self.interfaces.as_slice()
     }
+
+    fn as_any(&self) -> &dyn Any {
+        self
+    }
 }
 
 impl ClassInstance for BytecodeClassInstance {
