@@ -1176,8 +1176,16 @@ got: {:?}",
                 frame.operand_stack.push(StackValue::Int(*i)).unwrap();
                 Update::None
             },
+            Self::Ldc(Ldc::Long(l)) => {
+                frame.operand_stack.push(StackValue::Long(*l)).unwrap();
+                Update::None
+            },
             Self::Ldc(Ldc::Float(f)) => {
                 frame.operand_stack.push(StackValue::Float(*f)).unwrap();
+                Update::None
+            },
+            Self::Ldc(Ldc::Double(d)) => {
+                frame.operand_stack.push(StackValue::Double(*d)).unwrap();
                 Update::None
             },
             Self::Ldc(Ldc::String(s)) => {
