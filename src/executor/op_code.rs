@@ -578,6 +578,24 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Daload => {
+                let index = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let array: Rc<dyn ClassInstance> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let array: &DoubleArrayInstance =
+                    array.as_ref().try_into().unwrap();
+
+                let obj = array.get(index.try_into().unwrap()).unwrap();
+                frame.operand_stack.push(StackValue::Double(obj)).unwrap();
+
+                Update::None
+            },
+
             // note: split this into multiple cases,
             // in case the types are supposed to be verified
             Self::Dload(index)
