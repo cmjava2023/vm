@@ -110,7 +110,7 @@ pub type FloatArrayInstance = ArrayInstance<FloatArrayKind>;
 pub struct FloatArrayKind {}
 
 impl ArrayKind for FloatArrayKind {
-    type Value = f64;
+    type Value = f32;
 
     fn class_name(&self) -> &str {
         "[F"
