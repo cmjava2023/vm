@@ -5,7 +5,7 @@ use crate::{
     executor::{local_variables::VariableValueOrValue, RuntimeError},
 };
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub enum StackValue {
     // Primitive Types
     //   Integral Types

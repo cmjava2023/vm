@@ -639,13 +639,21 @@ got: {:?}",
 
             // note: split this into multiple cases,
             // in case the types are supposed to be verified
-            Self::Dstore(index)
+            Self::Astore(index)
+            | Self::Dstore(index)
             | Self::Fstore(index)
             | Self::Istore(index)
             | Self::Lstore(index) => {
                 frame
                     .local_variables
                     .set(*index, frame.operand_stack.pop().unwrap().into());
+                Update::None
+            },
+
+            Self::Dup(Dup::Dup) => {
+                let val = frame.operand_stack.pop().unwrap();
+                frame.operand_stack.push(val.clone()).unwrap();
+                frame.operand_stack.push(val).unwrap();
                 Update::None
             },
 
@@ -690,6 +698,7 @@ got: {:?}",
                 let array: &FloatArrayInstance =
                     array.as_ref().try_into().unwrap();
                 array.set(index.try_into().unwrap(), value).unwrap();
+
                 Update::None
             },
 
@@ -1176,8 +1185,16 @@ got: {:?}",
                 frame.operand_stack.push(StackValue::Int(*i)).unwrap();
                 Update::None
             },
+            Self::Ldc(Ldc::Long(l)) => {
+                frame.operand_stack.push(StackValue::Long(*l)).unwrap();
+                Update::None
+            },
             Self::Ldc(Ldc::Float(f)) => {
                 frame.operand_stack.push(StackValue::Float(*f)).unwrap();
+                Update::None
+            },
+            Self::Ldc(Ldc::Double(d)) => {
+                frame.operand_stack.push(StackValue::Double(*d)).unwrap();
                 Update::None
             },
             Self::Ldc(Ldc::String(s)) => {
