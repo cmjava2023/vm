@@ -42,7 +42,7 @@ pub enum Ldc {
     Double(f64),
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Copy, Debug)]
 pub enum OffsetDirection {
     Forward,
     Backward,
