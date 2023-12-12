@@ -467,7 +467,7 @@ pub fn parse_opcodes<'a>(
                 opcode_sizes.push(3);
                 let (new_content, byte_value) = be_i16(current_content)?;
                 current_content = new_content;
-                opcodes.push(OpCode::Sipush(byte_value));
+                opcodes.push(OpCode::Sipush(byte_value.into()));
             },
             18 => {
                 opcode_sizes.push(2);

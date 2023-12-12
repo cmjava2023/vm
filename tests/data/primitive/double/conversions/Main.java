@@ -26,7 +26,7 @@ public class Main {
         System.out.println("f:");
         System.out.println(f);
 
-        System.out.println("k:");
+        System.out.println("i:");
         System.out.println(i);
 
         System.out.println("l:");

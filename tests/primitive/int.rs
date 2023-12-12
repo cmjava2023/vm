@@ -46,19 +46,15 @@ fn logicops() -> Result<(), Box<dyn std::error::Error>> {
 
     cmd.arg("tests/data/primitive/int/logicops/Main.class");
     cmd.assert()
-        .failure()
-        .stderr(predicate::str::contains("Missing OpCode implementation"));
-    // failure caused by recent sipush inclusion in test case
-    // uncomment when sipush is supported
-    // .success()
-    // .stdout(predicate::str::contains("i:\n4\n"))
-    // .stdout(predicate::str::contains("eight:\n8\n"))
-    // .stdout(predicate::str::contains("i2:\n0\n"))
-    // .stdout(predicate::str::contains("i3:\n6\n"))
-    // .stdout(predicate::str::contains("i4:\n16\n"))
-    // .stdout(predicate::str::contains("i5:\n4\n"))
-    // .stdout(predicate::str::contains("i6:\n4\n"))
-    // .stdout(predicate::str::contains("i7:\n2\n"));
+        .success()
+        .stdout(predicate::str::contains("i:\n4\n"))
+        .stdout(predicate::str::contains("eight:\n8\n"))
+        .stdout(predicate::str::contains("i2:\n0\n"))
+        .stdout(predicate::str::contains("i3:\n6\n"))
+        .stdout(predicate::str::contains("i4:\n16\n"))
+        .stdout(predicate::str::contains("i5:\n4\n"))
+        .stdout(predicate::str::contains("i6:\n4\n"))
+        .stdout(predicate::str::contains("i7:\n2\n"));
 
     Ok(())
 }
