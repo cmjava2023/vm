@@ -12,7 +12,9 @@ use crate::{
         ClassFile,
     },
     executor::{
-        op_code::{ArrayType, Dup, FloatCmp, Ldc, OffsetDirection},
+        op_code::{
+            ArrayReferenceKinds, ArrayType, Dup, FloatCmp, Ldc, OffsetDirection,
+        },
         OpCode,
     },
     heap::Heap,
@@ -1190,10 +1192,51 @@ on how to resolve at execution time"
             },
             189 => {
                 opcode_sizes.push(3);
-                todo!(
-                    "AnewArray(Rc<dyn Any>),, needs information \
-on how to resolve at execution time"
-                )
+                let (new_content, index) = be_u16(current_content)?;
+                current_content = new_content;
+                let cp_entry = &runtime_cp[remove_cp_offset(index as usize)];
+                let class_name = cp_entry.as_class().unwrap();
+                // get underlying component class for array
+                let array_cls = if class_name.starts_with('[') {
+                    // array
+                    let (array_dim, kind) =
+                        class_name.rsplit_once('[').unwrap();
+                    let scalar_class = match kind {
+                        "L" => {
+                            let cls_name = &kind[1..kind.len() - 1];
+                            ArrayReferenceKinds::Object(
+                                heap.find_class(cls_name).unwrap().clone(),
+                            )
+                        },
+                        "Z" => ArrayReferenceKinds::Boolean,
+                        "B" => ArrayReferenceKinds::Byte,
+                        "C" => ArrayReferenceKinds::Char,
+                        "D" => ArrayReferenceKinds::Double,
+                        "F" => ArrayReferenceKinds::Float,
+                        "J" => ArrayReferenceKinds::Long,
+                        "I" => ArrayReferenceKinds::Int,
+                        "S" => ArrayReferenceKinds::Short,
+                        _ => panic!(
+                            "unexpected array class name: {}",
+                            class_name
+                        ),
+                    };
+
+                    // +1 for removed dim in rsplit
+                    // +1 for implicit dim in op-code anewarray
+                    let dim = array_dim.len() + 2;
+
+                    heap.find_array_class(scalar_class, dim.try_into().unwrap())
+                } else {
+                    let scalar_class = heap.find_class(class_name).unwrap();
+                    // object
+                    heap.find_array_class(
+                        ArrayReferenceKinds::Object(scalar_class.clone()),
+                        1,
+                    )
+                }
+                .unwrap();
+                opcodes.push(OpCode::AnewArray(array_cls));
             },
             190 => {
                 opcode_sizes.push(1);
@@ -1241,7 +1284,44 @@ on how to resolve at execution time"
             },
             197 => {
                 opcode_sizes.push(4);
-                todo!("MultiAnewArray")
+                let (new_content, index) = be_u16(current_content)?;
+                let (new_content, dimensions) = be_u8(new_content)?;
+                current_content = new_content;
+                let cp_entry = &runtime_cp[remove_cp_offset(index as usize)];
+                let class_name = cp_entry.as_class().unwrap();
+                // get underlying component class for array
+                let array_cls = if class_name.starts_with('[') {
+                    // array
+                    let (_, kind) = class_name.rsplit_once('[').unwrap();
+                    match kind {
+                        "L" => {
+                            let cls_name = &kind[1..kind.len() - 1];
+                            ArrayReferenceKinds::Object(
+                                heap.find_class(cls_name).unwrap().clone(),
+                            )
+                        },
+                        "Z" => ArrayReferenceKinds::Boolean,
+                        "B" => ArrayReferenceKinds::Byte,
+                        "C" => ArrayReferenceKinds::Char,
+                        "D" => ArrayReferenceKinds::Double,
+                        "F" => ArrayReferenceKinds::Float,
+                        "J" => ArrayReferenceKinds::Long,
+                        "I" => ArrayReferenceKinds::Int,
+                        "S" => ArrayReferenceKinds::Short,
+                        _ => panic!(
+                            "unexpected array class name: {}",
+                            class_name
+                        ),
+                    }
+                } else {
+                    ArrayReferenceKinds::Object(
+                        heap.find_class(class_name).unwrap().clone(),
+                    )
+                };
+                opcodes.push(OpCode::MultiAnewArray {
+                    reference_kind: array_cls,
+                    dimensions,
+                });
             },
             198 => {
                 opcode_sizes.push(3);
