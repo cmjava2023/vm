@@ -1,6 +1,6 @@
 Classfile /home/florian/Documents/fh/WS23_24/Compilerbau/vm/main/tests/data/primitive/double/conversions/Main.class
-  Last modified 03.12.2023; size 1040 bytes
-  MD5 checksum 118c01a99c1a989a8d042ac41874639a
+  Last modified 12.12.2023; size 1040 bytes
+  MD5 checksum 1f0d895da47ecf888658dee5861a072d
   Compiled from "Main.java"
 public class org.cmjava2023.Main
   minor version: 0
@@ -15,7 +15,7 @@ Constant pool:
    #7 = Methodref          #47.#49        // java/io/PrintStream.println:(D)V
    #8 = String             #50            // f:
    #9 = Methodref          #47.#51        // java/io/PrintStream.println:(F)V
-  #10 = String             #52            // k:
+  #10 = String             #52            // i:
   #11 = Methodref          #47.#53        // java/io/PrintStream.println:(I)V
   #12 = String             #54            // l:
   #13 = Methodref          #47.#55        // java/io/PrintStream.println:(J)V
@@ -57,7 +57,7 @@ Constant pool:
   #49 = NameAndType        #65:#67        // println:(D)V
   #50 = Utf8               f:
   #51 = NameAndType        #65:#68        // println:(F)V
-  #52 = Utf8               k:
+  #52 = Utf8               i:
   #53 = NameAndType        #65:#69        // println:(I)V
   #54 = Utf8               l:
   #55 = NameAndType        #65:#70        // println:(J)V
@@ -126,7 +126,7 @@ Constant pool:
         51: fload_3
         52: invokevirtual #9                  // Method java/io/PrintStream.println:(F)V
         55: getstatic     #4                  // Field java/lang/System.out:Ljava/io/PrintStream;
-        58: ldc           #10                 // String k:
+        58: ldc           #10                 // String i:
         60: invokevirtual #6                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
         63: getstatic     #4                  // Field java/lang/System.out:Ljava/io/PrintStream;
         66: iload         4

@@ -262,7 +262,7 @@ pub enum OpCode {
     Return,
     Saload,
     Sastore,
-    Sipush(i16),
+    Sipush(i32),
     Swap,
     // unsupported for now
     Tableswitch,
@@ -534,7 +534,7 @@ got: {:?}",
                 Update::None
             },
 
-            Self::Bipush(v) => {
+            Self::Bipush(v) | Self::Sipush(v) => {
                 frame.operand_stack.push(StackValue::Int(*v)).unwrap();
                 Update::None
             },
@@ -577,6 +577,81 @@ got: {:?}",
                         char_value.try_into().unwrap(),
                     )
                     .unwrap();
+                Update::None
+            },
+
+            Self::D2f => {
+                let val = if let StackValue::Double(d) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    d
+                } else {
+                    panic!("expected double on top");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Float(val as f32))
+                    .unwrap();
+
+                Update::None
+            },
+
+            Self::D2i => {
+                let val = if let StackValue::Double(d) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    d
+                } else {
+                    panic!("expected double on top");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Int(val as i32))
+                    .unwrap();
+
+                Update::None
+            },
+
+            Self::D2l => {
+                let val = if let StackValue::Double(d) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    d
+                } else {
+                    panic!("expected double on top");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Long(val as i64))
+                    .unwrap();
+
+                Update::None
+            },
+
+            Self::Dadd => {
+                let op2 = if let StackValue::Double(d) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    d
+                } else {
+                    panic!("expected double on top");
+                };
+                let op1 = if let StackValue::Double(d) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    d
+                } else {
+                    panic!("expected double on top");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Double(op1 + op2))
+                    .unwrap();
+
                 Update::None
             },
 
@@ -624,6 +699,36 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Dconst(d) => {
+                frame.operand_stack.push(StackValue::Double(*d)).unwrap();
+
+                Update::None
+            },
+
+            Self::Ddiv => {
+                let op2 = if let StackValue::Double(d) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    d
+                } else {
+                    panic!("expected double on top");
+                };
+                let op1 = if let StackValue::Double(d) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    d
+                } else {
+                    panic!("expected double on top");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Double(op1 / op2))
+                    .unwrap();
+
+                Update::None
+            },
+
             // note: split this into multiple cases,
             // in case the types are supposed to be verified
             Self::Dload(index)
@@ -634,6 +739,68 @@ got: {:?}",
                     .operand_stack
                     .push(frame.local_variables.get(*index).into())
                     .unwrap();
+                Update::None
+            },
+
+            Self::Dmul => {
+                let op2 = if let StackValue::Double(d) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    d
+                } else {
+                    panic!("expected double on top");
+                };
+                let op1 = if let StackValue::Double(d) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    d
+                } else {
+                    panic!("expected double on top");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Double(op1 * op2))
+                    .unwrap();
+
+                Update::None
+            },
+
+            Self::Dneg => {
+                let val = if let StackValue::Double(d) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    d
+                } else {
+                    panic!("expected double on top");
+                };
+
+                frame.operand_stack.push(StackValue::Double(-val)).unwrap();
+
+                Update::None
+            },
+
+            Self::Drem => {
+                let op2 = if let StackValue::Double(d) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    d
+                } else {
+                    panic!("expected double on top");
+                };
+                let op1 = if let StackValue::Double(d) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    d
+                } else {
+                    panic!("expected double on top");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Double(op1 % op2))
+                    .unwrap();
+
                 Update::None
             },
 
@@ -650,10 +817,109 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Dsub => {
+                let op2 = if let StackValue::Double(d) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    d
+                } else {
+                    panic!("expected double on top");
+                };
+                let op1 = if let StackValue::Double(d) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    d
+                } else {
+                    panic!("expected double on top");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Double(op1 - op2))
+                    .unwrap();
+
+                Update::None
+            },
+
             Self::Dup(Dup::Dup) => {
                 let val = frame.operand_stack.pop().unwrap();
                 frame.operand_stack.push(val.clone()).unwrap();
                 frame.operand_stack.push(val).unwrap();
+                Update::None
+            },
+
+            Self::F2d => {
+                let val = if let StackValue::Float(f) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    f
+                } else {
+                    panic!("float on stack");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Double(val.into()))
+                    .unwrap();
+
+                Update::None
+            },
+
+            Self::F2i => {
+                let val = if let StackValue::Float(f) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    f
+                } else {
+                    panic!("float on stack");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Int(val as i32))
+                    .unwrap();
+
+                Update::None
+            },
+
+            Self::F2l => {
+                let val = if let StackValue::Float(f) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    f
+                } else {
+                    panic!("float on stack");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Long(val as i64))
+                    .unwrap();
+
+                Update::None
+            },
+
+            Self::Fadd => {
+                let op2 = if let StackValue::Float(f) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    f
+                } else {
+                    panic!("float on top of stack");
+                };
+                let op1 = if let StackValue::Float(f) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    f
+                } else {
+                    panic!("float on top of stack");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Float(op1 + op2))
+                    .unwrap();
+
                 Update::None
             },
 
@@ -698,6 +964,122 @@ got: {:?}",
                 let array: &FloatArrayInstance =
                     array.as_ref().try_into().unwrap();
                 array.set(index.try_into().unwrap(), value).unwrap();
+
+                Update::None
+            },
+
+            Self::Fconst(f) => {
+                frame.operand_stack.push(StackValue::Float(*f)).unwrap();
+
+                Update::None
+            },
+
+            Self::Fdiv => {
+                let op2 = if let StackValue::Float(f) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    f
+                } else {
+                    panic!("float on top of stack");
+                };
+                let op1 = if let StackValue::Float(f) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    f
+                } else {
+                    panic!("float on top of stack");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Float(op1 / op2))
+                    .unwrap();
+
+                Update::None
+            },
+
+            Self::Fmul => {
+                let op2 = if let StackValue::Float(f) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    f
+                } else {
+                    panic!("float on top of stack");
+                };
+                let op1 = if let StackValue::Float(f) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    f
+                } else {
+                    panic!("float on top of stack");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Float(op1 * op2))
+                    .unwrap();
+
+                Update::None
+            },
+
+            Self::Fneg => {
+                let val = if let StackValue::Float(f) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    f
+                } else {
+                    panic!("float on top of stack");
+                };
+
+                frame.operand_stack.push(StackValue::Float(-val)).unwrap();
+
+                Update::None
+            },
+
+            Self::Frem => {
+                let op2 = if let StackValue::Float(f) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    f
+                } else {
+                    panic!("float on top of stack");
+                };
+                let op1 = if let StackValue::Float(f) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    f
+                } else {
+                    panic!("float on top of stack");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Float(op1 % op2))
+                    .unwrap();
+
+                Update::None
+            },
+
+            Self::Fsub => {
+                let op2 = if let StackValue::Float(f) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    f
+                } else {
+                    panic!("float on top of stack");
+                };
+                let op1 = if let StackValue::Float(f) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    f
+                } else {
+                    panic!("float on top of stack");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Float(op1 - op2))
+                    .unwrap();
 
                 Update::None
             },
@@ -1030,6 +1412,57 @@ got: {:?}",
                 Update::None
             },
 
+            Self::L2d => {
+                let val = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("long on stack");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Double(val as f64))
+                    .unwrap();
+
+                Update::None
+            },
+
+            Self::L2f => {
+                let val = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("long on stack");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Float(val as f32))
+                    .unwrap();
+
+                Update::None
+            },
+
+            Self::L2i => {
+                let val = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("long on stack");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Int(val as i32))
+                    .unwrap();
+
+                Update::None
+            },
+
             Self::I2b => {
                 let int = frame.operand_stack.pop().expect("stack has value");
                 let int = match int {
@@ -1137,6 +1570,30 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Ladd => {
+                let op2 = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long value");
+                };
+                let op1 = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long value");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Long(op1.wrapping_add(op2)))
+                    .unwrap();
+
+                Update::None
+            },
+
             Self::Laload => {
                 let index = frame
                     .operand_stack
@@ -1151,6 +1608,30 @@ got: {:?}",
 
                 let obj = array.get(index.try_into().unwrap()).unwrap();
                 frame.operand_stack.push(StackValue::Long(obj)).unwrap();
+
+                Update::None
+            },
+
+            Self::Land => {
+                let op2 = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long value");
+                };
+                let op1 = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long value");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Long(op1 & op2))
+                    .unwrap();
 
                 Update::None
             },
@@ -1181,6 +1662,12 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Lconst(l) => {
+                frame.operand_stack.push(StackValue::Long(*l)).unwrap();
+
+                Update::None
+            },
+
             Self::Ldc(Ldc::Int(i)) => {
                 frame.operand_stack.push(StackValue::Int(*i)).unwrap();
                 Update::None
@@ -1202,6 +1689,237 @@ got: {:?}",
                     .operand_stack
                     .push(StackValue::Reference(Some(s.clone())))
                     .unwrap();
+                Update::None
+            },
+
+            Self::Ldiv => {
+                let op2 = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long value");
+                };
+                let op1 = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long value");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Long(op1.wrapping_div(op2)))
+                    .unwrap();
+
+                Update::None
+            },
+
+            Self::Lmul => {
+                let op2 = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long value");
+                };
+                let op1 = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long value");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Long(op1.wrapping_mul(op2)))
+                    .unwrap();
+
+                Update::None
+            },
+
+            Self::Lneg => {
+                let val = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long value");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Long(val.wrapping_neg()))
+                    .unwrap();
+
+                Update::None
+            },
+
+            Self::Lor => {
+                let op2 = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long value");
+                };
+                let op1 = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long value");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Long(op1 | op2))
+                    .unwrap();
+
+                Update::None
+            },
+
+            Self::Lrem => {
+                let op2 = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long value");
+                };
+                let op1 = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long value");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Long(op1.wrapping_rem(op2)))
+                    .unwrap();
+
+                Update::None
+            },
+
+            Self::Lshl => {
+                let op2 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let op1 = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long value");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Long(op1 << (op2 & 0x3f)))
+                    .unwrap();
+
+                Update::None
+            },
+
+            Self::Lshr => {
+                let op2 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let op1 = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long value");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Long(op1 >> (op2 & 0x3f)))
+                    .unwrap();
+
+                Update::None
+            },
+
+            Self::Lsub => {
+                let op2 = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long value");
+                };
+                let op1 = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long value");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Long(op1.wrapping_sub(op2)))
+                    .unwrap();
+
+                Update::None
+            },
+
+            Self::Lushr => {
+                let op2 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let op1 = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long value");
+                };
+
+                // perform shift with zero extension
+                // by casting to an unsigned value before the shift
+                let result: i64 = ((op1 as u64) >> (op2 & 0x3f)) as i64;
+
+                frame.operand_stack.push(StackValue::Long(result)).unwrap();
+
+                Update::None
+            },
+
+            Self::Lxor => {
+                let op2 = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long value");
+                };
+                let op1 = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long value");
+                };
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Long(op1 ^ op2))
+                    .unwrap();
+
                 Update::None
             },
 
