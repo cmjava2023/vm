@@ -124,7 +124,7 @@ pub fn run(code: &Code, heap: &mut Heap) {
             Update::GoTo(offset, direction) => {
                 match direction {
                     OffsetDirection::Forward => current_pc.next(offset).unwrap(),
-                    OffsetDirection::Backward => current_pc.(offset).unwrap(),
+                    OffsetDirection::Backward => current_pc.previous(offset).unwrap(),
                 }
             }
         }
