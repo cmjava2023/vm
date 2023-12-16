@@ -12,7 +12,7 @@ pub enum ProgramCounterError {
     #[error("Index {requested_pos} out of {actual_len}")]
     OutOfBoundsError {
         actual_len: usize,
-        requested_pos: usize,
+        requested_pos: isize,
     },
 }
 
@@ -33,14 +33,23 @@ impl ProgramCounter {
         if self.current_op_codes.len() <= self.current_op_code + offset {
             return Err(ProgramCounterError::OutOfBoundsError {
                 actual_len: self.current_op_codes.len(),
-                requested_pos: self.current_op_code + offset,
+                requested_pos: (self.current_op_code + offset) as isize,
             });
         }
         self.current_op_code += offset;
         Ok(())
     }
 
-    // todo: fn previous() might be needed as offset as usize cannot be negative
+    pub fn previous(&mut self, offset: usize) -> Result<(), ProgramCounterError> {
+        if offset > self.current_op_code {
+            return Err(ProgramCounterError::OutOfBoundsError {
+                actual_len: self.current_op_codes.len(),
+                requested_pos: (self.current_op_code as isize) - (offset as isize),
+            });
+        }
+        self.current_op_code -= offset;
+        Ok(())
+    }
 
     /// absolute
     pub fn set(&mut self, position: usize) -> Result<(), ProgramCounterError> {

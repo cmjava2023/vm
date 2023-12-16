@@ -21,6 +21,8 @@ use crate::{
     heap::Heap,
 };
 
+use self::op_code::OffsetDirection;
+
 pub struct ExecutorFrame {
     frame: Frame,
     pc: ProgramCounter,
@@ -119,6 +121,12 @@ pub fn run(code: &Code, heap: &mut Heap) {
                 };
                 current_pc.next(1).unwrap();
             },
+            Update::GoTo(offset, direction) => {
+                match direction {
+                    OffsetDirection::Forward => current_pc.next(offset).unwrap(),
+                    OffsetDirection::Backward => current_pc.(offset).unwrap(),
+                }
+            }
         }
     }
 }
@@ -168,6 +176,7 @@ the len is {length} but the index is {index}"
 pub enum Update {
     None,
     Return,
+    GoTo(usize, OffsetDirection),
     MethodCall(Rc<Method>),
 }
 
