@@ -1171,7 +1171,290 @@ got: {:?}",
 
                 Update::None
             },
-
+            Self::IfacmpNe(size, direction) => {
+                let op2: Option<Rc<dyn ClassInstance>> = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .try_into()
+                    .unwrap();
+                let op1: Option<Rc<dyn ClassInstance>> = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .try_into()
+                    .unwrap();
+                match(op1, op2) {
+                    (Some(_), None) | (None, Some(_)) => Update::GoTo(*size, *direction),
+                    (None, None) => Update::None,
+                    (Some(op1), Some(op2)) => {
+                        if !Rc::<dyn ClassInstance>::ptr_eq(&op1, &op2) {
+                            Update::GoTo(*size, *direction)
+                        }
+                        else {
+                            Update::None
+                        }
+                    }
+                }
+            }
+            Self::IfacmpEq(size, direction) => {
+                let op2: Option<Rc<dyn ClassInstance>> = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .try_into()
+                    .unwrap();
+                let op1: Option<Rc<dyn ClassInstance>> = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .try_into()
+                    .unwrap();
+                match(op1, op2) {
+                    (Some(_), None) | (None, Some(_)) => Update::None,
+                    (None, None) => Update::GoTo(*size, *direction),
+                    (Some(op1), Some(op2)) => {
+                        if Rc::<dyn ClassInstance>::ptr_eq(&op1, &op2) {
+                            Update::GoTo(*size, *direction)
+                        }
+                        else {
+                            Update::None
+                        }
+                    }
+                }
+            }
+            Self::IficmpEq(size, direction) => {
+                let op2 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let op1 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                if op1 == op2 {
+                    Update::GoTo(*size, *direction)
+                }
+                else {
+                    Update::None
+                }
+            }
+            Self::IficmpNe(size, direction) => {
+                let op2 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let op1 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                if op1 != op2 {
+                    Update::GoTo(*size, *direction)
+                }
+                else {
+                    Update::None
+                }
+            }
+            Self::IficmpLt(size, direction) => {
+                let op2 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let op1 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                if op1 < op2 {
+                    Update::GoTo(*size, *direction)
+                }
+                else {
+                    Update::None
+                }
+            }
+            Self::IficmpGt(size, direction) => {
+                let op2 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let op1 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                if op1 > op2 {
+                    Update::GoTo(*size, *direction)
+                }
+                else {
+                    Update::None
+                }
+            }
+            Self::IficmpLe(size, direction) => {
+                let op2 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let op1 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                if op1 <= op2 {
+                    Update::GoTo(*size, *direction)
+                }
+                else {
+                    Update::None
+                }
+            }
+            Self::IficmpGe(size, direction) => {
+                let op2 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let op1 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                if op1 >= op2 {
+                    Update::GoTo(*size, *direction)
+                }
+                else {
+                    Update::None
+                }
+            }
+            Self::IfEq(size, direction) => {
+                let op1 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                if op1 == 0 {
+                    Update::GoTo(*size, *direction)
+                }
+                else {
+                    Update::None
+                }
+            }
+            Self::IfNe(size, direction) => {
+                let op1 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                if op1 != 0 {
+                    Update::GoTo(*size, *direction)
+                }
+                else {
+                    Update::None
+                }
+            }
+            Self::IfLt(size, direction) => {
+                let op1 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                if op1 < 0 {
+                    Update::GoTo(*size, *direction)
+                }
+                else {
+                    Update::None
+                }
+            }
+            Self::IfGt(size, direction) => {
+                let op1 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                if op1 > 0 {
+                    Update::GoTo(*size, *direction)
+                }
+                else {
+                    Update::None
+                }
+            }
+            Self::IfLe(size, direction) => {
+                let op1 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                if op1 <= 0 {
+                    Update::GoTo(*size, *direction)
+                }
+                else {
+                    Update::None
+                }
+            }
+            Self::IfGe(size, direction) => {
+                let op1 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                if op1 >= 0 {
+                    Update::GoTo(*size, *direction)
+                }
+                else {
+                    Update::None
+                }
+            }
+            Self::IfNonNull(size, direction) => {
+                let op1: Option<Rc<dyn ClassInstance>> = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .try_into()
+                    .unwrap();
+                if op1.is_some() {
+                    Update::GoTo(*size, *direction)
+                }
+                else {
+                    Update::None
+                }
+            }
+            Self::IfNull(size, direction) => {
+                let op1: Option<Rc<dyn ClassInstance>> = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .try_into()
+                    .unwrap();
+                if op1.is_none() {
+                    Update::GoTo(*size, *direction)
+                }
+                else {
+                    Update::None
+                }
+            }
             Self::Iinc { index, constant } => {
                 let op1 = frame.local_variables.get(*index);
                 let op1 = match op1 {
