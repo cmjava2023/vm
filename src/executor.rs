@@ -107,6 +107,7 @@ pub fn run(code: &Code, heap: &mut Heap) {
 
                     match code(&mut new_frame) {
                         RustMethodReturn::Void => (),
+                        RustMethodReturn::Value(_) => todo!(),
                     }
 
                     current_pc.next(1).unwrap();

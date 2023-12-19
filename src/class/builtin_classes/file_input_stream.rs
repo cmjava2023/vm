@@ -6,10 +6,10 @@ use std::{
 
 use crate::{
     class::{
-        ArgumentKind, Class, ClassInstance, Field, Method, MethodCode,
-        RustMethodReturn, SimpleArgumentKind,
+        ArgumentKind, Class, ClassInstance, Field, FieldValue, Method,
+        MethodCode, RustMethodReturn, SimpleArgumentKind,
     },
-    executor::{frame_stack::StackValue, Frame},
+    executor::Frame,
 };
 
 pub struct FileInputStream {
@@ -44,17 +44,13 @@ impl Default for FileInputStream {
     }
 }
 
-fn read(frame: &mut Frame) -> RustMethodReturn {
+fn read(_frame: &mut Frame) -> RustMethodReturn {
     let input = io::stdin()
         .bytes()
         .next()
         .expect("some input on stdin")
         .unwrap();
-    frame
-        .operand_stack
-        .push(StackValue::Int(input.into()))
-        .unwrap();
-    RustMethodReturn::Void
+    RustMethodReturn::Value(FieldValue::Int(input.into()))
 }
 
 impl Class for FileInputStream {

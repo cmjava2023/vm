@@ -10,7 +10,10 @@ fn input() -> Result<(), Box<dyn std::error::Error>> {
     cmd.write_stdin(format!("{}", sample_input));
     cmd.assert()
         .success()
-        .stdout(predicate::str::contains(format!("{}\n", sample_input as u8)));
+        .stdout(predicate::str::contains(format!(
+            "{}\n",
+            sample_input as u8
+        )));
 
     Ok(())
 }

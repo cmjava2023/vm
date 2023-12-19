@@ -47,6 +47,7 @@ pub enum MethodCode {
 
 pub enum RustMethodReturn {
     Void,
+    Value(FieldValue),
 }
 
 pub trait Class {
