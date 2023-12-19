@@ -2330,6 +2330,8 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Nop => Update::None,
+
             Self::Return => Update::Return,
 
             Self::Saload => {
