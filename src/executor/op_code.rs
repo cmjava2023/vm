@@ -19,6 +19,12 @@ use crate::{
     heap::Heap,
 };
 
+/// Explicitly compare only the data part of fat/trait/dyn Trait pointers.
+#[allow(clippy::ptr_eq)]
+fn trait_pointer_eq<T: ?Sized, U: ?Sized>(p: *const T, q: *const U) -> bool {
+    (p as *const ()) == (q as *const ())
+}
+
 #[derive(Clone, Debug)]
 pub enum ArrayReferenceKinds {
     Boolean,
@@ -1268,7 +1274,7 @@ got: {:?}",
                     },
                     (None, None) => Update::None,
                     (Some(op1), Some(op2)) => {
-                        if !Rc::<dyn ClassInstance>::ptr_eq(&op1, &op2) {
+                        if !trait_pointer_eq(op1.as_ref(), op2.as_ref()) {
                             Update::GoTo(*size, *direction)
                         } else {
                             Update::None
@@ -1286,7 +1292,7 @@ got: {:?}",
                     (Some(_), None) | (None, Some(_)) => Update::None,
                     (None, None) => Update::GoTo(*size, *direction),
                     (Some(op1), Some(op2)) => {
-                        if Rc::<dyn ClassInstance>::ptr_eq(&op1, &op2) {
+                        if trait_pointer_eq(op1.as_ref(), op2.as_ref()) {
                             Update::GoTo(*size, *direction)
                         } else {
                             Update::None

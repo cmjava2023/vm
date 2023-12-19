@@ -12,7 +12,9 @@ fn control_flow() -> Result<(), Box<dyn std::error::Error>> {
         .stdout(predicate::str::contains("a / 2 == 5\n"))
         .stdout(predicate::str::contains("l / 2 != 5\n"))
         .stdout(predicate::str::contains("d:\n15\n"))
-        .stdout(predicate::str::contains("f > 10"));
+        .stdout(predicate::str::contains("f > 10"))
+        .stdout(predicate::str::contains("s1 == s2"))
+        .stdout(predicate::str::contains("s1 != s3"));
 
     Ok(())
 }

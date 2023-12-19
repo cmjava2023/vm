@@ -37,5 +37,19 @@ public class Main {
         } else {
             System.out.println("f == 10");
         }
+
+        String s1 = "Hello World";
+        String s2 = s1;
+        String s3 = "Goodbye";
+        if (s1 == s2) {
+            System.out.println("s1 == s2");
+        } else {
+            System.out.println("s1 != s2");
+        }
+        if (s1 != s3) {
+            System.out.println("s1 != s3");
+        } else {
+            System.out.println("s1 == s3");
+        }
     }
 }
