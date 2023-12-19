@@ -6,8 +6,8 @@ use std::{
 
 use crate::{
     class::{
-        ArgumentKind, Class, ClassInstance, Field, FieldValue, Method,
-        MethodCode, RustMethodReturn, SimpleArgumentKind,
+        ArgumentKind, Class, ClassInstance, Field, Method, MethodCode,
+        ReturnValue, RustMethodReturn, SimpleArgumentKind,
     },
     executor::Frame,
 };
@@ -50,7 +50,7 @@ fn read(_frame: &mut Frame) -> RustMethodReturn {
         .next()
         .expect("some input on stdin")
         .unwrap();
-    RustMethodReturn::Value(FieldValue::Int(input.into()))
+    RustMethodReturn::Value(ReturnValue::Int(input.into()))
 }
 
 impl Class for FileInputStream {
