@@ -663,8 +663,6 @@ got: {:?}",
             },
 
             Self::Dcmp(nan_handling) => {
-                // TODO: Floating-point comparison in accordance with IEEE 754?
-
                 let op2 = if let StackValue::Double(d) =
                     frame.operand_stack.pop().unwrap()
                 {
@@ -680,24 +678,28 @@ got: {:?}",
                     panic!("expected double on top");
                 };
 
-                if op1.is_nan() || op2.is_nan() {
-                    match nan_handling {
-                        FloatCmp::Pg => frame
-                            .operand_stack
-                            .push(StackValue::Int(1))
-                            .unwrap(),
-                        FloatCmp::Pl => frame
-                            .operand_stack
-                            .push(StackValue::Int(-1))
-                            .unwrap(),
+                match op1.partial_cmp(&op2) {
+                    Some(Ordering::Greater) => {
+                        frame.operand_stack.push(StackValue::Int(1)).unwrap();
+                    },
+                    Some(Ordering::Equal) => {
+                        frame.operand_stack.push(StackValue::Int(0)).unwrap();
+                    },
+                    Some(Ordering::Less) => {
+                        frame.operand_stack.push(StackValue::Int(-1)).unwrap();
+                    },
+                    None => {
+                        match nan_handling {
+                            FloatCmp::Pg => frame
+                                .operand_stack
+                                .push(StackValue::Int(1))
+                                .unwrap(),
+                            FloatCmp::Pl => frame
+                                .operand_stack
+                                .push(StackValue::Int(-1))
+                                .unwrap(),
+                        }
                     }
-                } else if op1 > op2 {
-                    frame.operand_stack.push(StackValue::Int(1)).unwrap();
-                } else if op1 == op2 {
-                    frame.operand_stack.push(StackValue::Int(0)).unwrap();
-                } else {
-                    // op1 < op2
-                    frame.operand_stack.push(StackValue::Int(-1)).unwrap();
                 }
 
                 Update::None
@@ -973,41 +975,43 @@ got: {:?}",
             },
 
             Self::Fcmp(nan_handling) => {
-                // TODO: Floating-point comparison in accordance with IEEE 754?
-
                 let op2 = if let StackValue::Float(d) =
                     frame.operand_stack.pop().unwrap()
                 {
                     d
                 } else {
-                    panic!("expected double on top");
+                    panic!("expected float on top");
                 };
                 let op1 = if let StackValue::Float(d) =
                     frame.operand_stack.pop().unwrap()
                 {
                     d
                 } else {
-                    panic!("expected double on top");
+                    panic!("expected float on top");
                 };
 
-                if op1.is_nan() || op2.is_nan() {
-                    match nan_handling {
-                        FloatCmp::Pg => frame
-                            .operand_stack
-                            .push(StackValue::Int(1))
-                            .unwrap(),
-                        FloatCmp::Pl => frame
-                            .operand_stack
-                            .push(StackValue::Int(-1))
-                            .unwrap(),
+                match op1.partial_cmp(&op2) {
+                    Some(Ordering::Greater) => {
+                        frame.operand_stack.push(StackValue::Int(1)).unwrap();
+                    },
+                    Some(Ordering::Equal) => {
+                        frame.operand_stack.push(StackValue::Int(0)).unwrap();
+                    },
+                    Some(Ordering::Less) => {
+                        frame.operand_stack.push(StackValue::Int(-1)).unwrap();
+                    },
+                    None => {
+                        match nan_handling {
+                            FloatCmp::Pg => frame
+                                .operand_stack
+                                .push(StackValue::Int(1))
+                                .unwrap(),
+                            FloatCmp::Pl => frame
+                                .operand_stack
+                                .push(StackValue::Int(-1))
+                                .unwrap(),
+                        }
                     }
-                } else if op1 > op2 {
-                    frame.operand_stack.push(StackValue::Int(1)).unwrap();
-                } else if op1 == op2 {
-                    frame.operand_stack.push(StackValue::Int(0)).unwrap();
-                } else {
-                    // op1 < op2
-                    frame.operand_stack.push(StackValue::Int(-1)).unwrap();
                 }
 
                 Update::None
