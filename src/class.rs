@@ -45,8 +45,11 @@ pub enum MethodCode {
     Rust(for<'a> fn(&'a mut Frame) -> RustMethodReturn),
 }
 
+pub type ReturnValue = FieldValue;
+
 pub enum RustMethodReturn {
     Void,
+    Value(ReturnValue),
 }
 
 pub trait Class {

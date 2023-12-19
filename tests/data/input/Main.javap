@@ -1,0 +1,94 @@
+Classfile /Main.class
+  Last modified Dec 18, 2023; size 678 bytes
+  MD5 checksum e0ccf083f2988e942d14385480a88aa8
+  Compiled from "Main.java"
+public class org.cmjava2023.Main
+  minor version: 0
+  major version: 52
+  flags: ACC_PUBLIC, ACC_SUPER
+Constant pool:
+   #1 = Methodref          #7.#25         // java/lang/Object."<init>":()V
+   #2 = Fieldref           #26.#27        // java/lang/System.in:Ljava/io/InputStream;
+   #3 = Methodref          #28.#29        // java/io/InputStream.read:()I
+   #4 = Fieldref           #26.#30        // java/lang/System.out:Ljava/io/PrintStream;
+   #5 = Methodref          #31.#32        // java/io/PrintStream.println:(I)V
+   #6 = Class              #33            // org/cmjava2023/Main
+   #7 = Class              #34            // java/lang/Object
+   #8 = Utf8               <init>
+   #9 = Utf8               ()V
+  #10 = Utf8               Code
+  #11 = Utf8               LineNumberTable
+  #12 = Utf8               LocalVariableTable
+  #13 = Utf8               this
+  #14 = Utf8               Lorg/cmjava2023/Main;
+  #15 = Utf8               main
+  #16 = Utf8               ([Ljava/lang/String;)V
+  #17 = Utf8               args
+  #18 = Utf8               [Ljava/lang/String;
+  #19 = Utf8               input
+  #20 = Utf8               I
+  #21 = Utf8               Exceptions
+  #22 = Class              #35            // java/io/IOException
+  #23 = Utf8               SourceFile
+  #24 = Utf8               Main.java
+  #25 = NameAndType        #8:#9          // "<init>":()V
+  #26 = Class              #36            // java/lang/System
+  #27 = NameAndType        #37:#38        // in:Ljava/io/InputStream;
+  #28 = Class              #39            // java/io/InputStream
+  #29 = NameAndType        #40:#41        // read:()I
+  #30 = NameAndType        #42:#43        // out:Ljava/io/PrintStream;
+  #31 = Class              #44            // java/io/PrintStream
+  #32 = NameAndType        #45:#46        // println:(I)V
+  #33 = Utf8               org/cmjava2023/Main
+  #34 = Utf8               java/lang/Object
+  #35 = Utf8               java/io/IOException
+  #36 = Utf8               java/lang/System
+  #37 = Utf8               in
+  #38 = Utf8               Ljava/io/InputStream;
+  #39 = Utf8               java/io/InputStream
+  #40 = Utf8               read
+  #41 = Utf8               ()I
+  #42 = Utf8               out
+  #43 = Utf8               Ljava/io/PrintStream;
+  #44 = Utf8               java/io/PrintStream
+  #45 = Utf8               println
+  #46 = Utf8               (I)V
+{
+  public org.cmjava2023.Main();
+    descriptor: ()V
+    flags: ACC_PUBLIC
+    Code:
+      stack=1, locals=1, args_size=1
+         0: aload_0
+         1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+         4: return
+      LineNumberTable:
+        line 3: 0
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       5     0  this   Lorg/cmjava2023/Main;
+
+  public static void main(java.lang.String[]) throws java.io.IOException;
+    descriptor: ([Ljava/lang/String;)V
+    flags: ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=2, locals=2, args_size=1
+         0: getstatic     #2                  // Field java/lang/System.in:Ljava/io/InputStream;
+         3: invokevirtual #3                  // Method java/io/InputStream.read:()I
+         6: istore_1
+         7: getstatic     #4                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        10: iload_1
+        11: invokevirtual #5                  // Method java/io/PrintStream.println:(I)V
+        14: return
+      LineNumberTable:
+        line 5: 0
+        line 6: 7
+        line 7: 14
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0      15     0  args   [Ljava/lang/String;
+            7       8     1 input   I
+    Exceptions:
+      throws java.io.IOException
+}
+SourceFile: "Main.java"

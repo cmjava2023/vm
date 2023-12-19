@@ -10,7 +10,8 @@ use crate::{
                 IntArrayInstance, LongArray, LongArrayInstance,
                 ObjectArrayKind, ShortArray, ShortArrayInstance,
             },
-            PrintStream, StringClass, StringInstance, SystemClass,
+            FileInputStream, InputStream, PrintStream, StringClass,
+            StringInstance, SystemClass,
         },
         Class,
     },
@@ -43,11 +44,19 @@ impl Heap {
 
         let string_class = Rc::new(StringClass::default());
         let print_stream_class = Rc::new(PrintStream::default());
-        let system_class = Rc::new(SystemClass::new(&print_stream_class));
+        let input_stream_class = Rc::new(InputStream::default());
+        let file_input_stream_class = Rc::new(FileInputStream::default());
+        let system_class =
+            Rc::new(SystemClass::new(&print_stream_class, &input_stream_class));
 
         let mut classes: HashMap<String, Rc<dyn Class>> = HashMap::new();
         classes.insert("java/lang/String".to_string(), string_class.clone());
         classes.insert("java/io/PrintStream".to_string(), print_stream_class);
+        classes.insert("java/io/InputStream".to_string(), input_stream_class);
+        classes.insert(
+            "java/io/FileInputStream".to_string(),
+            file_input_stream_class,
+        );
         classes.insert("java/lang/System".to_string(), system_class);
         classes.insert(
             boolean_array_class.name().to_string(),
