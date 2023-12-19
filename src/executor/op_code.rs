@@ -688,18 +688,16 @@ got: {:?}",
                     Some(Ordering::Less) => {
                         frame.operand_stack.push(StackValue::Int(-1)).unwrap();
                     },
-                    None => {
-                        match nan_handling {
-                            FloatCmp::Pg => frame
-                                .operand_stack
-                                .push(StackValue::Int(1))
-                                .unwrap(),
-                            FloatCmp::Pl => frame
-                                .operand_stack
-                                .push(StackValue::Int(-1))
-                                .unwrap(),
-                        }
-                    }
+                    None => match nan_handling {
+                        FloatCmp::Pg => frame
+                            .operand_stack
+                            .push(StackValue::Int(1))
+                            .unwrap(),
+                        FloatCmp::Pl => frame
+                            .operand_stack
+                            .push(StackValue::Int(-1))
+                            .unwrap(),
+                    },
                 }
 
                 Update::None
@@ -1000,18 +998,16 @@ got: {:?}",
                     Some(Ordering::Less) => {
                         frame.operand_stack.push(StackValue::Int(-1)).unwrap();
                     },
-                    None => {
-                        match nan_handling {
-                            FloatCmp::Pg => frame
-                                .operand_stack
-                                .push(StackValue::Int(1))
-                                .unwrap(),
-                            FloatCmp::Pl => frame
-                                .operand_stack
-                                .push(StackValue::Int(-1))
-                                .unwrap(),
-                        }
-                    }
+                    None => match nan_handling {
+                        FloatCmp::Pg => frame
+                            .operand_stack
+                            .push(StackValue::Int(1))
+                            .unwrap(),
+                        FloatCmp::Pl => frame
+                            .operand_stack
+                            .push(StackValue::Int(-1))
+                            .unwrap(),
+                    },
                 }
 
                 Update::None
