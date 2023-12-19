@@ -1137,6 +1137,10 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Goto(position, direction) => {
+                Update::GoTo(*position, *direction)
+            },
+
             Self::Iaload => {
                 let index = frame
                     .operand_stack
