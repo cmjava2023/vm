@@ -73,6 +73,7 @@ pub enum AttributeInfo {
     SourceFile,
     LineNumberTable,
     LocalVariableTable,
+    Exceptions,
 }
 
 impl AttributeInfo {
