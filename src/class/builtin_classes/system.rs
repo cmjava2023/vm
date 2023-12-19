@@ -1,7 +1,7 @@
 use std::{any::Any, rc::Rc};
 
 use crate::class::{
-    builtin_classes::{FileInputStream, PrintStream},
+    builtin_classes::{InputStream, PrintStream},
     Class, Field, FieldValue, Method,
 };
 
@@ -12,7 +12,8 @@ pub struct SystemClass {
 impl SystemClass {
     pub fn new(
         print_stream_class: &Rc<PrintStream>,
-        file_input_stream_class: &Rc<FileInputStream>,
+        // TODO: replace with FileInputStream when InputStream becomes abstract
+        file_input_stream_class: &Rc<InputStream>,
     ) -> Self {
         let fields = vec![
             Rc::new(Field {
