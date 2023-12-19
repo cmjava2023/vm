@@ -98,6 +98,7 @@ fn parse_attribute(
         "LineNumberTable" => AttributeInfo::LineNumberTable,
         "LocalVariableTable" => AttributeInfo::LocalVariableTable,
         "Exceptions" => AttributeInfo::Exceptions,
+        "StackMapTable" => AttributeInfo::StackMapTable,
         _ => panic!("Unknown Attribute {}", name),
     }
 }

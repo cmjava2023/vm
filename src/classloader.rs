@@ -74,6 +74,7 @@ pub enum AttributeInfo {
     LineNumberTable,
     LocalVariableTable,
     Exceptions,
+    StackMapTable,
 }
 
 impl AttributeInfo {
