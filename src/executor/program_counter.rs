@@ -40,11 +40,15 @@ impl ProgramCounter {
         Ok(())
     }
 
-    pub fn previous(&mut self, offset: usize) -> Result<(), ProgramCounterError> {
+    pub fn previous(
+        &mut self,
+        offset: usize,
+    ) -> Result<(), ProgramCounterError> {
         if offset > self.current_op_code {
             return Err(ProgramCounterError::OutOfBoundsError {
                 actual_len: self.current_op_codes.len(),
-                requested_pos: (self.current_op_code as isize) - (offset as isize),
+                requested_pos: (self.current_op_code as isize)
+                    - (offset as isize),
             });
         }
         self.current_op_code -= offset;
@@ -56,7 +60,7 @@ impl ProgramCounter {
         if self.current_op_codes.len() <= position {
             return Err(ProgramCounterError::OutOfBoundsError {
                 actual_len: self.current_op_codes.len(),
-                requested_pos: position,
+                requested_pos: position as isize,
             });
         }
         self.current_op_code = position;
