@@ -7,6 +7,7 @@ use std::rc::Rc;
 
 use thiserror::Error;
 
+use self::op_code::OffsetDirection;
 pub use crate::executor::op_code::OpCode;
 use crate::{
     class::{
@@ -20,8 +21,6 @@ use crate::{
     },
     heap::Heap,
 };
-
-use self::op_code::OffsetDirection;
 
 pub struct ExecutorFrame {
     frame: Frame,
@@ -121,12 +120,12 @@ pub fn run(code: &Code, heap: &mut Heap) {
                 };
                 current_pc.next(1).unwrap();
             },
-            Update::GoTo(offset, direction) => {
-                match direction {
-                    OffsetDirection::Forward => current_pc.next(offset).unwrap(),
-                    OffsetDirection::Backward => current_pc.previous(offset).unwrap(),
-                }
-            }
+            Update::GoTo(offset, direction) => match direction {
+                OffsetDirection::Forward => current_pc.next(offset).unwrap(),
+                OffsetDirection::Backward => {
+                    current_pc.previous(offset).unwrap()
+                },
+            },
         }
     }
 }

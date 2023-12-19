@@ -1,4 +1,4 @@
-use std::{any::Any, ops::Neg, rc::Rc};
+use std::{any::Any, cmp::Ordering, ops::Neg, rc::Rc};
 
 use crate::{
     class::{
@@ -662,6 +662,47 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Dcmp(nan_handling) => {
+                // TODO: Floating-point comparison in accordance with IEEE 754?
+
+                let op2 = if let StackValue::Double(d) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    d
+                } else {
+                    panic!("expected double on top");
+                };
+                let op1 = if let StackValue::Double(d) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    d
+                } else {
+                    panic!("expected double on top");
+                };
+
+                if op1.is_nan() || op2.is_nan() {
+                    match nan_handling {
+                        FloatCmp::Pg => frame
+                            .operand_stack
+                            .push(StackValue::Int(1))
+                            .unwrap(),
+                        FloatCmp::Pl => frame
+                            .operand_stack
+                            .push(StackValue::Int(-1))
+                            .unwrap(),
+                    }
+                } else if op1 > op2 {
+                    frame.operand_stack.push(StackValue::Int(1)).unwrap();
+                } else if op1 == op2 {
+                    frame.operand_stack.push(StackValue::Int(0)).unwrap();
+                } else {
+                    // op1 < op2
+                    frame.operand_stack.push(StackValue::Int(-1)).unwrap();
+                }
+
+                Update::None
+            },
+
             Self::Dconst(d) => {
                 frame.operand_stack.push(StackValue::Double(*d)).unwrap();
 
@@ -931,6 +972,47 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Fcmp(nan_handling) => {
+                // TODO: Floating-point comparison in accordance with IEEE 754?
+
+                let op2 = if let StackValue::Float(d) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    d
+                } else {
+                    panic!("expected double on top");
+                };
+                let op1 = if let StackValue::Float(d) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    d
+                } else {
+                    panic!("expected double on top");
+                };
+
+                if op1.is_nan() || op2.is_nan() {
+                    match nan_handling {
+                        FloatCmp::Pg => frame
+                            .operand_stack
+                            .push(StackValue::Int(1))
+                            .unwrap(),
+                        FloatCmp::Pl => frame
+                            .operand_stack
+                            .push(StackValue::Int(-1))
+                            .unwrap(),
+                    }
+                } else if op1 > op2 {
+                    frame.operand_stack.push(StackValue::Int(1)).unwrap();
+                } else if op1 == op2 {
+                    frame.operand_stack.push(StackValue::Int(0)).unwrap();
+                } else {
+                    // op1 < op2
+                    frame.operand_stack.push(StackValue::Int(-1)).unwrap();
+                }
+
+                Update::None
+            },
+
             Self::Fconst(f) => {
                 frame.operand_stack.push(StackValue::Float(*f)).unwrap();
 
@@ -1172,57 +1254,43 @@ got: {:?}",
                 Update::None
             },
             Self::IfacmpNe(size, direction) => {
-                let op2: Option<Rc<dyn ClassInstance>> = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .try_into()
-                    .unwrap();
-                let op1: Option<Rc<dyn ClassInstance>> = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .try_into()
-                    .unwrap();
-                match(op1, op2) {
-                    (Some(_), None) | (None, Some(_)) => Update::GoTo(*size, *direction),
+                let op2: Option<Rc<dyn ClassInstance>> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let op1: Option<Rc<dyn ClassInstance>> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                match (op1, op2) {
+                    (Some(_), None) | (None, Some(_)) => {
+                        Update::GoTo(*size, *direction)
+                    },
                     (None, None) => Update::None,
                     (Some(op1), Some(op2)) => {
                         if !Rc::<dyn ClassInstance>::ptr_eq(&op1, &op2) {
                             Update::GoTo(*size, *direction)
-                        }
-                        else {
+                        } else {
                             Update::None
                         }
-                    }
+                    },
                 }
-            }
+            },
+
             Self::IfacmpEq(size, direction) => {
-                let op2: Option<Rc<dyn ClassInstance>> = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .try_into()
-                    .unwrap();
-                let op1: Option<Rc<dyn ClassInstance>> = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .try_into()
-                    .unwrap();
-                match(op1, op2) {
+                let op2: Option<Rc<dyn ClassInstance>> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let op1: Option<Rc<dyn ClassInstance>> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                match (op1, op2) {
                     (Some(_), None) | (None, Some(_)) => Update::None,
                     (None, None) => Update::GoTo(*size, *direction),
                     (Some(op1), Some(op2)) => {
                         if Rc::<dyn ClassInstance>::ptr_eq(&op1, &op2) {
                             Update::GoTo(*size, *direction)
-                        }
-                        else {
+                        } else {
                             Update::None
                         }
-                    }
+                    },
                 }
-            }
+            },
+
             Self::IficmpEq(size, direction) => {
                 let op2 = frame
                     .operand_stack
@@ -1238,11 +1306,11 @@ got: {:?}",
                     .unwrap();
                 if op1 == op2 {
                     Update::GoTo(*size, *direction)
-                }
-                else {
+                } else {
                     Update::None
                 }
-            }
+            },
+
             Self::IficmpNe(size, direction) => {
                 let op2 = frame
                     .operand_stack
@@ -1258,11 +1326,11 @@ got: {:?}",
                     .unwrap();
                 if op1 != op2 {
                     Update::GoTo(*size, *direction)
-                }
-                else {
+                } else {
                     Update::None
                 }
-            }
+            },
+
             Self::IficmpLt(size, direction) => {
                 let op2 = frame
                     .operand_stack
@@ -1278,11 +1346,11 @@ got: {:?}",
                     .unwrap();
                 if op1 < op2 {
                     Update::GoTo(*size, *direction)
-                }
-                else {
+                } else {
                     Update::None
                 }
-            }
+            },
+
             Self::IficmpGt(size, direction) => {
                 let op2 = frame
                     .operand_stack
@@ -1298,11 +1366,11 @@ got: {:?}",
                     .unwrap();
                 if op1 > op2 {
                     Update::GoTo(*size, *direction)
-                }
-                else {
+                } else {
                     Update::None
                 }
-            }
+            },
+
             Self::IficmpLe(size, direction) => {
                 let op2 = frame
                     .operand_stack
@@ -1318,11 +1386,11 @@ got: {:?}",
                     .unwrap();
                 if op1 <= op2 {
                     Update::GoTo(*size, *direction)
-                }
-                else {
+                } else {
                     Update::None
                 }
-            }
+            },
+
             Self::IficmpGe(size, direction) => {
                 let op2 = frame
                     .operand_stack
@@ -1338,11 +1406,11 @@ got: {:?}",
                     .unwrap();
                 if op1 >= op2 {
                     Update::GoTo(*size, *direction)
-                }
-                else {
+                } else {
                     Update::None
                 }
-            }
+            },
+
             Self::IfEq(size, direction) => {
                 let op1 = frame
                     .operand_stack
@@ -1352,11 +1420,11 @@ got: {:?}",
                     .unwrap();
                 if op1 == 0 {
                     Update::GoTo(*size, *direction)
-                }
-                else {
+                } else {
                     Update::None
                 }
-            }
+            },
+
             Self::IfNe(size, direction) => {
                 let op1 = frame
                     .operand_stack
@@ -1366,11 +1434,11 @@ got: {:?}",
                     .unwrap();
                 if op1 != 0 {
                     Update::GoTo(*size, *direction)
-                }
-                else {
+                } else {
                     Update::None
                 }
-            }
+            },
+
             Self::IfLt(size, direction) => {
                 let op1 = frame
                     .operand_stack
@@ -1380,11 +1448,11 @@ got: {:?}",
                     .unwrap();
                 if op1 < 0 {
                     Update::GoTo(*size, *direction)
-                }
-                else {
+                } else {
                     Update::None
                 }
-            }
+            },
+
             Self::IfGt(size, direction) => {
                 let op1 = frame
                     .operand_stack
@@ -1394,11 +1462,11 @@ got: {:?}",
                     .unwrap();
                 if op1 > 0 {
                     Update::GoTo(*size, *direction)
-                }
-                else {
+                } else {
                     Update::None
                 }
-            }
+            },
+
             Self::IfLe(size, direction) => {
                 let op1 = frame
                     .operand_stack
@@ -1408,11 +1476,11 @@ got: {:?}",
                     .unwrap();
                 if op1 <= 0 {
                     Update::GoTo(*size, *direction)
-                }
-                else {
+                } else {
                     Update::None
                 }
-            }
+            },
+
             Self::IfGe(size, direction) => {
                 let op1 = frame
                     .operand_stack
@@ -1422,39 +1490,31 @@ got: {:?}",
                     .unwrap();
                 if op1 >= 0 {
                     Update::GoTo(*size, *direction)
-                }
-                else {
+                } else {
                     Update::None
                 }
-            }
+            },
+
             Self::IfNonNull(size, direction) => {
-                let op1: Option<Rc<dyn ClassInstance>> = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .try_into()
-                    .unwrap();
+                let op1: Option<Rc<dyn ClassInstance>> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 if op1.is_some() {
                     Update::GoTo(*size, *direction)
-                }
-                else {
+                } else {
                     Update::None
                 }
-            }
+            },
+
             Self::IfNull(size, direction) => {
-                let op1: Option<Rc<dyn ClassInstance>> = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .try_into()
-                    .unwrap();
+                let op1: Option<Rc<dyn ClassInstance>> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 if op1.is_none() {
                     Update::GoTo(*size, *direction)
-                }
-                else {
+                } else {
                     Update::None
                 }
-            }
+            },
+
             Self::Iinc { index, constant } => {
                 let op1 = frame.local_variables.get(*index);
                 let op1 = match op1 {
@@ -1905,6 +1965,37 @@ got: {:?}",
                 let array: &LongArrayInstance =
                     array.as_ref().try_into().unwrap();
                 array.set(index.try_into().unwrap(), value).unwrap();
+                Update::None
+            },
+
+            Self::Lcmp => {
+                let op2 = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long value");
+                };
+                let op1 = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long value");
+                };
+
+                match op1.cmp(&op2) {
+                    Ordering::Greater => {
+                        frame.operand_stack.push(StackValue::Int(1)).unwrap()
+                    },
+                    Ordering::Equal => {
+                        frame.operand_stack.push(StackValue::Int(0)).unwrap()
+                    },
+                    Ordering::Less => {
+                        frame.operand_stack.push(StackValue::Int(-1)).unwrap()
+                    },
+                };
+
                 Update::None
             },
 
