@@ -3,10 +3,7 @@ use std::{path::PathBuf, rc::Rc};
 use clap::Parser;
 use cmjava::{
     class::{ArgumentKind, Class, MethodCode, SimpleArgumentKind},
-    classloader::{
-        attribute_parser::parse_attributes,
-        class_creator::create_bytecode_class, file_parser::parse,
-    },
+    classloader::load_class,
     executor::run,
     heap::Heap,
 };
@@ -21,7 +18,8 @@ use tracing_subscriber::{
 #[command(name = "cmjava")]
 #[command(version = clap::crate_version!(), long_version = long_version())]
 struct Cli {
-    class_file: PathBuf,
+    #[clap(value_delimiter = ' ')]
+    class_file: Option<Vec<PathBuf>>,
     #[arg(short, long)]
     verbose: bool,
 }
@@ -106,14 +104,11 @@ fn main() -> anyhow::Result<()> {
     log_setup(cli.verbose);
 
     let mut heap = Heap::default();
-    let raw_class = parse(cli.class_file).unwrap();
-    let class = parse_attributes(raw_class);
-    let bytecode_class: Rc<dyn Class> =
-        Rc::new(create_bytecode_class(&class, &mut heap));
-    heap.add_class(
-        format!("{}/{}", bytecode_class.package(), bytecode_class.name()),
-        bytecode_class.clone(),
-    );
+    let class_files = cli.class_file.unwrap();
+    let mut bytecode_classes: Vec<Rc<dyn Class>> = Vec::new();
+    for class_file in class_files {
+        bytecode_classes.push(load_class(class_file, &mut heap));
+    }
 
     let main_descriptor = (
         vec![ArgumentKind::Array {
@@ -122,7 +117,7 @@ fn main() -> anyhow::Result<()> {
         }],
         None,
     );
-    let main = &bytecode_class
+    let main = &bytecode_classes[bytecode_classes.len() - 1]
         .get_method("main", main_descriptor)
         .unwrap()
         .code;

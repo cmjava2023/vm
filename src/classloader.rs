@@ -6,13 +6,21 @@ pub mod file_parser;
 pub mod opcode_parser;
 pub mod raw;
 
-use std::usize;
+use std::{path::Path, rc::Rc, usize};
 
 use enumflags2::BitFlags;
 
+use self::{
+    attribute_parser::parse_attributes, class_creator::create_bytecode_class,
+    file_parser::parse,
+};
 use crate::{
-    class::access_flags::{ClassAccessFlag, FieldAccessFlag, MethodAccessFlag},
+    class::{
+        access_flags::{ClassAccessFlag, FieldAccessFlag, MethodAccessFlag},
+        Class,
+    },
     classloader::constant_pool::CpInfo,
+    heap::Heap,
 };
 
 #[derive(Debug, Copy, Clone)]
@@ -127,4 +135,26 @@ impl ClassFile {
         }
         self.constant_pool.get(reference - 1)
     }
+}
+
+pub fn load_class<P: AsRef<Path>>(
+    path_to_file: P,
+    heap: &mut Heap,
+) -> Rc<dyn Class> {
+    let raw_class = parse(path_to_file).unwrap();
+    let class = parse_attributes(raw_class);
+    let bytecode_class: Rc<dyn Class> =
+        Rc::new(create_bytecode_class(&class, heap));
+    if bytecode_class.package() == "" {
+        heap.add_class(
+            bytecode_class.name().to_string(),
+            bytecode_class.clone(),
+        );
+    } else {
+        heap.add_class(
+            format!("{}/{}", bytecode_class.package(), bytecode_class.name()),
+            bytecode_class.clone(),
+        );
+    }
+    bytecode_class
 }
