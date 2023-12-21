@@ -19,7 +19,7 @@ use tracing_subscriber::{
 #[command(version = clap::crate_version!(), long_version = long_version())]
 struct Cli {
     #[clap(value_delimiter = ' ')]
-    class_file: Option<Vec<PathBuf>>,
+    class_file: Vec<PathBuf>,
     #[arg(short, long)]
     verbose: bool,
 }
@@ -104,9 +104,8 @@ fn main() -> anyhow::Result<()> {
     log_setup(cli.verbose);
 
     let mut heap = Heap::default();
-    let class_files = cli.class_file.unwrap();
     let mut bytecode_classes: Vec<Rc<dyn Class>> = Vec::new();
-    for class_file in class_files {
+    for class_file in cli.class_file {
         bytecode_classes.push(load_class(class_file, &mut heap));
     }
 
