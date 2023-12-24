@@ -1,0 +1,329 @@
+Classfile /home/florian/Documents/fh/WS23_24/Compilerbau/vm/main/tests/data/static_functions/Main.class
+  Last modified 24.12.2023; size 1826 bytes
+  MD5 checksum 7a8b6a3091217f573d6abdf3223964f9
+  Compiled from "Main.java"
+public class org.cmjava2023.Main
+  minor version: 0
+  major version: 52
+  flags: ACC_PUBLIC, ACC_SUPER
+Constant pool:
+   #1 = Methodref          #27.#66        // java/lang/Object."<init>":()V
+   #2 = Methodref          #26.#67        // org/cmjava2023/Main.objectReturn:()Ljava/lang/String;
+   #3 = Fieldref           #68.#69        // java/lang/System.out:Ljava/io/PrintStream;
+   #4 = String             #70            // (main) greeting:
+   #5 = Methodref          #71.#72        // java/io/PrintStream.println:(Ljava/lang/String;)V
+   #6 = Methodref          #26.#73        // org/cmjava2023/Main.objectArg:(Ljava/lang/String;)V
+   #7 = Methodref          #26.#74        // org/cmjava2023/Main.primitivReturn:()I
+   #8 = String             #75            // (main) num:
+   #9 = Methodref          #71.#76        // java/io/PrintStream.println:(I)V
+  #10 = Methodref          #26.#77        // org/cmjava2023/Main.primitiveArg:(I)V
+  #11 = Methodref          #26.#78        // org/cmjava2023/Main.arrayReturn:()[I
+  #12 = String             #79            // (main) nums:
+  #13 = Methodref          #71.#80        // java/io/PrintStream.println:(Ljava/lang/Object;)V
+  #14 = Methodref          #26.#81        // org/cmjava2023/Main.arrayArg:([I)V
+  #15 = Methodref          #26.#82        // org/cmjava2023/Main.largePrimitiveReturn:()D
+  #16 = String             #83            // (main) d:
+  #17 = Methodref          #71.#84        // java/io/PrintStream.println:(D)V
+  #18 = Methodref          #26.#85        // org/cmjava2023/Main.largePrimitiveArg:(D)V
+  #19 = String             #86            // (objectArg) greeting:
+  #20 = String             #87            // (primitiveArg) num:
+  #21 = String             #88            // (arrayArg) nums:
+  #22 = String             #89            // (largePrimitiveArg) d:
+  #23 = String             #90            // Hello World
+  #24 = Double             10.0d
+  #26 = Class              #91            // org/cmjava2023/Main
+  #27 = Class              #92            // java/lang/Object
+  #28 = Utf8               <init>
+  #29 = Utf8               ()V
+  #30 = Utf8               Code
+  #31 = Utf8               LineNumberTable
+  #32 = Utf8               LocalVariableTable
+  #33 = Utf8               this
+  #34 = Utf8               Lorg/cmjava2023/Main;
+  #35 = Utf8               main
+  #36 = Utf8               ([Ljava/lang/String;)V
+  #37 = Utf8               args
+  #38 = Utf8               [Ljava/lang/String;
+  #39 = Utf8               greeting
+  #40 = Utf8               Ljava/lang/String;
+  #41 = Utf8               num
+  #42 = Utf8               I
+  #43 = Utf8               nums
+  #44 = Utf8               [I
+  #45 = Utf8               d
+  #46 = Utf8               D
+  #47 = Utf8               objectArg
+  #48 = Utf8               (Ljava/lang/String;)V
+  #49 = Utf8               primitiveArg
+  #50 = Utf8               (I)V
+  #51 = Utf8               arrayArg
+  #52 = Utf8               ([I)V
+  #53 = Utf8               largePrimitiveArg
+  #54 = Utf8               (D)V
+  #55 = Utf8               objectReturn
+  #56 = Utf8               ()Ljava/lang/String;
+  #57 = Utf8               primitivReturn
+  #58 = Utf8               ()I
+  #59 = Utf8               arrayReturn
+  #60 = Utf8               ()[I
+  #61 = Utf8               i
+  #62 = Utf8               largePrimitiveReturn
+  #63 = Utf8               ()D
+  #64 = Utf8               SourceFile
+  #65 = Utf8               Main.java
+  #66 = NameAndType        #28:#29        // "<init>":()V
+  #67 = NameAndType        #55:#56        // objectReturn:()Ljava/lang/String;
+  #68 = Class              #93            // java/lang/System
+  #69 = NameAndType        #94:#95        // out:Ljava/io/PrintStream;
+  #70 = Utf8               (main) greeting:
+  #71 = Class              #96            // java/io/PrintStream
+  #72 = NameAndType        #97:#48        // println:(Ljava/lang/String;)V
+  #73 = NameAndType        #47:#48        // objectArg:(Ljava/lang/String;)V
+  #74 = NameAndType        #57:#58        // primitivReturn:()I
+  #75 = Utf8               (main) num:
+  #76 = NameAndType        #97:#50        // println:(I)V
+  #77 = NameAndType        #49:#50        // primitiveArg:(I)V
+  #78 = NameAndType        #59:#60        // arrayReturn:()[I
+  #79 = Utf8               (main) nums:
+  #80 = NameAndType        #97:#98        // println:(Ljava/lang/Object;)V
+  #81 = NameAndType        #51:#52        // arrayArg:([I)V
+  #82 = NameAndType        #62:#63        // largePrimitiveReturn:()D
+  #83 = Utf8               (main) d:
+  #84 = NameAndType        #97:#54        // println:(D)V
+  #85 = NameAndType        #53:#54        // largePrimitiveArg:(D)V
+  #86 = Utf8               (objectArg) greeting:
+  #87 = Utf8               (primitiveArg) num:
+  #88 = Utf8               (arrayArg) nums:
+  #89 = Utf8               (largePrimitiveArg) d:
+  #90 = Utf8               Hello World
+  #91 = Utf8               org/cmjava2023/Main
+  #92 = Utf8               java/lang/Object
+  #93 = Utf8               java/lang/System
+  #94 = Utf8               out
+  #95 = Utf8               Ljava/io/PrintStream;
+  #96 = Utf8               java/io/PrintStream
+  #97 = Utf8               println
+  #98 = Utf8               (Ljava/lang/Object;)V
+{
+  public org.cmjava2023.Main();
+    descriptor: ()V
+    flags: ACC_PUBLIC
+    Code:
+      stack=1, locals=1, args_size=1
+         0: aload_0
+         1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+         4: return
+      LineNumberTable:
+        line 3: 0
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       5     0  this   Lorg/cmjava2023/Main;
+
+  public static void main(java.lang.String[]);
+    descriptor: ([Ljava/lang/String;)V
+    flags: ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=3, locals=6, args_size=1
+         0: invokestatic  #2                  // Method objectReturn:()Ljava/lang/String;
+         3: astore_1
+         4: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+         7: ldc           #4                  // String (main) greeting:
+         9: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        12: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        15: aload_1
+        16: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        19: aload_1
+        20: invokestatic  #6                  // Method objectArg:(Ljava/lang/String;)V
+        23: invokestatic  #7                  // Method primitivReturn:()I
+        26: istore_2
+        27: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        30: ldc           #8                  // String (main) num:
+        32: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        35: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        38: iload_2
+        39: invokevirtual #9                  // Method java/io/PrintStream.println:(I)V
+        42: iload_2
+        43: invokestatic  #10                 // Method primitiveArg:(I)V
+        46: invokestatic  #11                 // Method arrayReturn:()[I
+        49: astore_3
+        50: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        53: ldc           #12                 // String (main) nums:
+        55: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        58: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        61: aload_3
+        62: invokevirtual #13                 // Method java/io/PrintStream.println:(Ljava/lang/Object;)V
+        65: aload_3
+        66: invokestatic  #14                 // Method arrayArg:([I)V
+        69: invokestatic  #15                 // Method largePrimitiveReturn:()D
+        72: dstore        4
+        74: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        77: ldc           #16                 // String (main) d:
+        79: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        82: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        85: dload         4
+        87: invokevirtual #17                 // Method java/io/PrintStream.println:(D)V
+        90: dload         4
+        92: invokestatic  #18                 // Method largePrimitiveArg:(D)V
+        95: return
+      LineNumberTable:
+        line 5: 0
+        line 6: 4
+        line 7: 12
+        line 8: 19
+        line 10: 23
+        line 11: 27
+        line 12: 35
+        line 13: 42
+        line 15: 46
+        line 16: 50
+        line 17: 58
+        line 18: 65
+        line 20: 69
+        line 21: 74
+        line 22: 82
+        line 23: 90
+        line 24: 95
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0      96     0  args   [Ljava/lang/String;
+            4      92     1 greeting   Ljava/lang/String;
+           27      69     2   num   I
+           50      46     3  nums   [I
+           74      22     4     d   D
+
+  public static void objectArg(java.lang.String);
+    descriptor: (Ljava/lang/String;)V
+    flags: ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=2, locals=1, args_size=1
+         0: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+         3: ldc           #19                 // String (objectArg) greeting:
+         5: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+         8: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        11: aload_0
+        12: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        15: return
+      LineNumberTable:
+        line 27: 0
+        line 28: 8
+        line 29: 15
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0      16     0 greeting   Ljava/lang/String;
+
+  public static void primitiveArg(int);
+    descriptor: (I)V
+    flags: ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=2, locals=1, args_size=1
+         0: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+         3: ldc           #20                 // String (primitiveArg) num:
+         5: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+         8: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        11: iload_0
+        12: invokevirtual #9                  // Method java/io/PrintStream.println:(I)V
+        15: return
+      LineNumberTable:
+        line 32: 0
+        line 33: 8
+        line 34: 15
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0      16     0   num   I
+
+  public static void arrayArg(int[]);
+    descriptor: ([I)V
+    flags: ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=2, locals=1, args_size=1
+         0: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+         3: ldc           #21                 // String (arrayArg) nums:
+         5: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+         8: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        11: aload_0
+        12: invokevirtual #13                 // Method java/io/PrintStream.println:(Ljava/lang/Object;)V
+        15: return
+      LineNumberTable:
+        line 37: 0
+        line 38: 8
+        line 39: 15
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0      16     0  nums   [I
+
+  public static void largePrimitiveArg(double);
+    descriptor: (D)V
+    flags: ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=3, locals=2, args_size=1
+         0: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+         3: ldc           #22                 // String (largePrimitiveArg) d:
+         5: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+         8: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        11: dload_0
+        12: invokevirtual #17                 // Method java/io/PrintStream.println:(D)V
+        15: return
+      LineNumberTable:
+        line 42: 0
+        line 43: 8
+        line 44: 15
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0      16     0     d   D
+
+  public static java.lang.String objectReturn();
+    descriptor: ()Ljava/lang/String;
+    flags: ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=1, locals=0, args_size=0
+         0: ldc           #23                 // String Hello World
+         2: areturn
+      LineNumberTable:
+        line 47: 0
+
+  public static int primitivReturn();
+    descriptor: ()I
+    flags: ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=1, locals=0, args_size=0
+         0: bipush        10
+         2: ireturn
+      LineNumberTable:
+        line 51: 0
+
+  public static int[] arrayReturn();
+    descriptor: ()[I
+    flags: ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=4, locals=1, args_size=0
+         0: iconst_2
+         1: newarray       int
+         3: dup
+         4: iconst_0
+         5: bipush        10
+         7: iastore
+         8: dup
+         9: iconst_1
+        10: bipush        11
+        12: iastore
+        13: astore_0
+        14: aload_0
+        15: areturn
+      LineNumberTable:
+        line 55: 0
+        line 56: 14
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+           14       2     0     i   [I
+
+  public static double largePrimitiveReturn();
+    descriptor: ()D
+    flags: ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=2, locals=0, args_size=0
+         0: ldc2_w        #24                 // double 10.0d
+         3: dreturn
+      LineNumberTable:
+        line 60: 0
+}
+SourceFile: "Main.java"
