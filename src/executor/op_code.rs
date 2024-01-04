@@ -9,9 +9,8 @@ use crate::{
             LongArray, LongArrayInstance, ObjectArray, ObjectArrayInstance,
             ShortArray, ShortArrayInstance,
         },
-        Class, ClassInstance, Field, Method,
+        ArgumentKind, Class, ClassInstance, Field, Method,
     },
-    classloader::cp_decoder::RuntimeCPEntry,
     executor::{
         frame_stack::StackValue, local_variables::VariableValueOrValue, Frame,
         Update,
@@ -23,6 +22,18 @@ use crate::{
 #[allow(clippy::ptr_eq)]
 fn trait_pointer_eq<T: ?Sized, U: ?Sized>(p: *const T, q: *const U) -> bool {
     (p as *const ()) == (q as *const ())
+}
+
+#[derive(Clone, Debug)]
+pub struct MethodDescriptor {
+    pub name: String,
+    pub descriptor: (Vec<ArgumentKind>, Option<ArgumentKind>),
+}
+
+#[derive(Clone, Debug)]
+pub struct SymbolicMethod {
+    pub class_name: String,
+    pub descriptor: MethodDescriptor,
 }
 
 #[derive(Clone, Debug)]
@@ -159,9 +170,10 @@ pub enum OpCode {
     /// index into local variables
     Fstore(usize),
     Fsub,
-    // TODO(FW): how are instance fields stored
-    // to resolve them at execution time
-    GetField(Rc<dyn Any>),
+    GetField {
+        class: String,
+        field_name: String,
+    },
     GetStatic(Rc<Field>),
     Goto(usize, OffsetDirection),
     I2b,
@@ -205,9 +217,9 @@ pub enum OpCode {
     InstanceOf(Rc<dyn Any>),
     InvokeDynamic(Rc<dyn Any>),
     InvokeInterface(Rc<dyn Any>),
-    InvokeSpecial(RuntimeCPEntry), // Placeholder, to enable bytecode parsing
-    InvokeStatic(Rc<Method>),
-    InvokeVirtual(Rc<Method>),
+    InvokeSpecial(SymbolicMethod),
+    InvokeStatic(SymbolicMethod),
+    InvokeVirtual(SymbolicMethod),
     Ior,
     Irem,
     Ireturn,
@@ -255,14 +267,16 @@ pub enum OpCode {
         reference_kind: ArrayReferenceKinds,
         dimensions: u8,
     },
-    New(Rc<dyn Any>),
+    // classname
+    New(String),
     NewArray(ArrayType),
     Nop,
     Pop,
     Pop2,
-    // TODO(FW): how are instance fields stored
-    // to resolve them at execution time
-    PutField(Rc<dyn Any>),
+    PutField {
+        class: String,
+        field_name: String,
+    },
     PutStatic(Rc<Field>),
     Ret(usize),
     Return,
@@ -1577,7 +1591,20 @@ got: {:?}",
                 Update::None
             },
 
-            Self::InvokeVirtual(method) => Update::MethodCall(method.clone()),
+            Self::InvokeVirtual(method) => {
+                let class = heap.find_class(&method.class_name).unwrap();
+                let method = class
+                    .get_method(
+                        &method.descriptor.name,
+                        (
+                            &method.descriptor.descriptor.0,
+                            method.descriptor.descriptor.1.as_ref(),
+                        ),
+                    )
+                    .unwrap();
+
+                Update::MethodCall(method)
+            },
 
             Self::Ior => {
                 let op2 = frame

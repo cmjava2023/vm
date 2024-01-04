@@ -11,7 +11,7 @@ fn static_functions() -> Result<(), Box<dyn std::error::Error>> {
     // are implemented
     // NOTE: make sure to unindent the strings when uncommenting!
     cmd.assert().failure().stderr(predicate::str::contains(
-        "Class with name  org/cmjava2023/Main exists",
+        "Missing OpCode implementation for: InvokeStatic",
     ));
     // prints '[I@a92b32a' (i.e. @<some memory address)
     // since memory address is unpredictable,
