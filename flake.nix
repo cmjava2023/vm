@@ -39,7 +39,11 @@
         };
 
         fenix-pkgs = fenix.packages.${system};
-        fenix-channel = fenix-pkgs.complete;
+        fenix-channel = fenix-pkgs.toolchainOf {
+          channel = "nightly";
+          date = builtins.replaceStrings ["nightly-"] [""] (builtins.fromTOML (builtins.readFile ./rust-toolchain.toml)).toolchain.channel;
+          sha256 = "sha256-SzEeSoO54GiBQ2kfANPhWrt0EDRxqEvhIbTt2uJt/TQ=";
+        };
       in
         function {inherit system pkgs fenix-pkgs fenix-channel;});
   in {
@@ -76,10 +80,9 @@
         "rustc"
         "rustfmt-preview"
       ];
-      rust-analyzer = fenix-pkgs.rust-analyzer;
     in {
       default = pkgs.callPackage (./. + "/nix/dev-shells/${packageName}.nix") {
-        inherit fenixRustToolchain rust-analyzer packageName;
+        inherit fenixRustToolchain packageName;
       };
       ci = pkgs.callPackage ./nix/dev-shells/ci.nix {
         inherit fenixRustToolchain packageName;

@@ -4,7 +4,6 @@
   mkShell,
   fenixRustToolchain,
   bashInteractive,
-  rust-analyzer,
   reuse,
   just,
   eclint,
@@ -17,7 +16,6 @@ mkShell {
     fenixRustToolchain
 
     bashInteractive
-    rust-analyzer
 
     reuse
     just
