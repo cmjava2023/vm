@@ -1,0 +1,82 @@
+Classfile /home/florian/Documents/fh/WS23_24/Compilerbau/vm/main/tests/data/inheritance/simple/B.class
+  Last modified 25.12.2023; size 493 bytes
+  MD5 checksum 17eff231328d985578ff2423f0faeb1e
+  Compiled from "B.java"
+public class B extends A
+  minor version: 0
+  major version: 52
+  flags: ACC_PUBLIC, ACC_SUPER
+Constant pool:
+   #1 = Methodref          #8.#19         // A."<init>":()V
+   #2 = Methodref          #8.#20         // A.doStuff:()V
+   #3 = Fieldref           #21.#22        // java/lang/System.out:Ljava/io/PrintStream;
+   #4 = String             #23            // (B) doStuff()
+   #5 = Methodref          #24.#25        // java/io/PrintStream.println:(Ljava/lang/String;)V
+   #6 = Methodref          #8.#26         // A.doOtherStuff:()V
+   #7 = Class              #27            // B
+   #8 = Class              #28            // A
+   #9 = Utf8               <init>
+  #10 = Utf8               ()V
+  #11 = Utf8               Code
+  #12 = Utf8               LineNumberTable
+  #13 = Utf8               LocalVariableTable
+  #14 = Utf8               this
+  #15 = Utf8               LB;
+  #16 = Utf8               doStuff
+  #17 = Utf8               SourceFile
+  #18 = Utf8               B.java
+  #19 = NameAndType        #9:#10         // "<init>":()V
+  #20 = NameAndType        #16:#10        // doStuff:()V
+  #21 = Class              #29            // java/lang/System
+  #22 = NameAndType        #30:#31        // out:Ljava/io/PrintStream;
+  #23 = Utf8               (B) doStuff()
+  #24 = Class              #32            // java/io/PrintStream
+  #25 = NameAndType        #33:#34        // println:(Ljava/lang/String;)V
+  #26 = NameAndType        #35:#10        // doOtherStuff:()V
+  #27 = Utf8               B
+  #28 = Utf8               A
+  #29 = Utf8               java/lang/System
+  #30 = Utf8               out
+  #31 = Utf8               Ljava/io/PrintStream;
+  #32 = Utf8               java/io/PrintStream
+  #33 = Utf8               println
+  #34 = Utf8               (Ljava/lang/String;)V
+  #35 = Utf8               doOtherStuff
+{
+  public B();
+    descriptor: ()V
+    flags: ACC_PUBLIC
+    Code:
+      stack=1, locals=1, args_size=1
+         0: aload_0
+         1: invokespecial #1                  // Method A."<init>":()V
+         4: return
+      LineNumberTable:
+        line 1: 0
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       5     0  this   LB;
+
+  public void doStuff();
+    descriptor: ()V
+    flags: ACC_PUBLIC
+    Code:
+      stack=2, locals=1, args_size=1
+         0: aload_0
+         1: invokespecial #2                  // Method A.doStuff:()V
+         4: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+         7: ldc           #4                  // String (B) doStuff()
+         9: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        12: aload_0
+        13: invokespecial #6                  // Method A.doOtherStuff:()V
+        16: return
+      LineNumberTable:
+        line 3: 0
+        line 4: 4
+        line 5: 12
+        line 6: 16
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0      17     0  this   LB;
+}
+SourceFile: "B.java"

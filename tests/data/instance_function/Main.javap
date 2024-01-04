@@ -1,0 +1,115 @@
+Classfile /home/florian/Documents/fh/WS23_24/Compilerbau/vm/main/tests/data/instance_function/Main.class
+  Last modified 25.12.2023; size 687 bytes
+  MD5 checksum 50a06d9b386962e95c2fee6b87693dc4
+  Compiled from "Main.java"
+public class org.cmjava2023.Main
+  minor version: 0
+  major version: 52
+  flags: ACC_PUBLIC, ACC_SUPER
+Constant pool:
+   #1 = Methodref          #8.#27         // java/lang/Object."<init>":()V
+   #2 = Fieldref           #3.#28         // org/cmjava2023/Main.num:I
+   #3 = Class              #29            // org/cmjava2023/Main
+   #4 = Methodref          #3.#30         // org/cmjava2023/Main."<init>":(I)V
+   #5 = Methodref          #3.#31         // org/cmjava2023/Main.doStuff:()V
+   #6 = Fieldref           #32.#33        // java/lang/System.out:Ljava/io/PrintStream;
+   #7 = Methodref          #34.#35        // java/io/PrintStream.println:(I)V
+   #8 = Class              #36            // java/lang/Object
+   #9 = Utf8               num
+  #10 = Utf8               I
+  #11 = Utf8               <init>
+  #12 = Utf8               (I)V
+  #13 = Utf8               Code
+  #14 = Utf8               LineNumberTable
+  #15 = Utf8               LocalVariableTable
+  #16 = Utf8               this
+  #17 = Utf8               Lorg/cmjava2023/Main;
+  #18 = Utf8               main
+  #19 = Utf8               ([Ljava/lang/String;)V
+  #20 = Utf8               args
+  #21 = Utf8               [Ljava/lang/String;
+  #22 = Utf8               m
+  #23 = Utf8               doStuff
+  #24 = Utf8               ()V
+  #25 = Utf8               SourceFile
+  #26 = Utf8               Main.java
+  #27 = NameAndType        #11:#24        // "<init>":()V
+  #28 = NameAndType        #9:#10         // num:I
+  #29 = Utf8               org/cmjava2023/Main
+  #30 = NameAndType        #11:#12        // "<init>":(I)V
+  #31 = NameAndType        #23:#24        // doStuff:()V
+  #32 = Class              #37            // java/lang/System
+  #33 = NameAndType        #38:#39        // out:Ljava/io/PrintStream;
+  #34 = Class              #40            // java/io/PrintStream
+  #35 = NameAndType        #41:#12        // println:(I)V
+  #36 = Utf8               java/lang/Object
+  #37 = Utf8               java/lang/System
+  #38 = Utf8               out
+  #39 = Utf8               Ljava/io/PrintStream;
+  #40 = Utf8               java/io/PrintStream
+  #41 = Utf8               println
+{
+  int num;
+    descriptor: I
+    flags:
+
+  public org.cmjava2023.Main(int);
+    descriptor: (I)V
+    flags: ACC_PUBLIC
+    Code:
+      stack=2, locals=2, args_size=2
+         0: aload_0
+         1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+         4: aload_0
+         5: iload_1
+         6: putfield      #2                  // Field num:I
+         9: return
+      LineNumberTable:
+        line 6: 0
+        line 7: 4
+        line 8: 9
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0      10     0  this   Lorg/cmjava2023/Main;
+            0      10     1   num   I
+
+  public static void main(java.lang.String[]);
+    descriptor: ([Ljava/lang/String;)V
+    flags: ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=3, locals=2, args_size=1
+         0: new           #3                  // class org/cmjava2023/Main
+         3: dup
+         4: bipush        10
+         6: invokespecial #4                  // Method "<init>":(I)V
+         9: astore_1
+        10: aload_1
+        11: invokevirtual #5                  // Method doStuff:()V
+        14: return
+      LineNumberTable:
+        line 11: 0
+        line 12: 10
+        line 13: 14
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0      15     0  args   [Ljava/lang/String;
+           10       5     1     m   Lorg/cmjava2023/Main;
+
+  public void doStuff();
+    descriptor: ()V
+    flags: ACC_PUBLIC
+    Code:
+      stack=2, locals=1, args_size=1
+         0: getstatic     #6                  // Field java/lang/System.out:Ljava/io/PrintStream;
+         3: aload_0
+         4: getfield      #2                  // Field num:I
+         7: invokevirtual #7                  // Method java/io/PrintStream.println:(I)V
+        10: return
+      LineNumberTable:
+        line 16: 0
+        line 17: 10
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0      11     0  this   Lorg/cmjava2023/Main;
+}
+SourceFile: "Main.java"
