@@ -1,4 +1,4 @@
-use std::{any::Any, ops::Neg, rc::Rc};
+use std::{any::Any, cmp::Ordering, ops::Neg, rc::Rc};
 
 use crate::{
     class::{
@@ -18,6 +18,12 @@ use crate::{
     },
     heap::Heap,
 };
+
+/// Explicitly compare only the data part of fat/trait/dyn Trait pointers.
+#[allow(clippy::ptr_eq)]
+fn trait_pointer_eq<T: ?Sized, U: ?Sized>(p: *const T, q: *const U) -> bool {
+    (p as *const ()) == (q as *const ())
+}
 
 #[derive(Clone, Debug)]
 pub enum ArrayReferenceKinds {
@@ -662,6 +668,47 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Dcmp(nan_handling) => {
+                let op2 = if let StackValue::Double(d) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    d
+                } else {
+                    panic!("expected double on top");
+                };
+                let op1 = if let StackValue::Double(d) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    d
+                } else {
+                    panic!("expected double on top");
+                };
+
+                match op1.partial_cmp(&op2) {
+                    Some(Ordering::Greater) => {
+                        frame.operand_stack.push(StackValue::Int(1)).unwrap();
+                    },
+                    Some(Ordering::Equal) => {
+                        frame.operand_stack.push(StackValue::Int(0)).unwrap();
+                    },
+                    Some(Ordering::Less) => {
+                        frame.operand_stack.push(StackValue::Int(-1)).unwrap();
+                    },
+                    None => match nan_handling {
+                        FloatCmp::Pg => frame
+                            .operand_stack
+                            .push(StackValue::Int(1))
+                            .unwrap(),
+                        FloatCmp::Pl => frame
+                            .operand_stack
+                            .push(StackValue::Int(-1))
+                            .unwrap(),
+                    },
+                }
+
+                Update::None
+            },
+
             Self::Dconst(d) => {
                 frame.operand_stack.push(StackValue::Double(*d)).unwrap();
 
@@ -931,6 +978,47 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Fcmp(nan_handling) => {
+                let op2 = if let StackValue::Float(d) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    d
+                } else {
+                    panic!("expected float on top");
+                };
+                let op1 = if let StackValue::Float(d) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    d
+                } else {
+                    panic!("expected float on top");
+                };
+
+                match op1.partial_cmp(&op2) {
+                    Some(Ordering::Greater) => {
+                        frame.operand_stack.push(StackValue::Int(1)).unwrap();
+                    },
+                    Some(Ordering::Equal) => {
+                        frame.operand_stack.push(StackValue::Int(0)).unwrap();
+                    },
+                    Some(Ordering::Less) => {
+                        frame.operand_stack.push(StackValue::Int(-1)).unwrap();
+                    },
+                    None => match nan_handling {
+                        FloatCmp::Pg => frame
+                            .operand_stack
+                            .push(StackValue::Int(1))
+                            .unwrap(),
+                        FloatCmp::Pl => frame
+                            .operand_stack
+                            .push(StackValue::Int(-1))
+                            .unwrap(),
+                    },
+                }
+
+                Update::None
+            },
+
             Self::Fconst(f) => {
                 frame.operand_stack.push(StackValue::Float(*f)).unwrap();
 
@@ -1055,6 +1143,10 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Goto(position, direction) => {
+                Update::GoTo(*position, *direction)
+            },
+
             Self::Iaload => {
                 let index = frame
                     .operand_stack
@@ -1170,6 +1262,267 @@ got: {:?}",
                 frame.operand_stack.push(StackValue::Int(result)).unwrap();
 
                 Update::None
+            },
+            Self::IfacmpNe(size, direction) => {
+                let op2: Option<Rc<dyn ClassInstance>> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let op1: Option<Rc<dyn ClassInstance>> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                match (op1, op2) {
+                    (Some(_), None) | (None, Some(_)) => {
+                        Update::GoTo(*size, *direction)
+                    },
+                    (None, None) => Update::None,
+                    (Some(op1), Some(op2)) => {
+                        if !trait_pointer_eq(op1.as_ref(), op2.as_ref()) {
+                            Update::GoTo(*size, *direction)
+                        } else {
+                            Update::None
+                        }
+                    },
+                }
+            },
+
+            Self::IfacmpEq(size, direction) => {
+                let op2: Option<Rc<dyn ClassInstance>> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let op1: Option<Rc<dyn ClassInstance>> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                match (op1, op2) {
+                    (Some(_), None) | (None, Some(_)) => Update::None,
+                    (None, None) => Update::GoTo(*size, *direction),
+                    (Some(op1), Some(op2)) => {
+                        if trait_pointer_eq(op1.as_ref(), op2.as_ref()) {
+                            Update::GoTo(*size, *direction)
+                        } else {
+                            Update::None
+                        }
+                    },
+                }
+            },
+
+            Self::IficmpEq(size, direction) => {
+                let op2 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let op1 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                if op1 == op2 {
+                    Update::GoTo(*size, *direction)
+                } else {
+                    Update::None
+                }
+            },
+
+            Self::IficmpNe(size, direction) => {
+                let op2 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let op1 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                if op1 != op2 {
+                    Update::GoTo(*size, *direction)
+                } else {
+                    Update::None
+                }
+            },
+
+            Self::IficmpLt(size, direction) => {
+                let op2 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let op1 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                if op1 < op2 {
+                    Update::GoTo(*size, *direction)
+                } else {
+                    Update::None
+                }
+            },
+
+            Self::IficmpGt(size, direction) => {
+                let op2 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let op1 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                if op1 > op2 {
+                    Update::GoTo(*size, *direction)
+                } else {
+                    Update::None
+                }
+            },
+
+            Self::IficmpLe(size, direction) => {
+                let op2 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let op1 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                if op1 <= op2 {
+                    Update::GoTo(*size, *direction)
+                } else {
+                    Update::None
+                }
+            },
+
+            Self::IficmpGe(size, direction) => {
+                let op2 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                let op1 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                if op1 >= op2 {
+                    Update::GoTo(*size, *direction)
+                } else {
+                    Update::None
+                }
+            },
+
+            Self::IfEq(size, direction) => {
+                let op1 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                if op1 == 0 {
+                    Update::GoTo(*size, *direction)
+                } else {
+                    Update::None
+                }
+            },
+
+            Self::IfNe(size, direction) => {
+                let op1 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                if op1 != 0 {
+                    Update::GoTo(*size, *direction)
+                } else {
+                    Update::None
+                }
+            },
+
+            Self::IfLt(size, direction) => {
+                let op1 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                if op1 < 0 {
+                    Update::GoTo(*size, *direction)
+                } else {
+                    Update::None
+                }
+            },
+
+            Self::IfGt(size, direction) => {
+                let op1 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                if op1 > 0 {
+                    Update::GoTo(*size, *direction)
+                } else {
+                    Update::None
+                }
+            },
+
+            Self::IfLe(size, direction) => {
+                let op1 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                if op1 <= 0 {
+                    Update::GoTo(*size, *direction)
+                } else {
+                    Update::None
+                }
+            },
+
+            Self::IfGe(size, direction) => {
+                let op1 = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+                if op1 >= 0 {
+                    Update::GoTo(*size, *direction)
+                } else {
+                    Update::None
+                }
+            },
+
+            Self::IfNonNull(size, direction) => {
+                let op1: Option<Rc<dyn ClassInstance>> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                if op1.is_some() {
+                    Update::GoTo(*size, *direction)
+                } else {
+                    Update::None
+                }
+            },
+
+            Self::IfNull(size, direction) => {
+                let op1: Option<Rc<dyn ClassInstance>> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                if op1.is_none() {
+                    Update::GoTo(*size, *direction)
+                } else {
+                    Update::None
+                }
             },
 
             Self::Iinc { index, constant } => {
@@ -1625,6 +1978,37 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Lcmp => {
+                let op2 = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long value");
+                };
+                let op1 = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long value");
+                };
+
+                match op1.cmp(&op2) {
+                    Ordering::Greater => {
+                        frame.operand_stack.push(StackValue::Int(1)).unwrap()
+                    },
+                    Ordering::Equal => {
+                        frame.operand_stack.push(StackValue::Int(0)).unwrap()
+                    },
+                    Ordering::Less => {
+                        frame.operand_stack.push(StackValue::Int(-1)).unwrap()
+                    },
+                };
+
+                Update::None
+            },
+
             Self::Lconst(l) => {
                 frame.operand_stack.push(StackValue::Long(*l)).unwrap();
 
@@ -1951,6 +2335,8 @@ got: {:?}",
 
                 Update::None
             },
+
+            Self::Nop => Update::None,
 
             Self::Return => Update::Return,
 
