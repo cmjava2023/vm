@@ -71,14 +71,14 @@ impl dyn Class {
     pub fn get_method(
         &self,
         method_name: &str,
-        method_descriptor: (Vec<ArgumentKind>, Option<ArgumentKind>),
+        method_descriptor: (&[ArgumentKind], Option<&ArgumentKind>),
     ) -> Option<Rc<Method>> {
         self.methods()
             .iter()
             .find(|element| {
                 element.name == method_name
                     && element.parameters == method_descriptor.0
-                    && element.return_type == method_descriptor.1
+                    && element.return_type.as_ref() == method_descriptor.1
             })
             .cloned()
     }

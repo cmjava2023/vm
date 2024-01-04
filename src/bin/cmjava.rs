@@ -119,7 +119,10 @@ fn main() -> anyhow::Result<()> {
     let main = &bytecode_classes
         .last()
         .unwrap()
-        .get_method("main", main_descriptor)
+        .get_method(
+            "main",
+            (main_descriptor.0.as_ref(), main_descriptor.1.as_ref()),
+        )
         .unwrap()
         .code;
     let main = if let MethodCode::Bytecode(code) = main {

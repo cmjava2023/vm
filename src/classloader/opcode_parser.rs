@@ -5,7 +5,7 @@ use nom::{
 };
 
 use crate::{
-    class::{Field, Method},
+    class::Field,
     classloader::{
         class_creator::signature_parser::parse_method_arguments,
         cp_decoder::{remove_cp_offset, RuntimeCPEntry},
@@ -13,7 +13,8 @@ use crate::{
     },
     executor::{
         op_code::{
-            ArrayReferenceKinds, ArrayType, Dup, FloatCmp, Ldc, OffsetDirection,
+            ArrayReferenceKinds, ArrayType, Dup, FloatCmp, Ldc,
+            MethodDescriptor, OffsetDirection, SymbolicMethod,
         },
         OpCode,
     },
@@ -155,32 +156,24 @@ fn parse_cp_method_ref<'a>(
     current_content: &'a [u8],
     _class_file: &ClassFile,
     runtime_cp: &[RuntimeCPEntry],
-    heap: &mut Heap,
-) -> IResult<&'a [u8], Rc<Method>> {
+) -> IResult<&'a [u8], SymbolicMethod> {
     let (current_content, cp_ref) = be_u16(current_content)?;
     let cp_entry = &runtime_cp[remove_cp_offset(cp_ref as usize)];
     let (class_name, name, descriptor) = cp_entry
         .as_method_ref()
         .unwrap_or_else(|| panic!("CPEntry {:?} is MethodRefInfo", cp_entry));
-    let class = heap
-        .find_class(class_name)
-        .unwrap_or_else(|| panic!("Class with name  {} exists", class_name));
     let descriptor = parse_method_arguments(descriptor);
-    let method = class.get_method(name, descriptor).unwrap_or_else(|| {
-        panic!("Class with name{} has method {}", class_name, name)
-    });
 
-    Ok((current_content, method))
-}
-
-fn parse_invokespecial<'a>(
-    current_content: &'a [u8],
-    _class_file: &ClassFile,
-    runtime_cp: &[RuntimeCPEntry],
-) -> IResult<&'a [u8], OpCode> {
-    let (current_content, cp_ref) = be_u16(current_content)?;
-    let cp_entry = &runtime_cp[remove_cp_offset(cp_ref as usize)];
-    Ok((current_content, OpCode::InvokeSpecial(cp_entry.clone())))
+    Ok((
+        current_content,
+        SymbolicMethod {
+            class_name: class_name.to_string(),
+            descriptor: MethodDescriptor {
+                name: name.to_string(),
+                descriptor,
+            },
+        },
+    ))
 }
 
 fn signed_offset_to_usize_and_direction(
@@ -1137,19 +1130,18 @@ on how to resolve fields at execution time"
                     current_content,
                     class_file,
                     runtime_cp,
-                    heap,
                 )?;
                 opcodes.push(OpCode::InvokeVirtual(method));
                 current_content = new_content;
             },
             183 => {
                 opcode_sizes.push(3);
-                let (new_content, opcode) = parse_invokespecial(
+                let (new_content, method) = parse_cp_method_ref(
                     current_content,
                     class_file,
                     runtime_cp,
                 )?;
-                opcodes.push(opcode);
+                opcodes.push(OpCode::InvokeSpecial(method));
                 current_content = new_content;
             },
             184 => {
@@ -1158,7 +1150,6 @@ on how to resolve fields at execution time"
                     current_content,
                     class_file,
                     runtime_cp,
-                    heap,
                 )?;
                 opcodes.push(OpCode::InvokeStatic(method));
                 current_content = new_content;
