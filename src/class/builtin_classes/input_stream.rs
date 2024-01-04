@@ -3,11 +3,28 @@
 use std::{any::Any, rc::Rc};
 
 use super::FileInputStream;
-use crate::class::{Class, ClassInstance, Field, Method};
+use crate::class::{
+    class_identifier, Class, ClassIdentifier, ClassInstance, Field, Method,
+};
 
-#[derive(Default)]
 pub struct InputStream {
+    class_identifier: ClassIdentifier,
     file_input_stream: FileInputStream,
+}
+
+impl InputStream {
+    pub fn new() -> Self {
+        InputStream {
+            class_identifier: class_identifier!(java / io, InputStream),
+            file_input_stream: FileInputStream::default(),
+        }
+    }
+}
+
+impl Default for InputStream {
+    fn default() -> Self {
+        InputStream::new()
+    }
 }
 
 impl InputStream {
@@ -31,12 +48,8 @@ impl Class for InputStream {
         self.file_input_stream.instance_fields()
     }
 
-    fn package(&self) -> &str {
-        "java/io"
-    }
-
-    fn name(&self) -> &str {
-        "InputStream"
+    fn class_identifier(&self) -> &crate::class::ClassIdentifier {
+        &self.class_identifier
     }
 
     fn super_class(&self) -> Option<Rc<dyn Class>> {

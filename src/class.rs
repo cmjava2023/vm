@@ -3,9 +3,265 @@ pub mod builtin_classes;
 pub mod bytecode_classes;
 
 use core::fmt;
-use std::{any::Any, rc::Rc};
+use std::{any::Any, borrow::Cow, rc::Rc};
 
 use crate::executor::{frame_stack::StackValue, Frame, OpCode, RuntimeError};
+
+macro_rules! class_identifier {
+    // put primitive array variants at the top,
+    // so that they're favored against package + class name
+    // variant
+    // (otherwise you end up with
+    //   { package: ["int"], class_name: Plain("dim") }
+    // )
+    (byte, $dim:expr) => {
+        crate::class::ClassIdentifier {
+            package: ::std::borrow::Cow::from(&[][..]),
+            class_name: crate::class::ClassName::Array {
+                dimensions: $dim,
+                name: crate::class::ArrayName::Byte,
+            },
+        }
+    };
+    (char, $dim:expr) => {
+        crate::class::ClassIdentifier {
+            package: ::std::borrow::Cow::from(&[][..]),
+            class_name: crate::class::ClassName::Array {
+                dimensions: $dim,
+                name: crate::class::ArrayName::Char,
+            },
+        }
+    };
+    (double, $dim:expr) => {
+        crate::class::ClassIdentifier {
+            package: ::std::borrow::Cow::from(&[][..]),
+            class_name: crate::class::ClassName::Array {
+                dimensions: $dim,
+                name: crate::class::ArrayName::Double,
+            },
+        }
+    };
+    (float, $dim:expr) => {
+        crate::class::ClassIdentifier {
+            package: ::std::borrow::Cow::from(&[][..]),
+            class_name: crate::class::ClassName::Array {
+                dimensions: $dim,
+                name: crate::class::ArrayName::Float,
+            },
+        }
+    };
+    (int, $dim:expr) => {
+        crate::class::ClassIdentifier {
+            package: ::std::borrow::Cow::from(&[][..]),
+            class_name: crate::class::ClassName::Array {
+                dimensions: $dim,
+                name: crate::class::ArrayName::Int,
+            },
+        }
+    };
+    (long, $dim:expr) => {
+        crate::class::ClassIdentifier {
+            package: ::std::borrow::Cow::from(&[][..]),
+            class_name: crate::class::ClassName::Array {
+                dimensions: $dim,
+                name: crate::class::ArrayName::Long,
+            },
+        }
+    };
+    (short, $dim:expr) => {
+        crate::class::ClassIdentifier {
+            package: ::std::borrow::Cow::from(&[][..]),
+            class_name: crate::class::ClassName::Array {
+                dimensions: $dim,
+                name: crate::class::ArrayName::Short,
+            },
+        }
+    };
+    (bool, $dim:expr) => {
+        crate::class::ClassIdentifier {
+            package: ::std::borrow::Cow::from(&[][..]),
+            class_name: crate::class::ClassName::Array {
+                dimensions: $dim,
+                name: crate::class::ArrayName::Boolean,
+            },
+        }
+    };
+    ($c:ident) => {
+        crate::class::ClassIdentifier {
+            package: ::std::borrow::Cow::from(&[][..]),
+            class_name: crate::class::ClassName::Plain(
+                ::std::borrow::Cow::from(stringify!($c))
+            ),
+        }
+    };
+    ($($p:ident)/+, $c:ident) => {
+        crate::class::ClassIdentifier {
+            package: ::std::borrow::Cow::from(vec![$(
+                ::std::borrow::Cow::from(stringify!($p)),
+            )*]),
+            class_name: crate::class::ClassName::Plain(
+                ::std::borrow::Cow::from(stringify!($c))
+            ),
+        }
+    };
+    ($dim:literal, $($p:ident)/+, $c:ident) => {
+        crate::class::ClassIdentifier {
+            package: ::std::borrow::Cow::from(vec![$(
+                ::std::borrow::Cow::from(stringify!($p)),
+            )*]),
+            class_name: crate::class::ClassName::Array {
+                dimensions: $dim,
+                name: crate::class::ArrayName::Class(
+                    ::std::borrow::Cow::from(stringify!($c))
+                ),
+            },
+        }
+    };
+    ($dim:literal, $c:ident) => {
+        crate::class::ClassIdentifier {
+            package: ::std::borrow::Cow::from(&[][..]),
+            class_name: crate::class::ClassName::Array {
+                dimensions: $dim,
+                name: crate::class::ArrayName::Class(
+                    ::std::borrow::Cow::from(stringify!($c))
+                ),
+            },
+        }
+    };
+}
+
+pub(crate) use class_identifier;
+
+#[derive(Eq, Hash, PartialEq, Clone, Debug)]
+pub struct ClassIdentifier {
+    pub package: Cow<'static, [Cow<'static, str>]>,
+    pub class_name: ClassName,
+}
+
+impl fmt::Display for ClassIdentifier {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        if let ClassName::Array { dimensions, .. } = &self.class_name {
+            for _ in 0..*dimensions {
+                write!(f, "[")?;
+            }
+        }
+        if self.package.len() > 0 {
+            write!(f, "{}/", self.package.join("/"))?;
+        }
+
+        match &self.class_name {
+            ClassName::Array { name, .. } => match name {
+                ArrayName::Byte => write!(f, "B"),
+                ArrayName::Char => write!(f, "C"),
+                ArrayName::Double => write!(f, "D"),
+                ArrayName::Float => write!(f, "F"),
+                ArrayName::Int => write!(f, "I"),
+                ArrayName::Long => write!(f, "J"),
+                ArrayName::Class(name) => write!(f, "{}", name),
+                ArrayName::Short => write!(f, "S"),
+                ArrayName::Boolean => write!(f, "Z"),
+            },
+            ClassName::Plain(name) => write!(f, "{}", name),
+        }
+    }
+}
+
+impl ClassIdentifier {
+    /// Returns the dimension and array class name of this identifier.
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if called with an identifier that
+    /// is a [ClassName::Plain] identifier.
+    pub fn get_array_class_name(&self) -> (usize, &ArrayName) {
+        match &self.class_name {
+            ClassName::Array { dimensions, name } => (*dimensions, name),
+            ClassName::Plain(_) => panic!(
+                "{:?} is a ClassName::Plain identifier, \
+but expected a ClassName::Array",
+                self
+            ),
+        }
+    }
+
+    /// Converts this identifier into
+    /// its package and array class name components.
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if called with an identifier that
+    /// is a [ClassName::Plain] identifier.
+    pub fn into_array_identifier(
+        self,
+    ) -> (Cow<'static, [Cow<'static, str>]>, (usize, ArrayName)) {
+        match self.class_name {
+            ClassName::Array { dimensions, name } => {
+                (self.package, (dimensions, name))
+            },
+            ClassName::Plain(_) => panic!(
+                "{:?} is a ClassName::Plain identifier, \
+but expected a ClassName::Array",
+                self
+            ),
+        }
+    }
+
+    /// Returns the plain class name of this identifier.
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if called with an identifier that
+    /// is a [ClassName::Array] identifier.
+    pub fn get_plain_name(&self) -> &Cow<'static, str> {
+        match &self.class_name {
+            ClassName::Plain(name) => name,
+            ClassName::Array { .. } => panic!(
+                "{:?} is a ClassName::ArrayName identifier, \
+but expected a ClassName::Plain",
+                self
+            ),
+        }
+    }
+
+    /// Converts this identifier into
+    /// its package and plain class name components.
+    ///
+    /// # Panics
+    ///
+    /// This function will panic if called with an identifier that
+    /// is a [ClassName::Array] identifier.
+    pub fn into_plain_identifier(
+        self,
+    ) -> (Cow<'static, [Cow<'static, str>]>, Cow<'static, str>) {
+        match self.class_name {
+            ClassName::Plain(name) => (self.package, name),
+            ClassName::Array { .. } => panic!(
+                "{:?} is a ClassName::ArrayName identifier, \
+but expected a ClassName::Plain",
+                self
+            ),
+        }
+    }
+}
+
+#[derive(Eq, Hash, PartialEq, Clone, Debug)]
+pub enum ClassName {
+    Array { dimensions: usize, name: ArrayName },
+    Plain(Cow<'static, str>),
+}
+
+#[derive(Eq, Hash, PartialEq, Clone, Debug)]
+pub enum ArrayName {
+    Byte,
+    Char,
+    Double,
+    Float,
+    Int,
+    Long,
+    Class(Cow<'static, str>),
+    Short,
+    Boolean,
+}
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ArgumentKind {
@@ -57,8 +313,7 @@ pub trait Class {
     fn static_fields(&self) -> &[Rc<Field>];
     fn instance_fields(&self) -> &[String];
     // TODO flags
-    fn package(&self) -> &str;
-    fn name(&self) -> &str;
+    fn class_identifier(&self) -> &ClassIdentifier;
     fn super_class(&self) -> Option<Rc<dyn Class>>;
     // TODO how are interfaces represented?
     fn interfaces(&self) -> &[Rc<dyn std::any::Any>];
@@ -93,7 +348,7 @@ impl dyn Class {
 
 impl std::fmt::Debug for dyn Class {
     fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "Class '{}/{}'", self.package(), self.name())
+        write!(f, "Class '{}'", self.class_identifier())
     }
 }
 
@@ -103,8 +358,7 @@ pub struct BytecodeClass {
     pub static_fields: Vec<Rc<Field>>,
     pub instance_fields: Vec<String>,
     // TODO flags
-    pub package: String,
-    pub name: String,
+    pub class_identifier: ClassIdentifier,
     pub super_class: Option<Rc<dyn Class>>,
     // TODO how are interfaces represented?
     pub interfaces: Vec<Rc<dyn std::any::Any>>,
@@ -201,7 +455,7 @@ pub trait ClassInstance {
 
 impl fmt::Debug for dyn ClassInstance {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "instance of Class '{}'", self.class().name())
+        write!(f, "instance of Class '{}'", self.class().class_identifier())
     }
 }
 

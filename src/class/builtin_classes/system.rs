@@ -2,10 +2,11 @@ use std::{any::Any, rc::Rc};
 
 use crate::class::{
     builtin_classes::{InputStream, PrintStream},
-    Class, Field, FieldValue, Method,
+    class_identifier, Class, ClassIdentifier, Field, FieldValue, Method,
 };
 
 pub struct SystemClass {
+    class_identifier: ClassIdentifier,
     fields: Vec<Rc<Field>>,
 }
 
@@ -29,7 +30,10 @@ impl SystemClass {
                 ))),
             }),
         ];
-        Self { fields }
+        Self {
+            class_identifier: class_identifier!(java / lang, System),
+            fields,
+        }
     }
 }
 
@@ -46,12 +50,8 @@ impl Class for SystemClass {
         &[]
     }
 
-    fn package(&self) -> &str {
-        "java/lang"
-    }
-
-    fn name(&self) -> &str {
-        "System"
+    fn class_identifier(&self) -> &crate::class::ClassIdentifier {
+        &self.class_identifier
     }
 
     fn super_class(&self) -> Option<Rc<dyn Class>> {

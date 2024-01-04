@@ -6,7 +6,7 @@ pub mod file_parser;
 pub mod opcode_parser;
 pub mod raw;
 
-use std::{path::Path, rc::Rc, usize};
+use std::{borrow::Cow, path::Path, rc::Rc, usize};
 
 use enumflags2::BitFlags;
 
@@ -17,11 +17,30 @@ use self::{
 use crate::{
     class::{
         access_flags::{ClassAccessFlag, FieldAccessFlag, MethodAccessFlag},
-        Class,
+        Class, ClassIdentifier,
     },
     classloader::constant_pool::CpInfo,
     heap::Heap,
 };
+
+pub fn parse_class_identifier(name: &str) -> ClassIdentifier {
+    let (package, class_name) = match name.rsplit_once('/') {
+        Some((package, name)) => (
+            package
+                .split('/')
+                .map(|c| Cow::from(c.to_string()))
+                .collect(),
+            name,
+        ),
+        None => (vec![], name),
+    };
+    ClassIdentifier {
+        package: package.into(),
+        class_name: crate::class::ClassName::Plain(
+            class_name.to_string().into(),
+        ),
+    }
+}
 
 #[derive(Debug, Copy, Clone)]
 pub enum ReferenceKind {
@@ -146,16 +165,10 @@ pub fn load_class<P: AsRef<Path>>(
     let class = parse_attributes(raw_class);
     let bytecode_class: Rc<dyn Class> =
         Rc::new(create_bytecode_class(&class, heap));
-    if bytecode_class.package() == "" {
-        heap.add_class(
-            bytecode_class.name().to_string(),
-            bytecode_class.clone(),
-        );
-    } else {
-        heap.add_class(
-            format!("{}/{}", bytecode_class.package(), bytecode_class.name()),
-            bytecode_class.clone(),
-        );
-    }
+
+    heap.add_class(
+        bytecode_class.class_identifier().clone(),
+        bytecode_class.clone(),
+    );
     bytecode_class
 }

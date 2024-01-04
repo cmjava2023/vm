@@ -1,12 +1,18 @@
 use std::{any::Any, rc::Rc};
 
-use crate::class::{Class, ClassInstance, Field, Method};
+use crate::class::{
+    class_identifier, Class, ClassIdentifier, ClassInstance, Field, Method,
+};
 
-pub struct StringClass {}
+pub struct StringClass {
+    class_identifier: ClassIdentifier,
+}
 
 impl StringClass {
     pub fn new() -> StringClass {
-        StringClass {}
+        StringClass {
+            class_identifier: class_identifier!(java / lang, String),
+        }
     }
 
     pub fn new_instance(self: &Rc<Self>, string: String) -> StringInstance {
@@ -36,12 +42,8 @@ impl Class for StringClass {
         &[]
     }
 
-    fn package(&self) -> &str {
-        "java/lang"
-    }
-
-    fn name(&self) -> &str {
-        "String"
+    fn class_identifier(&self) -> &crate::class::ClassIdentifier {
+        &self.class_identifier
     }
 
     fn super_class(&self) -> Option<Rc<dyn Class>> {

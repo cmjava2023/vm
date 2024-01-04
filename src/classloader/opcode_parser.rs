@@ -4,8 +4,9 @@ use nom::{
     IResult,
 };
 
+use super::parse_class_identifier;
 use crate::{
-    class::Field,
+    class::{class_identifier, ArrayName, ClassIdentifier, ClassName, Field},
     classloader::{
         class_creator::signature_parser::parse_method_arguments,
         cp_decoder::{remove_cp_offset, RuntimeCPEntry},
@@ -13,8 +14,8 @@ use crate::{
     },
     executor::{
         op_code::{
-            ArrayReferenceKinds, ArrayType, Dup, FloatCmp, Ldc,
-            MethodDescriptor, OffsetDirection, SymbolicMethod,
+            ArrayType, Dup, FloatCmp, Ldc, MethodDescriptor, OffsetDirection,
+            SymbolicMethod,
         },
         OpCode,
     },
@@ -107,7 +108,7 @@ fn parse_static_field<'a>(
         .as_field_ref()
         .unwrap_or_else(|| panic!("CPentry {:?} is FieldRefInfo", cp_entry));
     let class = heap
-        .find_class(class_name)
+        .find_class(&parse_class_identifier(class_name))
         .unwrap_or_else(|| panic!("Class with name  {} exists", class_name));
     let field = class.get_static_field(name).unwrap_or_else(|| {
         panic!("Class with name{} has method {}", class_name, name)
@@ -167,7 +168,7 @@ fn parse_cp_method_ref<'a>(
     Ok((
         current_content,
         SymbolicMethod {
-            class_name: class_name.to_string(),
+            class_name: parse_class_identifier(class_name),
             descriptor: MethodDescriptor {
                 name: name.to_string(),
                 descriptor,
@@ -1188,45 +1189,55 @@ on how to resolve at execution time"
                 let cp_entry = &runtime_cp[remove_cp_offset(index as usize)];
                 let class_name = cp_entry.as_class().unwrap();
                 // get underlying component class for array
-                let array_cls = if class_name.starts_with('[') {
+                let array_cls_indentifier = if class_name.starts_with('[') {
                     // array
                     let (array_dim, kind) =
                         class_name.rsplit_once('[').unwrap();
-                    let scalar_class = match kind {
-                        "L" => {
-                            let cls_name = &kind[1..kind.len() - 1];
-                            ArrayReferenceKinds::Object(
-                                heap.find_class(cls_name).unwrap().clone(),
-                            )
-                        },
-                        "Z" => ArrayReferenceKinds::Boolean,
-                        "B" => ArrayReferenceKinds::Byte,
-                        "C" => ArrayReferenceKinds::Char,
-                        "D" => ArrayReferenceKinds::Double,
-                        "F" => ArrayReferenceKinds::Float,
-                        "J" => ArrayReferenceKinds::Long,
-                        "I" => ArrayReferenceKinds::Int,
-                        "S" => ArrayReferenceKinds::Short,
-                        _ => panic!(
-                            "unexpected array class name: {}",
-                            class_name
-                        ),
-                    };
 
                     // +1 for removed dim in rsplit
                     // +1 for implicit dim in op-code anewarray
                     let dim = array_dim.len() + 2;
 
-                    heap.find_array_class(scalar_class, dim.try_into().unwrap())
+                    match kind {
+                        "L" => {
+                            let cls_name = &kind[1..kind.len() - 1];
+                            let (package, name) =
+                                parse_class_identifier(cls_name)
+                                    .into_plain_identifier();
+                            ClassIdentifier {
+                                package,
+                                class_name: ClassName::Array {
+                                    dimensions: dim,
+                                    name: ArrayName::Class(name),
+                                },
+                            }
+                        },
+                        "Z" => class_identifier!(bool, dim),
+                        "B" => class_identifier!(byte, dim),
+                        "C" => class_identifier!(char, dim),
+                        "D" => class_identifier!(double, dim),
+                        "F" => class_identifier!(float, dim),
+                        "J" => class_identifier!(long, dim),
+                        "I" => class_identifier!(int, dim),
+                        "S" => class_identifier!(short, dim),
+                        _ => panic!(
+                            "unexpected array class name: {}",
+                            class_name
+                        ),
+                    }
                 } else {
-                    let scalar_class = heap.find_class(class_name).unwrap();
-                    // object
-                    heap.find_array_class(
-                        ArrayReferenceKinds::Object(scalar_class.clone()),
-                        1,
-                    )
-                }
-                .unwrap();
+                    let (package, name) = parse_class_identifier(class_name)
+                        .into_plain_identifier();
+                    ClassIdentifier {
+                        package,
+                        class_name: ClassName::Array {
+                            dimensions: 1,
+                            name: ArrayName::Class(name),
+                        },
+                    }
+                };
+                let array_cls =
+                    heap.find_array_class(&array_cls_indentifier).unwrap();
                 opcodes.push(OpCode::AnewArray(array_cls));
             },
             190 => {
@@ -1276,43 +1287,54 @@ on how to resolve at execution time"
             197 => {
                 opcode_sizes.push(4);
                 let (new_content, index) = be_u16(current_content)?;
-                let (new_content, dimensions) = be_u8(new_content)?;
+                let (new_content, dim) = be_u8(new_content)?;
+                let dim: usize = dim.into();
                 current_content = new_content;
                 let cp_entry = &runtime_cp[remove_cp_offset(index as usize)];
                 let class_name = cp_entry.as_class().unwrap();
                 // get underlying component class for array
-                let array_cls = if class_name.starts_with('[') {
+                let array_identifier = if class_name.starts_with('[') {
                     // array
                     let (_, kind) = class_name.rsplit_once('[').unwrap();
                     match kind {
                         "L" => {
                             let cls_name = &kind[1..kind.len() - 1];
-                            ArrayReferenceKinds::Object(
-                                heap.find_class(cls_name).unwrap().clone(),
-                            )
+                            let (package, name) =
+                                parse_class_identifier(cls_name)
+                                    .into_plain_identifier();
+                            ClassIdentifier {
+                                package,
+                                class_name: ClassName::Array {
+                                    dimensions: dim,
+                                    name: ArrayName::Class(name),
+                                },
+                            }
                         },
-                        "Z" => ArrayReferenceKinds::Boolean,
-                        "B" => ArrayReferenceKinds::Byte,
-                        "C" => ArrayReferenceKinds::Char,
-                        "D" => ArrayReferenceKinds::Double,
-                        "F" => ArrayReferenceKinds::Float,
-                        "J" => ArrayReferenceKinds::Long,
-                        "I" => ArrayReferenceKinds::Int,
-                        "S" => ArrayReferenceKinds::Short,
+                        "Z" => class_identifier!(bool, dim),
+                        "B" => class_identifier!(byte, dim),
+                        "C" => class_identifier!(char, dim),
+                        "D" => class_identifier!(double, dim),
+                        "F" => class_identifier!(float, dim),
+                        "J" => class_identifier!(long, dim),
+                        "I" => class_identifier!(int, dim),
+                        "S" => class_identifier!(short, dim),
                         _ => panic!(
                             "unexpected array class name: {}",
                             class_name
                         ),
                     }
                 } else {
-                    ArrayReferenceKinds::Object(
-                        heap.find_class(class_name).unwrap().clone(),
-                    )
+                    let (package, name) = parse_class_identifier(class_name)
+                        .into_plain_identifier();
+                    ClassIdentifier {
+                        package,
+                        class_name: ClassName::Array {
+                            dimensions: dim,
+                            name: ArrayName::Class(name),
+                        },
+                    }
                 };
-                opcodes.push(OpCode::MultiAnewArray {
-                    reference_kind: array_cls,
-                    dimensions,
-                });
+                opcodes.push(OpCode::MultiAnewArray(array_identifier));
             },
             198 => {
                 opcode_sizes.push(3);
