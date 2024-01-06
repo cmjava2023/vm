@@ -1113,17 +1113,27 @@ pub fn parse_opcodes<'a>(
             },
             180 => {
                 opcode_sizes.push(3);
-                todo!(
-                    "GetField(Rc<dyn Any>), needs information \
-on how to resolve fields at execution time"
-                )
+                let (new_content, index) = be_u16(current_content)?;
+                current_content = new_content;
+                let cp_entry = &runtime_cp[remove_cp_offset(index as usize)];
+                let (field_name, class, _descriptor) =
+                    cp_entry.as_field_ref().unwrap();
+                opcodes.push(OpCode::GetField {
+                    class: (class.to_string()),
+                    field_name: field_name.to_string(),
+                })
             },
             181 => {
                 opcode_sizes.push(3);
-                todo!(
-                    "PutField(Rc<dyn Any>), needs information \
-on how to resolve fields at execution time"
-                )
+                let (new_content, index) = be_u16(current_content)?;
+                current_content = new_content;
+                let cp_entry = &runtime_cp[remove_cp_offset(index as usize)];
+                let (field_name, class, _descriptor) =
+                    cp_entry.as_field_ref().unwrap();
+                opcodes.push(OpCode::PutField {
+                    class: (class.to_string()),
+                    field_name: field_name.to_string(),
+                })
             },
             182 => {
                 opcode_sizes.push(3);
@@ -1171,10 +1181,12 @@ on how to resolve at execution time"
             },
             187 => {
                 opcode_sizes.push(3);
-                todo!(
-                    "New(Rc<dyn Any>), needs information \
-on how to resolve at execution time"
-                )
+                let (new_content, index) = be_u16(current_content)?;
+                current_content = new_content;
+                let cp_entry = &runtime_cp[remove_cp_offset(index as usize)];
+                let class_name = cp_entry.as_class().unwrap();
+                let identifier = parse_class_identifier(class_name);
+                opcodes.push(OpCode::New(identifier));
             },
             188 => {
                 opcode_sizes.push(2);

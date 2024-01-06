@@ -11,10 +11,9 @@ fn simple_inheritance() -> Result<(), Box<dyn std::error::Error>> {
     // contains both an assert.failure() and an assert.success(),
     // so that failure() can be simply removed when all features
     // are implemented
-    cmd.assert().failure().stderr(predicate::str::contains(
-        "New(Rc<dyn Any>), \
-needs information on how to resolve at execution time",
-    ));
+    cmd.assert()
+        .failure()
+        .stderr(predicate::str::contains("OpCode implementation for: New"));
     // cmd.assert().success().stdout(predicate::str::contains(
     //     "(A) doStuff()\n(B) doStuff()\n(A) doOtherStuff()\n",
     // ));
