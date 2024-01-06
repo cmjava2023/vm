@@ -39,7 +39,7 @@ pub fn run(code: &Code, heap: &mut Heap) {
     loop {
         match current_pc.current().0.execute(&mut current_frame, heap) {
             Update::None => current_pc.next(1).unwrap(),
-            Update::MethodCall(method) => match &method.code {
+            Update::MethodCall { method, is_static } => match &method.code {
                 MethodCode::Bytecode(c) => {
                     let mut new_frame = Frame {
                         local_variables: LocalVariables::new(
@@ -48,6 +48,11 @@ pub fn run(code: &Code, heap: &mut Heap) {
                         operand_stack: FrameStack::new(c.stack_depth),
                     };
                     let pc = ProgramCounter::new(c.byte_code.clone());
+
+                    assert_eq!(
+                        is_static, method.is_static,
+                        "method metadata and InvokeXXX agree"
+                    );
 
                     prepare_parameters(
                         &mut current_frame,
@@ -203,7 +208,7 @@ pub enum Update {
     None,
     Return(ReturnValue),
     GoTo(usize, OffsetDirection),
-    MethodCall(Rc<Method>),
+    MethodCall { method: Rc<Method>, is_static: bool },
 }
 
 pub enum ReturnValue {
