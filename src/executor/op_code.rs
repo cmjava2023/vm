@@ -14,7 +14,7 @@ use crate::{
     },
     executor::{
         frame_stack::StackValue, local_variables::VariableValueOrValue, Frame,
-        Update,
+        ReturnValue, Update,
     },
     heap::Heap,
 };
@@ -352,6 +352,13 @@ on top of the stack, got: {:?}",
                     .unwrap();
 
                 Update::None
+            },
+
+            Self::Areturn => {
+                let retval: Option<Rc<dyn ClassInstance>> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+
+                Update::Return(ReturnValue::Reference(retval))
             },
 
             Self::ArrayLength => {
@@ -813,6 +820,18 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Dreturn => {
+                let retval = if let StackValue::Double(d) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    d
+                } else {
+                    panic!("expected double on top");
+                };
+
+                Update::Return(ReturnValue::Double(retval))
+            },
+
             // note: split this into multiple cases,
             // in case the types are supposed to be verified
             Self::Astore(index)
@@ -1108,6 +1127,18 @@ got: {:?}",
                     .unwrap();
 
                 Update::None
+            },
+
+            Self::Freturn => {
+                let retval = if let StackValue::Float(d) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    d
+                } else {
+                    panic!("expected float on top");
+                };
+
+                Update::Return(ReturnValue::Float(retval))
             },
 
             Self::Fsub => {
@@ -1576,6 +1607,24 @@ got: {:?}",
                 Update::None
             },
 
+            Self::InvokeStatic(method) => {
+                let class = heap.find_class(&method.class_name).unwrap();
+                let method = class
+                    .get_method(
+                        &method.descriptor.name,
+                        (
+                            &method.descriptor.descriptor.0,
+                            method.descriptor.descriptor.1.as_ref(),
+                        ),
+                    )
+                    .unwrap();
+
+                Update::MethodCall {
+                    method,
+                    is_static: true,
+                }
+            },
+
             Self::InvokeVirtual(method) => {
                 let class = heap.find_class(&method.class_name).unwrap();
                 let method = class
@@ -1588,7 +1637,10 @@ got: {:?}",
                     )
                     .unwrap();
 
-                Update::MethodCall(method)
+                Update::MethodCall {
+                    method,
+                    is_static: false,
+                }
             },
 
             Self::Ior => {
@@ -1631,6 +1683,17 @@ got: {:?}",
                 frame.operand_stack.push(StackValue::Int(result)).unwrap();
 
                 Update::None
+            },
+
+            Self::Ireturn => {
+                let retval = frame
+                    .operand_stack
+                    .pop()
+                    .unwrap()
+                    .as_computation_int()
+                    .unwrap();
+
+                Update::Return(ReturnValue::Int(retval))
             },
 
             Self::Ishl => {
@@ -2160,6 +2223,18 @@ got: {:?}",
                 Update::None
             },
 
+            Self::Lreturn => {
+                let retval = if let StackValue::Long(l) =
+                    frame.operand_stack.pop().unwrap()
+                {
+                    l
+                } else {
+                    panic!("expected long on top");
+                };
+
+                Update::Return(ReturnValue::Long(retval))
+            },
+
             Self::Lshl => {
                 let op2 = frame
                     .operand_stack
@@ -2346,7 +2421,7 @@ got: {:?}",
 
             Self::Nop => Update::None,
 
-            Self::Return => Update::Return,
+            Self::Return => Update::Return(ReturnValue::Void),
 
             Self::Saload => {
                 let index = frame
