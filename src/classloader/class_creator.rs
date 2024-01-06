@@ -4,7 +4,10 @@ use std::rc::Rc;
 
 use super::parse_class_identifier;
 use crate::{
-    class::{BytecodeClass, Code, Field, FieldDescriptor, Method, MethodCode},
+    class::{
+        access_flags::FieldAccessFlag, BytecodeClass, Code, Field,
+        FieldDescriptor, FieldKind, FieldValue, Method, MethodCode,
+    },
     classloader::{
         class_creator::signature_parser::parse_method_arguments,
         cp_decoder::{decode_constant_pool, remove_cp_offset, RuntimeCPEntry},
@@ -74,17 +77,71 @@ fn create_bytecode_methods(
 }
 
 fn create_bytecode_fields(
-    _class_file: &ClassFile,
+    class_file: &ClassFile,
     _runtime_cp: &[RuntimeCPEntry],
-) -> Vec<Rc<Field>> {
-    Vec::new()
-}
+) -> (Vec<Rc<Field>>, Vec<FieldDescriptor>) {
+    let mut instance_fields = Vec::new();
+    let mut static_fields = Vec::new();
 
-fn create_bytecode_instance_fields(
-    _class_file: &ClassFile,
-    _runtime_cp: &[RuntimeCPEntry],
-) -> Vec<FieldDescriptor> {
-    Vec::new()
+    for field_info in &class_file.fields {
+        if field_info.access_flags.contains(FieldAccessFlag::Static) {
+            let name = class_file
+                .get_java_cp_entry(field_info.name_index as usize)
+                .unwrap()
+                .as_utf8_info()
+                .unwrap()
+                .to_string();
+            let desciptor = class_file
+                .get_java_cp_entry(field_info.descriptor_index as usize)
+                .unwrap()
+                .as_utf8_info()
+                .unwrap();
+            // everything except one of B C D F I J S Z
+            // means a non primitive type wich are handled
+            // the same for default values
+            let value = match desciptor {
+                "B" => FieldValue::byte(),
+                "C" => FieldValue::char(),
+                "D" => FieldValue::double(),
+                "F" => FieldValue::float(),
+                "I" => FieldValue::int(),
+                "J" => FieldValue::long(),
+                "S" => FieldValue::short(),
+                "Z" => FieldValue::boolean(),
+                _ => FieldValue::reference(),
+            };
+            static_fields.push(Rc::new(Field { name, value }));
+        } else {
+            let name = class_file
+                .get_java_cp_entry(field_info.name_index as usize)
+                .unwrap()
+                .as_utf8_info()
+                .unwrap()
+                .to_string();
+            let desciptor = class_file
+                .get_java_cp_entry(field_info.descriptor_index as usize)
+                .unwrap()
+                .as_utf8_info()
+                .unwrap();
+            // everything except one of B C D F I J S Z
+            // means a non primitive type
+            // wich are handled the same for default values
+            let kind = match desciptor {
+                "B" => FieldKind::Byte,
+                "C" => FieldKind::Char,
+                "D" => FieldKind::Double,
+                "F" => FieldKind::Float,
+                "I" => FieldKind::Int,
+                "J" => FieldKind::Long,
+                "S" => FieldKind::Short,
+                "Z" => FieldKind::Boolean,
+                _ => FieldKind::Reference,
+            };
+            instance_fields.push(FieldDescriptor { name, kind });
+        }
+    }
+
+    (static_fields, instance_fields)
 }
 
 pub fn create_bytecode_class(
@@ -94,9 +151,8 @@ pub fn create_bytecode_class(
     let runtime_cp = decode_constant_pool(class_file);
 
     let methods = create_bytecode_methods(class_file, &runtime_cp, heap);
-    let static_fields = create_bytecode_fields(class_file, &runtime_cp);
-    let instance_fields =
-        create_bytecode_instance_fields(class_file, &runtime_cp);
+    let (static_fields, instance_fields) =
+        create_bytecode_fields(class_file, &runtime_cp);
     let class: &RuntimeCPEntry =
         &runtime_cp[remove_cp_offset(class_file.this_class as usize)];
     let class_identifier = parse_class_identifier(class.as_class().unwrap());
