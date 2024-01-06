@@ -9,7 +9,8 @@ use crate::{
             LongArray, LongArrayInstance, ObjectArray, ObjectArrayInstance,
             ShortArray, ShortArrayInstance,
         },
-        ArgumentKind, Class, ClassInstance, Field, Method,
+        ArgumentKind, ArrayName, Class, ClassIdentifier, ClassInstance,
+        ClassName, Field, Method,
     },
     executor::{
         frame_stack::StackValue, local_variables::VariableValueOrValue, Frame,
@@ -32,21 +33,8 @@ pub struct MethodDescriptor {
 
 #[derive(Clone, Debug)]
 pub struct SymbolicMethod {
-    pub class_name: String,
+    pub class_name: ClassIdentifier,
     pub descriptor: MethodDescriptor,
-}
-
-#[derive(Clone, Debug)]
-pub enum ArrayReferenceKinds {
-    Boolean,
-    Byte,
-    Char,
-    Double,
-    Float,
-    Long,
-    Int,
-    Short,
-    Object(Rc<dyn Class>),
 }
 
 #[derive(Clone, Debug)]
@@ -263,10 +251,7 @@ pub enum OpCode {
     Monitorenter,
     // definitely unsupported
     Monitorexit,
-    MultiAnewArray {
-        reference_kind: ArrayReferenceKinds,
-        dimensions: u8,
-    },
+    MultiAnewArray(ClassIdentifier),
     // classname
     New(String),
     NewArray(ArrayType),
@@ -1870,15 +1855,13 @@ got: {:?}",
                 Update::None
             },
 
-            Self::MultiAnewArray {
-                reference_kind,
-                dimensions,
-            } => {
+            Self::MultiAnewArray(identifier) => {
                 let mut array_lens: Vec<usize> = vec![0]; // 1-based
 
+                let (dimensions, _) = identifier.get_array_class_name();
                 // stack contains as many counts as there are dimensions
                 // inner most dimension is on top of stack, outer most on bottom
-                for _ in 0..*dimensions {
+                for _ in 0..dimensions {
                     array_lens.push(
                         frame
                             .operand_stack
@@ -1893,15 +1876,13 @@ got: {:?}",
 
                 let outer_array = init_array(
                     heap,
-                    reference_kind.clone(),
-                    *dimensions,
-                    array_lens[Into::<usize>::into(*dimensions)],
+                    identifier,
+                    array_lens[Into::<usize>::into(dimensions)],
                 );
                 init_array_rec(
                     heap,
-                    reference_kind.clone(),
+                    identifier,
                     &array_lens,
-                    *dimensions,
                     outer_array.clone(),
                 );
 
@@ -2414,15 +2395,12 @@ got: {:?}",
 /// Only used in opcode multianewarray.
 fn init_array(
     heap: &mut Heap,
-    component_type: ArrayReferenceKinds,
-    dim_count: u8,
+    array_identifier: &ClassIdentifier,
     array_len: usize,
 ) -> Rc<dyn ClassInstance> {
-    let array_cls = heap
-        .find_array_class(component_type.clone(), dim_count)
-        .unwrap();
-    if dim_count > 1 || matches!(component_type, ArrayReferenceKinds::Object(_))
-    {
+    let array_cls = heap.find_array_class(array_identifier).unwrap();
+    let (dim_count, component_type) = array_identifier.get_array_class_name();
+    if dim_count > 1 || matches!(component_type, ArrayName::Class(_)) {
         // array_cls must be an obj array
         // construct new array
         let array_cls_for_ref = array_cls.clone();
@@ -2437,7 +2415,7 @@ fn init_array(
         // array_cls must be a primitive array
         // construct new array based on actual component_type
         match component_type {
-            ArrayReferenceKinds::Boolean => {
+            ArrayName::Boolean => {
                 let array_cls_for_ref = array_cls.clone();
                 let array_ref: &BoolArray =
                     array_cls_for_ref.as_ref().try_into().unwrap();
@@ -2447,7 +2425,7 @@ fn init_array(
 
                 Rc::new(array_inst)
             },
-            ArrayReferenceKinds::Byte => {
+            ArrayName::Byte => {
                 let array_cls_for_ref = array_cls.clone();
                 let array_ref: &ByteArray =
                     array_cls_for_ref.as_ref().try_into().unwrap();
@@ -2457,7 +2435,7 @@ fn init_array(
 
                 Rc::new(array_inst)
             },
-            ArrayReferenceKinds::Char => {
+            ArrayName::Char => {
                 let array_cls_for_ref = array_cls.clone();
                 let array_ref: &CharArray =
                     array_cls_for_ref.as_ref().try_into().unwrap();
@@ -2467,7 +2445,7 @@ fn init_array(
 
                 Rc::new(array_inst)
             },
-            ArrayReferenceKinds::Double => {
+            ArrayName::Double => {
                 let array_cls_for_ref = array_cls.clone();
                 let array_ref: &DoubleArray =
                     array_cls_for_ref.as_ref().try_into().unwrap();
@@ -2477,7 +2455,7 @@ fn init_array(
 
                 Rc::new(array_inst)
             },
-            ArrayReferenceKinds::Float => {
+            ArrayName::Float => {
                 let array_cls_for_ref = array_cls.clone();
                 let array_ref: &FloatArray =
                     array_cls_for_ref.as_ref().try_into().unwrap();
@@ -2487,7 +2465,7 @@ fn init_array(
 
                 Rc::new(array_inst)
             },
-            ArrayReferenceKinds::Long => {
+            ArrayName::Long => {
                 let array_cls_for_ref = array_cls.clone();
                 let array_ref: &LongArray =
                     array_cls_for_ref.as_ref().try_into().unwrap();
@@ -2497,7 +2475,7 @@ fn init_array(
 
                 Rc::new(array_inst)
             },
-            ArrayReferenceKinds::Int => {
+            ArrayName::Int => {
                 let array_cls_for_ref = array_cls.clone();
                 let array_ref: &IntArray =
                     array_cls_for_ref.as_ref().try_into().unwrap();
@@ -2507,7 +2485,7 @@ fn init_array(
 
                 Rc::new(array_inst)
             },
-            ArrayReferenceKinds::Short => {
+            ArrayName::Short => {
                 let array_cls_for_ref = array_cls.clone();
                 let array_ref: &ShortArray =
                     array_cls_for_ref.as_ref().try_into().unwrap();
@@ -2517,7 +2495,7 @@ fn init_array(
 
                 Rc::new(array_inst)
             },
-            ArrayReferenceKinds::Object(_) => {
+            ArrayName::Class(_) => {
                 unreachable!("should be handled by if case above")
             },
         }
@@ -2530,32 +2508,36 @@ fn init_array(
 /// array_lens is indexed 1-based!
 fn init_array_rec(
     heap: &mut Heap,
-    component_type: ArrayReferenceKinds,
+    array_identifier: &ClassIdentifier,
     array_lens: &[usize],
-    dim: u8,
     outer_array: Rc<dyn ClassInstance>,
 ) {
+    let (package, (dim, component_type)) =
+        array_identifier.clone().into_array_identifier();
+
     if dim == 1 {
         // rec exit
         return;
     }
+
+    let new_identifier = ClassIdentifier {
+        package,
+        class_name: ClassName::Array {
+            dimensions: dim - 1,
+            name: component_type.clone(),
+        },
+    };
 
     let outer_array: &ObjectArrayInstance =
         outer_array.as_ref().try_into().unwrap();
     for i in 0..array_lens[Into::<usize>::into(dim)] {
         let inner_array = init_array(
             heap,
-            component_type.clone(),
-            dim - 1,
+            &new_identifier,
             array_lens[Into::<usize>::into(dim - 1)],
         );
-        init_array_rec(
-            heap,
-            component_type.clone(),
-            array_lens,
-            dim - 1,
-            inner_array.clone(),
-        ); // rec enter
+        // rec enter
+        init_array_rec(heap, &new_identifier, array_lens, inner_array.clone());
         outer_array.set(i, Some(inner_array)).unwrap();
     }
 }

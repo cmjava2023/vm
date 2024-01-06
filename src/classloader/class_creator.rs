@@ -2,6 +2,7 @@ pub mod signature_parser;
 
 use std::rc::Rc;
 
+use super::parse_class_identifier;
 use crate::{
     class::{BytecodeClass, Code, Field, Method, MethodCode},
     classloader::{
@@ -98,10 +99,7 @@ pub fn create_bytecode_class(
         create_bytecode_instance_fields(class_file, &runtime_cp);
     let class: &RuntimeCPEntry =
         &runtime_cp[remove_cp_offset(class_file.this_class as usize)];
-    let (package, name) = match class.as_class().unwrap().rsplit_once('/') {
-        Some(package_and_name) => package_and_name,
-        None => ("", class.as_class().unwrap()),
-    };
+    let class_identifier = parse_class_identifier(class.as_class().unwrap());
 
     let super_class = None;
     let interfaces = Vec::new();
@@ -109,8 +107,7 @@ pub fn create_bytecode_class(
         methods,
         static_fields,
         instance_fields,
-        package: package.to_string(),
-        name: name.to_string(),
+        class_identifier,
         super_class,
         interfaces,
     }

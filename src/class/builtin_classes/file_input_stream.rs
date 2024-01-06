@@ -6,19 +6,22 @@ use std::{
 
 use crate::{
     class::{
-        ArgumentKind, Class, ClassInstance, Field, Method, MethodCode,
-        ReturnValue, RustMethodReturn, SimpleArgumentKind,
+        class_identifier, ArgumentKind, Class, ClassIdentifier, ClassInstance,
+        Field, Method, MethodCode, ReturnValue, RustMethodReturn,
+        SimpleArgumentKind,
     },
     executor::Frame,
 };
 
 pub struct FileInputStream {
+    class_identifier: ClassIdentifier,
     methods: Vec<Rc<Method>>,
 }
 
 impl FileInputStream {
     pub fn new() -> FileInputStream {
         FileInputStream {
+            class_identifier: class_identifier!(java / io, FileInputStream),
             methods: vec![Rc::new(Method {
                 code: MethodCode::Rust(read),
                 name: "read".to_owned(),
@@ -66,12 +69,8 @@ impl Class for FileInputStream {
         &[]
     }
 
-    fn package(&self) -> &str {
-        "java/io"
-    }
-
-    fn name(&self) -> &str {
-        "FileInputStream"
+    fn class_identifier(&self) -> &crate::class::ClassIdentifier {
+        &self.class_identifier
     }
 
     fn super_class(&self) -> Option<Rc<dyn Class>> {

@@ -1,21 +1,18 @@
 use std::{collections::HashMap, rc::Rc};
 
-use crate::{
-    class::{
-        builtin_classes::{
-            array::{
-                Array, BoolArray, BoolArrayInstance, ByteArray,
-                ByteArrayInstance, CharArray, CharArrayInstance, DoubleArray,
-                DoubleArrayInstance, FloatArray, FloatArrayInstance, IntArray,
-                IntArrayInstance, LongArray, LongArrayInstance,
-                ObjectArrayKind, ShortArray, ShortArrayInstance,
-            },
-            FileInputStream, InputStream, PrintStream, StringClass,
-            StringInstance, SystemClass,
+use crate::class::{
+    builtin_classes::{
+        array::{
+            Array, BoolArray, BoolArrayInstance, ByteArray, ByteArrayInstance,
+            CharArray, CharArrayInstance, DoubleArray, DoubleArrayInstance,
+            FloatArray, FloatArrayInstance, IntArray, IntArrayInstance,
+            LongArray, LongArrayInstance, ObjectArrayKind, ShortArray,
+            ShortArrayInstance,
         },
-        Class,
+        FileInputStream, InputStream, PrintStream, StringClass, StringInstance,
+        SystemClass,
     },
-    executor::op_code::ArrayReferenceKinds,
+    ArrayName, Class, ClassIdentifier, ClassName,
 };
 
 pub struct Heap {
@@ -28,7 +25,7 @@ pub struct Heap {
     long_array_class: Rc<LongArray>,
     int_array_class: Rc<IntArray>,
     short_array_class: Rc<ShortArray>,
-    classes: HashMap<String, Rc<dyn Class>>,
+    classes: HashMap<ClassIdentifier, Rc<dyn Class>>,
 }
 
 impl Heap {
@@ -49,45 +46,55 @@ impl Heap {
         let system_class =
             Rc::new(SystemClass::new(&print_stream_class, &input_stream_class));
 
-        let mut classes: HashMap<String, Rc<dyn Class>> = HashMap::new();
-        classes.insert("java/lang/String".to_string(), string_class.clone());
-        classes.insert("java/io/PrintStream".to_string(), print_stream_class);
-        classes.insert("java/io/InputStream".to_string(), input_stream_class);
+        let mut classes: HashMap<ClassIdentifier, Rc<dyn Class>> =
+            HashMap::new();
         classes.insert(
-            "java/io/FileInputStream".to_string(),
+            string_class.class_identifier().clone(),
+            string_class.clone(),
+        );
+        classes.insert(
+            print_stream_class.class_identifier().clone(),
+            print_stream_class,
+        );
+        classes.insert(
+            input_stream_class.class_identifier().clone(),
+            input_stream_class,
+        );
+        classes.insert(
+            file_input_stream_class.class_identifier().clone(),
             file_input_stream_class,
         );
-        classes.insert("java/lang/System".to_string(), system_class);
+        classes.insert(system_class.class_identifier().clone(), system_class);
         classes.insert(
-            boolean_array_class.name().to_string(),
+            boolean_array_class.class_identifier().clone(),
             boolean_array_class.clone(),
         );
         classes.insert(
-            byte_array_class.name().to_string(),
-            byte_array_class.clone(),
-        );
-        classes.insert(
-            char_array_class.name().to_string(),
+            char_array_class.class_identifier().clone(),
             char_array_class.clone(),
         );
         classes.insert(
-            double_array_class.name().to_string(),
+            double_array_class.class_identifier().clone(),
             double_array_class.clone(),
         );
         classes.insert(
-            float_array_class.name().to_string(),
+            float_array_class.class_identifier().clone(),
             float_array_class.clone(),
         );
         classes.insert(
-            long_array_class.name().to_string(),
+            byte_array_class.class_identifier().clone(),
+            byte_array_class.clone(),
+        );
+        classes.insert(
+            long_array_class.class_identifier().clone(),
             long_array_class.clone(),
         );
         classes.insert(
-            int_array_class.name().to_string(),
+            int_array_class.class_identifier().clone(),
             int_array_class.clone(),
         );
         classes.insert(
-            short_array_class.name().to_string(),
+            short_array_class.class_identifier().clone(),
             short_array_class.clone(),
         );
 
@@ -143,7 +150,7 @@ impl Heap {
 
     pub fn add_class(
         &mut self,
-        fully_qualified_name: String,
+        fully_qualified_name: ClassIdentifier,
         class: Rc<dyn Class>,
     ) {
         self.classes.insert(fully_qualified_name, class);
@@ -151,43 +158,21 @@ impl Heap {
 
     pub fn find_class(
         &self,
-        fully_qualified_name: &str,
+        fully_qualified_name: &ClassIdentifier,
     ) -> Option<&Rc<dyn Class>> {
         self.classes.get(fully_qualified_name)
     }
 
     pub fn find_array_class(
         &mut self,
-        kind: ArrayReferenceKinds,
-        dimensions: u8,
+        class_identifier: &ClassIdentifier,
     ) -> Option<Rc<dyn Class>> {
-        let mut class_name: String =
-            vec!['['; dimensions.into()].into_iter().collect();
-        if let Some(c) = match &kind {
-            ArrayReferenceKinds::Boolean => Some('Z'),
-            ArrayReferenceKinds::Byte => Some('B'),
-            ArrayReferenceKinds::Char => Some('C'),
-            ArrayReferenceKinds::Double => Some('D'),
-            ArrayReferenceKinds::Float => Some('F'),
-            ArrayReferenceKinds::Long => Some('J'),
-            ArrayReferenceKinds::Int => Some('I'),
-            ArrayReferenceKinds::Short => Some('S'),
-            ArrayReferenceKinds::Object(c) => {
-                class_name.push('L');
-                class_name.push_str(c.package());
-                class_name.push('/');
-                class_name.push_str(c.name());
-                class_name.push(';');
-                None
-            },
-        } {
-            class_name.push(c);
-        };
-
         // easy case: class already exists
-        if let Some(array_class) = self.find_class(&class_name) {
+        if let Some(array_class) = self.find_class(class_identifier) {
             Some(array_class.clone())
         } else {
+            let (package, (dimensions, name)) =
+                class_identifier.clone().into_array_identifier();
             // more difficult case: array class does not exist yet
             // So, it needs to be created.
             // To do that, perform the following steps:
@@ -200,16 +185,31 @@ impl Heap {
 
             // step 1
             let scalar_class = if dimensions > 1 {
+                let identifier_with_less_dim = ClassIdentifier {
+                    package,
+                    class_name: ClassName::Array {
+                        dimensions: dimensions - 1,
+                        name: name.clone(),
+                    },
+                };
                 // step 1.1
-                if let Some(c) = self.find_array_class(kind, dimensions - 1) {
+                if let Some(c) =
+                    self.find_array_class(&identifier_with_less_dim)
+                {
                     c.clone()
                 } else {
                     return None;
                 }
             } else {
                 // step 1.2
-                match &kind {
-                    ArrayReferenceKinds::Object(c) => c.clone(),
+                match name {
+                    ArrayName::Class(c) => {
+                        let sclar_class_indentifier = ClassIdentifier {
+                            package,
+                            class_name: ClassName::Plain(c),
+                        };
+                        self.find_class(&sclar_class_indentifier)?.clone()
+                    },
                     // Note: this assumes that
                     // all 1-dimenensional, primitive array classes
                     // are created during heap setup
@@ -217,7 +217,7 @@ impl Heap {
                         "dimension is 1, \
 but a primitve array kind (got '{:?}') \
 would create a 2 dimensional array here!",
-                        &kind
+                        &name
                     ),
                 }
             };
@@ -226,7 +226,10 @@ would create a 2 dimensional array here!",
             let array_class =
                 Rc::new(Array::new(ObjectArrayKind::new(scalar_class)));
             // step 3
-            self.classes.insert(class_name, array_class.clone());
+            self.classes.insert(
+                array_class.class_identifier().clone(),
+                array_class.clone(),
+            );
             Some(array_class)
         }
     }

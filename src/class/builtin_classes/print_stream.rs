@@ -2,19 +2,22 @@ use std::{any::Any, rc::Rc};
 
 use crate::{
     class::{
-        builtin_classes::StringInstance, ArgumentKind, Class, ClassInstance,
-        Field, Method, MethodCode, RustMethodReturn, SimpleArgumentKind,
+        builtin_classes::StringInstance, class_identifier, ArgumentKind, Class,
+        ClassIdentifier, ClassInstance, Field, Method, MethodCode,
+        RustMethodReturn, SimpleArgumentKind,
     },
     executor::{local_variables::VariableValueOrValue, Frame},
 };
 
 pub struct PrintStream {
+    class_identifier: ClassIdentifier,
     methods: Vec<Rc<Method>>,
 }
 
 impl PrintStream {
     pub fn new() -> PrintStream {
         PrintStream {
+            class_identifier: class_identifier!(java / io, PrintStream),
             methods: vec![
                 Rc::new(Method {
                     code: MethodCode::Rust(println),
@@ -196,12 +199,8 @@ impl Class for PrintStream {
         &[]
     }
 
-    fn package(&self) -> &str {
-        "java/io"
-    }
-
-    fn name(&self) -> &str {
-        "PrintStream"
+    fn class_identifier(&self) -> &crate::class::ClassIdentifier {
+        &self.class_identifier
     }
 
     fn super_class(&self) -> Option<Rc<dyn Class>> {

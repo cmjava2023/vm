@@ -1,7 +1,10 @@
 use std::{any::Any, cell::RefCell, rc::Rc};
 
 use crate::{
-    class::{Class, ClassInstance, Field},
+    class::{
+        class_identifier, ArrayName, Class, ClassIdentifier, ClassInstance,
+        ClassName, Field,
+    },
     executor::RuntimeError,
 };
 
@@ -9,17 +12,31 @@ pub type ObjectArray = Array<ObjectArrayKind>;
 pub type ObjectArrayInstance = ArrayInstance<ObjectArrayKind>;
 
 pub struct ObjectArrayKind {
-    array_class_name: String,
+    array_class_identifier: ClassIdentifier,
 }
 
 impl ObjectArrayKind {
     pub fn new(class: Rc<dyn Class>) -> ObjectArrayKind {
-        ObjectArrayKind {
-            array_class_name: format!(
-                "[L{}/{};",
-                class.package(),
-                class.name()
-            ),
+        let package = class.class_identifier().package.clone();
+        match &class.class_identifier().class_name {
+            ClassName::Array { dimensions, name } => ObjectArrayKind {
+                array_class_identifier: ClassIdentifier {
+                    package,
+                    class_name: ClassName::Array {
+                        dimensions: 1 + dimensions,
+                        name: name.clone(),
+                    },
+                },
+            },
+            ClassName::Plain(class_name) => ObjectArrayKind {
+                array_class_identifier: ClassIdentifier {
+                    package,
+                    class_name: ClassName::Array {
+                        dimensions: 1,
+                        name: ArrayName::Class(class_name.clone()),
+                    },
+                },
+            },
         }
     }
 }
@@ -27,8 +44,8 @@ impl ObjectArrayKind {
 impl ArrayKind for ObjectArrayKind {
     type Value = Option<Rc<dyn ClassInstance>>;
 
-    fn class_name(&self) -> &str {
-        &self.array_class_name
+    fn class_identifier(&self) -> &ClassIdentifier {
+        &self.array_class_identifier
     }
 
     fn default_val(&self) -> Self::Value {
@@ -38,14 +55,29 @@ impl ArrayKind for ObjectArrayKind {
 
 pub type ByteArray = Array<ByteArrayKind>;
 pub type ByteArrayInstance = ArrayInstance<ByteArrayKind>;
-#[derive(Default)]
-pub struct ByteArrayKind {}
+pub struct ByteArrayKind {
+    class_identifier: ClassIdentifier,
+}
+
+impl ByteArrayKind {
+    pub fn new() -> Self {
+        ByteArrayKind {
+            class_identifier: class_identifier!(byte, 1),
+        }
+    }
+}
+
+impl Default for ByteArrayKind {
+    fn default() -> Self {
+        ByteArrayKind::new()
+    }
+}
 
 impl ArrayKind for ByteArrayKind {
     type Value = i8;
 
-    fn class_name(&self) -> &str {
-        "[B"
+    fn class_identifier(&self) -> &ClassIdentifier {
+        &self.class_identifier
     }
 
     fn default_val(&self) -> Self::Value {
@@ -55,14 +87,29 @@ impl ArrayKind for ByteArrayKind {
 
 pub type BoolArray = Array<BoolArrayKind>;
 pub type BoolArrayInstance = ArrayInstance<BoolArrayKind>;
-#[derive(Default)]
-pub struct BoolArrayKind {}
+pub struct BoolArrayKind {
+    class_identifier: ClassIdentifier,
+}
+
+impl BoolArrayKind {
+    pub fn new() -> Self {
+        BoolArrayKind {
+            class_identifier: class_identifier!(bool, 1),
+        }
+    }
+}
+
+impl Default for BoolArrayKind {
+    fn default() -> Self {
+        BoolArrayKind::new()
+    }
+}
 
 impl ArrayKind for BoolArrayKind {
     type Value = bool;
 
-    fn class_name(&self) -> &str {
-        "[Z"
+    fn class_identifier(&self) -> &ClassIdentifier {
+        &self.class_identifier
     }
 
     fn default_val(&self) -> Self::Value {
@@ -72,14 +119,29 @@ impl ArrayKind for BoolArrayKind {
 
 pub type CharArray = Array<CharArrayKind>;
 pub type CharArrayInstance = ArrayInstance<CharArrayKind>;
-#[derive(Default)]
-pub struct CharArrayKind {}
+pub struct CharArrayKind {
+    class_identifier: ClassIdentifier,
+}
+
+impl CharArrayKind {
+    pub fn new() -> Self {
+        CharArrayKind {
+            class_identifier: class_identifier!(char, 1),
+        }
+    }
+}
+
+impl Default for CharArrayKind {
+    fn default() -> Self {
+        CharArrayKind::new()
+    }
+}
 
 impl ArrayKind for CharArrayKind {
     type Value = u16;
 
-    fn class_name(&self) -> &str {
-        "[C"
+    fn class_identifier(&self) -> &ClassIdentifier {
+        &self.class_identifier
     }
 
     fn default_val(&self) -> Self::Value {
@@ -89,14 +151,29 @@ impl ArrayKind for CharArrayKind {
 
 pub type DoubleArray = Array<DoubleArrayKind>;
 pub type DoubleArrayInstance = ArrayInstance<DoubleArrayKind>;
-#[derive(Default)]
-pub struct DoubleArrayKind {}
+pub struct DoubleArrayKind {
+    class_identifier: ClassIdentifier,
+}
+
+impl DoubleArrayKind {
+    pub fn new() -> Self {
+        DoubleArrayKind {
+            class_identifier: class_identifier!(double, 1),
+        }
+    }
+}
+
+impl Default for DoubleArrayKind {
+    fn default() -> Self {
+        DoubleArrayKind::new()
+    }
+}
 
 impl ArrayKind for DoubleArrayKind {
     type Value = f64;
 
-    fn class_name(&self) -> &str {
-        "[D"
+    fn class_identifier(&self) -> &ClassIdentifier {
+        &self.class_identifier
     }
 
     fn default_val(&self) -> Self::Value {
@@ -106,14 +183,29 @@ impl ArrayKind for DoubleArrayKind {
 
 pub type FloatArray = Array<FloatArrayKind>;
 pub type FloatArrayInstance = ArrayInstance<FloatArrayKind>;
-#[derive(Default)]
-pub struct FloatArrayKind {}
+pub struct FloatArrayKind {
+    class_identifier: ClassIdentifier,
+}
+
+impl FloatArrayKind {
+    pub fn new() -> Self {
+        FloatArrayKind {
+            class_identifier: class_identifier!(float, 1),
+        }
+    }
+}
+
+impl Default for FloatArrayKind {
+    fn default() -> Self {
+        FloatArrayKind::new()
+    }
+}
 
 impl ArrayKind for FloatArrayKind {
     type Value = f32;
 
-    fn class_name(&self) -> &str {
-        "[F"
+    fn class_identifier(&self) -> &ClassIdentifier {
+        &self.class_identifier
     }
 
     fn default_val(&self) -> Self::Value {
@@ -123,14 +215,29 @@ impl ArrayKind for FloatArrayKind {
 
 pub type IntArray = Array<IntArrayKind>;
 pub type IntArrayInstance = ArrayInstance<IntArrayKind>;
-#[derive(Default)]
-pub struct IntArrayKind {}
+pub struct IntArrayKind {
+    class_identifier: ClassIdentifier,
+}
+
+impl IntArrayKind {
+    pub fn new() -> Self {
+        IntArrayKind {
+            class_identifier: class_identifier!(int, 1),
+        }
+    }
+}
+
+impl Default for IntArrayKind {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl ArrayKind for IntArrayKind {
     type Value = i32;
 
-    fn class_name(&self) -> &str {
-        "[I"
+    fn class_identifier(&self) -> &ClassIdentifier {
+        &self.class_identifier
     }
 
     fn default_val(&self) -> Self::Value {
@@ -140,14 +247,29 @@ impl ArrayKind for IntArrayKind {
 
 pub type LongArray = Array<LongArrayKind>;
 pub type LongArrayInstance = ArrayInstance<LongArrayKind>;
-#[derive(Default)]
-pub struct LongArrayKind {}
+pub struct LongArrayKind {
+    class_identifier: ClassIdentifier,
+}
+
+impl LongArrayKind {
+    pub fn new() -> Self {
+        LongArrayKind {
+            class_identifier: class_identifier!(long, 1),
+        }
+    }
+}
+
+impl Default for LongArrayKind {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl ArrayKind for LongArrayKind {
     type Value = i64;
 
-    fn class_name(&self) -> &str {
-        "[J"
+    fn class_identifier(&self) -> &ClassIdentifier {
+        &self.class_identifier
     }
 
     fn default_val(&self) -> Self::Value {
@@ -157,14 +279,29 @@ impl ArrayKind for LongArrayKind {
 
 pub type ShortArray = Array<ShortArrayKind>;
 pub type ShortArrayInstance = ArrayInstance<ShortArrayKind>;
-#[derive(Default)]
-pub struct ShortArrayKind {}
+pub struct ShortArrayKind {
+    class_identifier: ClassIdentifier,
+}
+
+impl ShortArrayKind {
+    pub fn new() -> Self {
+        Self {
+            class_identifier: class_identifier!(short, 1),
+        }
+    }
+}
+
+impl Default for ShortArrayKind {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl ArrayKind for ShortArrayKind {
     type Value = i16;
 
-    fn class_name(&self) -> &str {
-        "[S"
+    fn class_identifier(&self) -> &ClassIdentifier {
+        &self.class_identifier
     }
 
     fn default_val(&self) -> Self::Value {
@@ -175,7 +312,7 @@ impl ArrayKind for ShortArrayKind {
 pub trait ArrayKind {
     type Value: Clone;
 
-    fn class_name(&self) -> &str;
+    fn class_identifier(&self) -> &ClassIdentifier;
 
     fn default_val(&self) -> Self::Value;
 }
@@ -237,12 +374,8 @@ impl<K: ArrayKind + 'static> Class for Array<K> {
         &[]
     }
 
-    fn package(&self) -> &str {
-        ""
-    }
-
-    fn name(&self) -> &str {
-        self.kind.class_name()
+    fn class_identifier(&self) -> &ClassIdentifier {
+        self.kind.class_identifier()
     }
 
     fn super_class(&self) -> Option<Rc<dyn Class>> {

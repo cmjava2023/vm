@@ -15,12 +15,8 @@ impl Class for BytecodeClass {
         self.instance_fields.as_slice()
     }
 
-    fn package(&self) -> &str {
-        self.package.as_str()
-    }
-
-    fn name(&self) -> &str {
-        self.name.as_str()
+    fn class_identifier(&self) -> &super::ClassIdentifier {
+        &self.class_identifier
     }
 
     fn super_class(&self) -> Option<Rc<dyn Class>> {
