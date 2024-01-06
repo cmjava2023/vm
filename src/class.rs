@@ -478,7 +478,7 @@ pub struct Code {
 pub struct ExceptionTable {
     pub active: Range<usize>,
     pub handler_position: usize,
-    pub catch_type: ClassIdentifier,
+    pub catch_type: Option<ClassIdentifier>,
 }
 
 pub trait ClassInstance {

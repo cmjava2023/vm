@@ -210,7 +210,7 @@ fn byte_offset_to_opcode_offset(
     }
 }
 
-fn parse_branch_offsets(opcodes: &mut [OpCode], opcode_sizes: Vec<u8>) {
+fn parse_branch_offsets(opcodes: &mut [OpCode], opcode_sizes: &[u8]) {
     for (i, opcode) in opcodes.iter_mut().enumerate() {
         match opcode {
             OpCode::IfEq(byte_offset, direction) => {
@@ -219,7 +219,7 @@ fn parse_branch_offsets(opcodes: &mut [OpCode], opcode_sizes: Vec<u8>) {
                         byte_offset,
                         direction,
                         i,
-                        &opcode_sizes,
+                        opcode_sizes,
                     ),
                     *direction,
                 )
@@ -230,7 +230,7 @@ fn parse_branch_offsets(opcodes: &mut [OpCode], opcode_sizes: Vec<u8>) {
                         byte_offset,
                         direction,
                         i,
-                        &opcode_sizes,
+                        opcode_sizes,
                     ),
                     *direction,
                 )
@@ -241,7 +241,7 @@ fn parse_branch_offsets(opcodes: &mut [OpCode], opcode_sizes: Vec<u8>) {
                         byte_offset,
                         direction,
                         i,
-                        &opcode_sizes,
+                        opcode_sizes,
                     ),
                     *direction,
                 )
@@ -252,7 +252,7 @@ fn parse_branch_offsets(opcodes: &mut [OpCode], opcode_sizes: Vec<u8>) {
                         byte_offset,
                         direction,
                         i,
-                        &opcode_sizes,
+                        opcode_sizes,
                     ),
                     *direction,
                 )
@@ -263,7 +263,7 @@ fn parse_branch_offsets(opcodes: &mut [OpCode], opcode_sizes: Vec<u8>) {
                         byte_offset,
                         direction,
                         i,
-                        &opcode_sizes,
+                        opcode_sizes,
                     ),
                     *direction,
                 )
@@ -274,7 +274,7 @@ fn parse_branch_offsets(opcodes: &mut [OpCode], opcode_sizes: Vec<u8>) {
                         byte_offset,
                         direction,
                         i,
-                        &opcode_sizes,
+                        opcode_sizes,
                     ),
                     *direction,
                 )
@@ -285,7 +285,7 @@ fn parse_branch_offsets(opcodes: &mut [OpCode], opcode_sizes: Vec<u8>) {
                         byte_offset,
                         direction,
                         i,
-                        &opcode_sizes,
+                        opcode_sizes,
                     ),
                     *direction,
                 )
@@ -296,7 +296,7 @@ fn parse_branch_offsets(opcodes: &mut [OpCode], opcode_sizes: Vec<u8>) {
                         byte_offset,
                         direction,
                         i,
-                        &opcode_sizes,
+                        opcode_sizes,
                     ),
                     *direction,
                 )
@@ -307,7 +307,7 @@ fn parse_branch_offsets(opcodes: &mut [OpCode], opcode_sizes: Vec<u8>) {
                         byte_offset,
                         direction,
                         i,
-                        &opcode_sizes,
+                        opcode_sizes,
                     ),
                     *direction,
                 )
@@ -318,7 +318,7 @@ fn parse_branch_offsets(opcodes: &mut [OpCode], opcode_sizes: Vec<u8>) {
                         byte_offset,
                         direction,
                         i,
-                        &opcode_sizes,
+                        opcode_sizes,
                     ),
                     *direction,
                 )
@@ -329,7 +329,7 @@ fn parse_branch_offsets(opcodes: &mut [OpCode], opcode_sizes: Vec<u8>) {
                         byte_offset,
                         direction,
                         i,
-                        &opcode_sizes,
+                        opcode_sizes,
                     ),
                     *direction,
                 )
@@ -340,7 +340,7 @@ fn parse_branch_offsets(opcodes: &mut [OpCode], opcode_sizes: Vec<u8>) {
                         byte_offset,
                         direction,
                         i,
-                        &opcode_sizes,
+                        opcode_sizes,
                     ),
                     *direction,
                 )
@@ -351,7 +351,7 @@ fn parse_branch_offsets(opcodes: &mut [OpCode], opcode_sizes: Vec<u8>) {
                         byte_offset,
                         direction,
                         i,
-                        &opcode_sizes,
+                        opcode_sizes,
                     ),
                     *direction,
                 )
@@ -362,7 +362,7 @@ fn parse_branch_offsets(opcodes: &mut [OpCode], opcode_sizes: Vec<u8>) {
                         byte_offset,
                         direction,
                         i,
-                        &opcode_sizes,
+                        opcode_sizes,
                     ),
                     *direction,
                 )
@@ -373,7 +373,7 @@ fn parse_branch_offsets(opcodes: &mut [OpCode], opcode_sizes: Vec<u8>) {
                         byte_offset,
                         direction,
                         i,
-                        &opcode_sizes,
+                        opcode_sizes,
                     ),
                     *direction,
                 )
@@ -384,7 +384,7 @@ fn parse_branch_offsets(opcodes: &mut [OpCode], opcode_sizes: Vec<u8>) {
                         byte_offset,
                         direction,
                         i,
-                        &opcode_sizes,
+                        opcode_sizes,
                     ),
                     *direction,
                 )
@@ -395,7 +395,7 @@ fn parse_branch_offsets(opcodes: &mut [OpCode], opcode_sizes: Vec<u8>) {
                         byte_offset,
                         direction,
                         i,
-                        &opcode_sizes,
+                        opcode_sizes,
                     ),
                     *direction,
                 )
@@ -406,7 +406,7 @@ fn parse_branch_offsets(opcodes: &mut [OpCode], opcode_sizes: Vec<u8>) {
                         byte_offset,
                         direction,
                         i,
-                        &opcode_sizes,
+                        opcode_sizes,
                     ),
                     *direction,
                 )
@@ -421,7 +421,7 @@ pub fn parse_opcodes<'a>(
     class_file: &ClassFile,
     runtime_cp: &[RuntimeCPEntry],
     heap: &mut Heap,
-) -> IResult<&'a [u8], Vec<OpCode>> {
+) -> IResult<&'a [u8], (Vec<OpCode>, Vec<u8>)> {
     let mut current_content = code.as_slice();
     let mut opcodes: Vec<OpCode> = Vec::new();
     let mut opcode_sizes: Vec<u8> = Vec::new();
@@ -1385,6 +1385,6 @@ on how to resolve at execution time"
             },
         }
     }
-    parse_branch_offsets(&mut opcodes, opcode_sizes);
-    Ok((current_content, opcodes))
+    parse_branch_offsets(&mut opcodes, &opcode_sizes);
+    Ok((current_content, (opcodes, opcode_sizes)))
 }
