@@ -4,11 +4,15 @@ use nom::{
     IResult,
 };
 
-use crate::classloader::{
-    file_parser::parse_attribute_info as parse_raw_attribute_info,
-    raw::{RawAttributeInfo, RawClassFile},
-    AttributeInfo, ClassFile, CodeAttribute, CpInfo, ExceptionTable, FieldInfo,
-    MethodInfo,
+use crate::{
+    class::ClassIdentifier,
+    classloader::{
+        file_parser::parse_attribute_info as parse_raw_attribute_info,
+        parse_class_identifier,
+        raw::{RawAttributeInfo, RawClassFile},
+        AttributeInfo, ClassFile, CodeAttribute, CpInfo, ExceptionTable,
+        FieldInfo, MethodInfo,
+    },
 };
 
 fn parse_attribute_info<'a, 'p, T, G, P>(
@@ -74,6 +78,36 @@ fn parse_code_attribute<'a>(
     }
 }
 
+fn parse_exception_index_table_entry(
+    raw_class_file: &RawClassFile,
+) -> impl Fn(&[u8]) -> IResult<&[u8], ClassIdentifier> + '_ {
+    move |current_content: &[u8]| {
+        let (current_content, index) = be_u16(current_content)?;
+        let cp_entry =
+            raw_class_file.get_java_cp_entry(index as usize).unwrap();
+        let name_index = cp_entry.as_class_info().unwrap();
+        let cp_entry = raw_class_file
+            .get_java_cp_entry(name_index as usize)
+            .unwrap();
+        let class_name = cp_entry.as_utf8_info().unwrap();
+        let identifier = parse_class_identifier(class_name);
+        Ok((current_content, identifier))
+    }
+}
+
+fn parse_exceptions_attribute<'a>(
+    _raw_attribute: &'a RawAttributeInfo,
+    raw_class_file: &'a RawClassFile,
+) -> impl Fn(&[u8]) -> IResult<&[u8], Vec<ClassIdentifier>> + 'a {
+    move |current_content: &[u8]| {
+        let (current_content, classes) = length_count(
+            be_u16,
+            parse_exception_index_table_entry(raw_class_file),
+        )(current_content)?;
+        Ok((current_content, classes))
+    }
+}
+
 fn parse_attribute(
     raw_attribute: &RawAttributeInfo,
     raw_class_file: &RawClassFile,
@@ -97,7 +131,11 @@ fn parse_attribute(
         "SourceFile" => AttributeInfo::SourceFile,
         "LineNumberTable" => AttributeInfo::LineNumberTable,
         "LocalVariableTable" => AttributeInfo::LocalVariableTable,
-        "Exceptions" => AttributeInfo::Exceptions,
+        "Exceptions" => AttributeInfo::Exceptions(parse_attribute_info(
+            raw_attribute,
+            raw_class_file,
+            parse_exceptions_attribute,
+        )),
         "StackMapTable" => AttributeInfo::StackMapTable,
         _ => panic!("Unknown Attribute {}", name),
     }

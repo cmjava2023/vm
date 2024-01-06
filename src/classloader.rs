@@ -100,7 +100,7 @@ pub enum AttributeInfo {
     SourceFile,
     LineNumberTable,
     LocalVariableTable,
-    Exceptions,
+    Exceptions(Vec<ClassIdentifier>),
     StackMapTable,
 }
 
