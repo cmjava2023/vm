@@ -3,7 +3,7 @@ pub mod builtin_classes;
 pub mod bytecode_classes;
 
 use core::fmt;
-use std::{any::Any, borrow::Cow, rc::Rc};
+use std::{any::Any, borrow::Cow, ops::Range, rc::Rc};
 
 use crate::executor::{
     frame_stack::StackValue, local_variables::VariableValueOrValue, Frame,
@@ -469,9 +469,16 @@ impl FieldValue {
 pub struct Code {
     pub stack_depth: usize,
     pub local_variable_count: usize,
-    // TODO exceptions
+    pub exception_table: Vec<ExceptionTable>,
     // TODO attributes
     pub byte_code: Vec<OpCode>,
+}
+
+#[derive(Debug, Clone)]
+pub struct ExceptionTable {
+    pub active: Range<usize>,
+    pub handler_position: usize,
+    pub catch_type: ClassIdentifier,
 }
 
 pub trait ClassInstance {

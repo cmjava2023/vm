@@ -55,6 +55,7 @@ fn create_bytecode_method(
         code: MethodCode::Bytecode(Code {
             stack_depth: stack_depth.into(),
             local_variable_count: local_variable_count.into(),
+            exception_table: Vec::new(),
             byte_code,
         }),
         name: name.to_string(),
