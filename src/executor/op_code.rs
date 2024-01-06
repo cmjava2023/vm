@@ -253,7 +253,7 @@ pub enum OpCode {
     Monitorexit,
     MultiAnewArray(ClassIdentifier),
     // classname
-    New(String),
+    New(ClassIdentifier),
     NewArray(ArrayType),
     Nop,
     Pop,

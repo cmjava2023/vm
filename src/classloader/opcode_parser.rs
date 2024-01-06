@@ -1171,10 +1171,12 @@ on how to resolve at execution time"
             },
             187 => {
                 opcode_sizes.push(3);
-                todo!(
-                    "New(Rc<dyn Any>), needs information \
-on how to resolve at execution time"
-                )
+                let (new_content, index) = be_u16(current_content)?;
+                current_content = new_content;
+                let cp_entry = &runtime_cp[remove_cp_offset(index as usize)];
+                let class_name = cp_entry.as_class().unwrap();
+                let identifier = parse_class_identifier(class_name);
+                opcodes.push(OpCode::New(identifier));
             },
             188 => {
                 opcode_sizes.push(2);
