@@ -85,6 +85,7 @@ impl StackValue {
     }
 }
 
+#[derive(Debug)]
 pub struct FrameStack {
     values: Vec<StackValue>,
 }

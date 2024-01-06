@@ -10,8 +10,7 @@ fn try_catch_finally_throwable() -> Result<(), Box<dyn std::error::Error>> {
     // so that failure() can be simply removed when all features
     // are implemented
     cmd.assert().failure().stderr(predicate::str::contains(
-        "\
-called `Option::unwrap()` on a `None` value",
+        "Missing OpCode implementation for: Athrow",
     ));
     // cmd.assert()
     //     .success()

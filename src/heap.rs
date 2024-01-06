@@ -10,7 +10,7 @@ use crate::class::{
             ShortArrayInstance,
         },
         FileInputStream, InputStream, ObjectClass, PrintStream, StringClass,
-        StringInstance, SystemClass,
+        StringInstance, SystemClass, ThrowableClass,
     },
     ArrayName, Class, ClassIdentifier, ClassName,
 };
@@ -46,6 +46,7 @@ impl Heap {
         let system_class =
             Rc::new(SystemClass::new(&print_stream_class, &input_stream_class));
         let object_class = Rc::new(ObjectClass::default());
+        let throwable_class = Rc::new(ThrowableClass::default());
 
         let mut classes: HashMap<ClassIdentifier, Rc<dyn Class>> =
             HashMap::new();
@@ -67,6 +68,10 @@ impl Heap {
         );
         classes.insert(system_class.class_identifier().clone(), system_class);
         classes.insert(object_class.class_identifier().clone(), object_class);
+        classes.insert(
+            throwable_class.class_identifier().clone(),
+            throwable_class,
+        );
         classes.insert(
             boolean_array_class.class_identifier().clone(),
             boolean_array_class.clone(),

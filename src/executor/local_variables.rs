@@ -8,7 +8,7 @@ use crate::{
     },
 };
 
-#[derive(Clone)]
+#[derive(Debug, Clone)]
 pub enum VariableValue {
     // Primitive Types
     //   Integral Types
@@ -41,6 +41,7 @@ pub enum VariableValue {
     Reference(Option<Rc<dyn ClassInstance>>),
 }
 
+#[derive(Debug)]
 pub struct LocalVariables {
     local_variables: Vec<VariableValue>,
 }
