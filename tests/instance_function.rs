@@ -10,8 +10,7 @@ fn instance_function() -> Result<(), Box<dyn std::error::Error>> {
     // so that failure() can be simply removed when all features
     // are implemented
     cmd.assert().failure().stderr(predicate::str::contains(
-        "PutField(Rc<dyn Any>), \
-needs information on how to resolve fields at execution time",
+        "Missing OpCode implementation for: New(",
     ));
     // cmd.assert()
     //     .success()
