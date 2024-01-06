@@ -7,12 +7,12 @@ use std::rc::Rc;
 
 use thiserror::Error;
 
-use self::op_code::OffsetDirection;
+use self::{frame_stack::StackValue, op_code::OffsetDirection};
 pub use crate::executor::op_code::OpCode;
 use crate::{
     class::{
-        ArgumentKind, Code, Method, MethodCode, RustMethodReturn,
-        SimpleArgumentKind,
+        ArgumentKind, ClassInstance, Code, Method, MethodCode,
+        RustMethodReturn, SimpleArgumentKind,
     },
     executor::{
         frame_stack::FrameStack,
@@ -117,11 +117,34 @@ pub fn run(code: &Code, heap: &mut Heap) {
                     current_pc.next(1).unwrap();
                 },
             },
-            Update::Return => {
+            Update::Return(value) => {
                 (current_frame, current_pc) = match frame_stack.pop() {
                     None => break,
                     Some(frame) => (frame.frame, frame.pc),
                 };
+                match value {
+                    ReturnValue::Int(i) => current_frame
+                        .operand_stack
+                        .push(StackValue::Int(i))
+                        .unwrap(),
+                    ReturnValue::Long(l) => current_frame
+                        .operand_stack
+                        .push(StackValue::Long(l))
+                        .unwrap(),
+                    ReturnValue::Float(f) => current_frame
+                        .operand_stack
+                        .push(StackValue::Float(f))
+                        .unwrap(),
+                    ReturnValue::Double(d) => current_frame
+                        .operand_stack
+                        .push(StackValue::Double(d))
+                        .unwrap(),
+                    ReturnValue::Reference(a) => current_frame
+                        .operand_stack
+                        .push(StackValue::Reference(a))
+                        .unwrap(),
+                    ReturnValue::Void => (),
+                }
                 current_pc.next(1).unwrap();
             },
             Update::GoTo(offset, direction) => match direction {
@@ -178,9 +201,24 @@ the len is {length} but the index is {index}"
 
 pub enum Update {
     None,
-    Return,
+    Return(ReturnValue),
     GoTo(usize, OffsetDirection),
     MethodCall(Rc<Method>),
+}
+
+pub enum ReturnValue {
+    // Primitive Types
+    //   Integral Types
+    Int(i32),
+    Long(i64),
+    //    Floating-Point Types
+    Float(f32),
+    Double(f64),
+    //    Other
+    Void,
+    // Reference Types
+    // TODO different reference types (array, interface)
+    Reference(Option<Rc<dyn ClassInstance>>),
 }
 
 pub struct Frame {
