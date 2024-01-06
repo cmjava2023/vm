@@ -9,8 +9,8 @@ use crate::class::{
             LongArray, LongArrayInstance, ObjectArrayKind, ShortArray,
             ShortArrayInstance,
         },
-        FileInputStream, InputStream, PrintStream, StringClass, StringInstance,
-        SystemClass,
+        FileInputStream, InputStream, ObjectClass, PrintStream, StringClass,
+        StringInstance, SystemClass,
     },
     ArrayName, Class, ClassIdentifier, ClassName,
 };
@@ -45,6 +45,7 @@ impl Heap {
         let file_input_stream_class = Rc::new(FileInputStream::default());
         let system_class =
             Rc::new(SystemClass::new(&print_stream_class, &input_stream_class));
+        let object_class = Rc::new(ObjectClass::default());
 
         let mut classes: HashMap<ClassIdentifier, Rc<dyn Class>> =
             HashMap::new();
@@ -65,6 +66,7 @@ impl Heap {
             file_input_stream_class,
         );
         classes.insert(system_class.class_identifier().clone(), system_class);
+        classes.insert(object_class.class_identifier().clone(), object_class);
         classes.insert(
             boolean_array_class.class_identifier().clone(),
             boolean_array_class.clone(),
