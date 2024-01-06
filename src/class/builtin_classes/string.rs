@@ -1,7 +1,8 @@
 use std::{any::Any, rc::Rc};
 
 use crate::class::{
-    class_identifier, Class, ClassIdentifier, ClassInstance, Field, Method,
+    class_identifier, Class, ClassIdentifier, ClassInstance, Field,
+    FieldDescriptor, Method,
 };
 
 pub struct StringClass {
@@ -38,7 +39,7 @@ impl Class for StringClass {
         &[]
     }
 
-    fn instance_fields(&self) -> &[String] {
+    fn instance_fields(&self) -> &[FieldDescriptor] {
         &[]
     }
 
@@ -56,6 +57,14 @@ impl Class for StringClass {
 
     fn as_any(&self) -> &dyn Any {
         self
+    }
+
+    fn new_instance(&self, cls: Rc<dyn Class>) -> Rc<dyn ClassInstance> {
+        // make sure that self and cls really are equal
+        let _cls_ref: &Self =
+            cls.as_ref().as_any().downcast_ref::<Self>().unwrap();
+
+        todo!()
     }
 }
 

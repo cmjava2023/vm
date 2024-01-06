@@ -9,9 +9,10 @@ fn try_catch_finally_throwable() -> Result<(), Box<dyn std::error::Error>> {
     // contains both an assert.failure() and an assert.success(),
     // so that failure() can be simply removed when all features
     // are implemented
-    cmd.assert()
-        .failure()
-        .stderr(predicate::str::contains("OpCode implementation for: New"));
+    cmd.assert().failure().stderr(predicate::str::contains(
+        "\
+called `Option::unwrap()` on a `None` value",
+    ));
     // cmd.assert()
     //     .success()
     //     .stdout(predicate::str::contains("caught e:\nOops\nanyway\n"));

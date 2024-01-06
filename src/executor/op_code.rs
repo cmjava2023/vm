@@ -1957,6 +1957,19 @@ got: {:?}",
                 Update::None
             },
 
+            Self::New(class_identifier) => {
+                let class = heap.find_class(class_identifier).unwrap();
+
+                let instance = class.new_instance(class.clone());
+
+                frame
+                    .operand_stack
+                    .push(StackValue::Reference(Some(instance)))
+                    .unwrap();
+
+                Update::None
+            },
+
             Self::Ladd => {
                 let op2 = if let StackValue::Long(l) =
                     frame.operand_stack.pop().unwrap()

@@ -314,7 +314,7 @@ pub enum RustMethodReturn {
 pub trait Class {
     fn methods(&self) -> &[Rc<Method>];
     fn static_fields(&self) -> &[Rc<Field>];
-    fn instance_fields(&self) -> &[String];
+    fn instance_fields(&self) -> &[FieldDescriptor];
     // TODO flags
     fn class_identifier(&self) -> &ClassIdentifier;
     fn super_class(&self) -> Option<Rc<dyn Class>>;
@@ -323,6 +323,9 @@ pub trait Class {
     // TODO attributes
 
     fn as_any(&self) -> &dyn Any;
+
+    /// self and cls must be the same!
+    fn new_instance(&self, cls: Rc<dyn Class>) -> Rc<dyn ClassInstance>;
 }
 
 impl dyn Class {
@@ -359,13 +362,34 @@ impl std::fmt::Debug for dyn Class {
 pub struct BytecodeClass {
     pub methods: Vec<Rc<Method>>,
     pub static_fields: Vec<Rc<Field>>,
-    pub instance_fields: Vec<String>,
+    pub instance_fields: Vec<FieldDescriptor>,
     // TODO flags
     pub class_identifier: ClassIdentifier,
     pub super_class: Option<Rc<dyn Class>>,
     // TODO how are interfaces represented?
     pub interfaces: Vec<Rc<dyn std::any::Any>>,
     // TODO attributes
+}
+
+#[derive(Debug)]
+pub struct FieldDescriptor {
+    pub name: String,
+    // TODO flags
+    // TODO attributes
+    pub kind: FieldKind,
+}
+
+#[derive(Debug)]
+pub enum FieldKind {
+    Byte,
+    Short,
+    Int,
+    Long,
+    Char,
+    Float,
+    Double,
+    Boolean,
+    Reference,
 }
 
 #[derive(Debug)]

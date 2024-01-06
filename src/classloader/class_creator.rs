@@ -4,7 +4,7 @@ use std::rc::Rc;
 
 use super::parse_class_identifier;
 use crate::{
-    class::{BytecodeClass, Code, Field, Method, MethodCode},
+    class::{BytecodeClass, Code, Field, FieldDescriptor, Method, MethodCode},
     classloader::{
         class_creator::signature_parser::parse_method_arguments,
         cp_decoder::{decode_constant_pool, remove_cp_offset, RuntimeCPEntry},
@@ -83,7 +83,7 @@ fn create_bytecode_fields(
 fn create_bytecode_instance_fields(
     _class_file: &ClassFile,
     _runtime_cp: &[RuntimeCPEntry],
-) -> Vec<String> {
+) -> Vec<FieldDescriptor> {
     Vec::new()
 }
 
