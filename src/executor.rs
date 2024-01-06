@@ -226,6 +226,7 @@ pub enum ReturnValue {
     Reference(Option<Rc<dyn ClassInstance>>),
 }
 
+#[derive(Debug)]
 pub struct Frame {
     pub local_variables: LocalVariables,
     pub operand_stack: FrameStack,
