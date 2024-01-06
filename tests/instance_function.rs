@@ -10,7 +10,7 @@ fn instance_function() -> Result<(), Box<dyn std::error::Error>> {
     // so that failure() can be simply removed when all features
     // are implemented
     cmd.assert().failure().stderr(predicate::str::contains(
-        "Missing OpCode implementation for: InvokeSpecial(",
+        "Missing OpCode implementation for: PutField {",
     ));
     // cmd.assert()
     //     .success()

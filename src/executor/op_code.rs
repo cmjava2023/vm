@@ -1607,6 +1607,27 @@ got: {:?}",
                 Update::None
             },
 
+            Self::InvokeSpecial(method) => {
+                let class =
+                    heap.find_class(&method.class_name).unwrap_or_else(|| {
+                        panic!("class for method call {:?} exists", method)
+                    });
+                let method = class
+                    .get_method(
+                        &method.descriptor.name,
+                        (
+                            &method.descriptor.descriptor.0,
+                            method.descriptor.descriptor.1.as_ref(),
+                        ),
+                    )
+                    .unwrap();
+
+                Update::MethodCall {
+                    method,
+                    is_static: false,
+                }
+            },
+
             Self::InvokeStatic(method) => {
                 let class = heap.find_class(&method.class_name).unwrap();
                 let method = class
