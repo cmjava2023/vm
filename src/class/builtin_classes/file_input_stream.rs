@@ -7,8 +7,8 @@ use std::{
 use crate::{
     class::{
         class_identifier, ArgumentKind, Class, ClassIdentifier, ClassInstance,
-        Field, Method, MethodCode, ReturnValue, RustMethodReturn,
-        SimpleArgumentKind,
+        Field, FieldDescriptor, Method, MethodCode, ReturnValue,
+        RustMethodReturn, SimpleArgumentKind,
     },
     executor::Frame,
 };
@@ -65,7 +65,7 @@ impl Class for FileInputStream {
         &[]
     }
 
-    fn instance_fields(&self) -> &[String] {
+    fn instance_fields(&self) -> &[FieldDescriptor] {
         &[]
     }
 
@@ -84,6 +84,14 @@ impl Class for FileInputStream {
 
     fn as_any(&self) -> &dyn Any {
         self
+    }
+
+    fn new_instance(&self, cls: Rc<dyn Class>) -> Rc<dyn ClassInstance> {
+        // make sure that self and cls really are equal
+        let _cls_ref: &Self =
+            cls.as_ref().as_any().downcast_ref::<Self>().unwrap();
+
+        todo!()
     }
 }
 

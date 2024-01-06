@@ -1,6 +1,9 @@
 use std::{any::Any, rc::Rc};
 
-use crate::class::{BytecodeClass, Class, ClassInstance, Field, Method};
+use crate::class::{
+    BytecodeClass, Class, ClassInstance, Field, FieldDescriptor, FieldKind,
+    FieldValue, Method,
+};
 
 impl Class for BytecodeClass {
     fn methods(&self) -> &[Rc<Method>] {
@@ -11,7 +14,7 @@ impl Class for BytecodeClass {
         self.static_fields.as_slice()
     }
 
-    fn instance_fields(&self) -> &[String] {
+    fn instance_fields(&self) -> &[FieldDescriptor] {
         self.instance_fields.as_slice()
     }
 
@@ -29,6 +32,39 @@ impl Class for BytecodeClass {
 
     fn as_any(&self) -> &dyn Any {
         self
+    }
+
+    fn new_instance(&self, cls: Rc<dyn Class>) -> Rc<dyn ClassInstance> {
+        // make sure that self and cls really are equal
+        let _cls_ref: &Self =
+            cls.as_ref().as_any().downcast_ref::<Self>().unwrap();
+
+        let instance_fields: Vec<Rc<Field>> = self
+            .instance_fields
+            .iter()
+            .map(|f| {
+                let default_val = match f.kind {
+                    FieldKind::Byte => FieldValue::byte(),
+                    FieldKind::Short => FieldValue::short(),
+                    FieldKind::Int => FieldValue::int(),
+                    FieldKind::Long => FieldValue::long(),
+                    FieldKind::Char => FieldValue::char(),
+                    FieldKind::Float => FieldValue::float(),
+                    FieldKind::Double => FieldValue::double(),
+                    FieldKind::Boolean => FieldValue::boolean(),
+                    FieldKind::Reference => FieldValue::reference(),
+                };
+                Rc::new(Field {
+                    name: f.name.clone(),
+                    value: default_val,
+                })
+            })
+            .collect();
+
+        Rc::new(BytecodeClassInstance {
+            class: cls,
+            instance_fields,
+        })
     }
 }
 

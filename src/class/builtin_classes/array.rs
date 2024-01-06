@@ -3,7 +3,7 @@ use std::{any::Any, cell::RefCell, rc::Rc};
 use crate::{
     class::{
         class_identifier, ArrayName, Class, ClassIdentifier, ClassInstance,
-        ClassName, Field,
+        ClassName, Field, FieldDescriptor,
     },
     executor::RuntimeError,
 };
@@ -370,7 +370,7 @@ impl<K: ArrayKind + 'static> Class for Array<K> {
         &[]
     }
 
-    fn instance_fields(&self) -> &[String] {
+    fn instance_fields(&self) -> &[FieldDescriptor] {
         &[]
     }
 
@@ -388,6 +388,13 @@ impl<K: ArrayKind + 'static> Class for Array<K> {
 
     fn as_any(&self) -> &dyn Any {
         self
+    }
+
+    fn new_instance(&self, cls: Rc<dyn Class>) -> Rc<dyn ClassInstance> {
+        // make sure that self and cls really are equal
+        let _cls_ref: &Self = cls.as_ref().try_into().unwrap();
+
+        panic!("arrays cannot be created with new");
     }
 }
 
