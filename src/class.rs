@@ -5,7 +5,10 @@ pub mod bytecode_classes;
 use core::fmt;
 use std::{any::Any, borrow::Cow, rc::Rc};
 
-use crate::executor::{frame_stack::StackValue, Frame, OpCode, RuntimeError};
+use crate::executor::{
+    frame_stack::StackValue, local_variables::VariableValueOrValue, Frame,
+    OpCode, RuntimeError,
+};
 
 macro_rules! class_identifier {
     // put primitive array variants at the top,
@@ -476,6 +479,20 @@ impl TryFrom<StackValue> for Option<Rc<dyn ClassInstance>> {
     fn try_from(value: StackValue) -> Result<Self, Self::Error> {
         match value {
             StackValue::Reference(r) => Ok(r),
+            _ => Err(RuntimeError::InvalidType {
+                expected: "reference",
+                actual: value.type_name(),
+            }),
+        }
+    }
+}
+
+impl TryFrom<VariableValueOrValue> for Option<Rc<dyn ClassInstance>> {
+    type Error = RuntimeError;
+
+    fn try_from(value: VariableValueOrValue) -> Result<Self, Self::Error> {
+        match value {
+            VariableValueOrValue::Reference(r) => Ok(r),
             _ => Err(RuntimeError::InvalidType {
                 expected: "reference",
                 actual: value.type_name(),

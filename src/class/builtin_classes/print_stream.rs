@@ -20,6 +20,17 @@ impl PrintStream {
             class_identifier: class_identifier!(java / io, PrintStream),
             methods: vec![
                 Rc::new(Method {
+                    code: MethodCode::Rust(println_object),
+                    name: "println".to_owned(),
+                    parameters: vec![ArgumentKind::Simple(
+                        SimpleArgumentKind::Class(
+                            "java/lang/Object".to_string(),
+                        ),
+                    )],
+                    return_type: None,
+                    is_static: false,
+                }),
+                Rc::new(Method {
                     code: MethodCode::Rust(println),
                     name: "println".to_owned(),
                     parameters: vec![ArgumentKind::Simple(
@@ -182,6 +193,19 @@ fn println_long(frame: &mut Frame) -> RustMethodReturn {
         _ => panic!("local variables have long to print at index 1"),
     };
     println!("{}", long);
+
+    RustMethodReturn::Void
+}
+
+fn println_object(frame: &mut Frame) -> RustMethodReturn {
+    let object: Option<Rc<dyn ClassInstance>> =
+        frame.local_variables.get(1).try_into().unwrap();
+    match object {
+        None => println!("null"),
+        Some(object) => {
+            println!("{}@{:p}", object.class().class_identifier(), object)
+        },
+    }
 
     RustMethodReturn::Void
 }
