@@ -2,4 +2,5 @@
 mod exceptions {
     mod nested;
     mod simple;
+    mod uncaught;
 }
