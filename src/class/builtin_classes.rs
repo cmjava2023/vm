@@ -5,6 +5,7 @@ pub mod object;
 pub mod print_stream;
 pub mod string;
 pub mod system;
+pub mod throwable;
 
 pub use crate::class::builtin_classes::{
     file_input_stream::{FileInputStream, FileInputStreamInstance},
@@ -13,4 +14,5 @@ pub use crate::class::builtin_classes::{
     print_stream::{PrintStream, PrintStreamInstance},
     string::{StringClass, StringInstance},
     system::SystemClass,
+    throwable::{ThrowableClass, ThrowableInstance},
 };

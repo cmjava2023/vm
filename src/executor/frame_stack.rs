@@ -85,6 +85,7 @@ impl StackValue {
     }
 }
 
+#[derive(Debug)]
 pub struct FrameStack {
     values: Vec<StackValue>,
 }
@@ -111,6 +112,10 @@ impl FrameStack {
 
     pub fn pop(&mut self) -> Option<StackValue> {
         self.values.pop()
+    }
+
+    pub fn clear(&mut self) {
+        self.values.clear()
     }
 }
 

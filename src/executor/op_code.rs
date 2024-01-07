@@ -431,6 +431,13 @@ on top of the stack, got: {:?}",
                 Update::None
             },
 
+            Self::Athrow => {
+                let exception: Rc<dyn ClassInstance> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+
+                Update::Exception(exception)
+            },
+
             Self::Baload => {
                 let index = frame
                     .operand_stack

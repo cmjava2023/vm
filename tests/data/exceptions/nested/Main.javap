@@ -1,0 +1,150 @@
+Classfile /home/florian/Documents/fh/WS23_24/Compilerbau/vm/main/tests/data/exceptions/nested/Main.class
+  Last modified 07.01.2024; size 915 bytes
+  MD5 checksum e54df0c1aabcea77892df2bfa04f260d
+  Compiled from "Main.java"
+public class org.cmjava2023.Main
+  minor version: 0
+  major version: 52
+  flags: ACC_PUBLIC, ACC_SUPER
+Constant pool:
+   #1 = Methodref          #12.#32        // java/lang/Object."<init>":()V
+   #2 = Methodref          #11.#33        // org/cmjava2023/Main.oops:()V
+   #3 = Fieldref           #34.#35        // java/lang/System.out:Ljava/io/PrintStream;
+   #4 = String             #36            // anyway
+   #5 = Methodref          #37.#38        // java/io/PrintStream.println:(Ljava/lang/String;)V
+   #6 = Class              #39            // java/lang/Throwable
+   #7 = String             #40            // caught e:
+   #8 = Methodref          #6.#41         // java/lang/Throwable.getMessage:()Ljava/lang/String;
+   #9 = String             #42            // Oops
+  #10 = Methodref          #6.#43         // java/lang/Throwable."<init>":(Ljava/lang/String;)V
+  #11 = Class              #44            // org/cmjava2023/Main
+  #12 = Class              #45            // java/lang/Object
+  #13 = Utf8               <init>
+  #14 = Utf8               ()V
+  #15 = Utf8               Code
+  #16 = Utf8               LineNumberTable
+  #17 = Utf8               LocalVariableTable
+  #18 = Utf8               this
+  #19 = Utf8               Lorg/cmjava2023/Main;
+  #20 = Utf8               main
+  #21 = Utf8               ([Ljava/lang/String;)V
+  #22 = Utf8               e
+  #23 = Utf8               Ljava/lang/Throwable;
+  #24 = Utf8               args
+  #25 = Utf8               [Ljava/lang/String;
+  #26 = Utf8               StackMapTable
+  #27 = Class              #39            // java/lang/Throwable
+  #28 = Utf8               oops
+  #29 = Utf8               Exceptions
+  #30 = Utf8               SourceFile
+  #31 = Utf8               Main.java
+  #32 = NameAndType        #13:#14        // "<init>":()V
+  #33 = NameAndType        #28:#14        // oops:()V
+  #34 = Class              #46            // java/lang/System
+  #35 = NameAndType        #47:#48        // out:Ljava/io/PrintStream;
+  #36 = Utf8               anyway
+  #37 = Class              #49            // java/io/PrintStream
+  #38 = NameAndType        #50:#51        // println:(Ljava/lang/String;)V
+  #39 = Utf8               java/lang/Throwable
+  #40 = Utf8               caught e:
+  #41 = NameAndType        #52:#53        // getMessage:()Ljava/lang/String;
+  #42 = Utf8               Oops
+  #43 = NameAndType        #13:#51        // "<init>":(Ljava/lang/String;)V
+  #44 = Utf8               org/cmjava2023/Main
+  #45 = Utf8               java/lang/Object
+  #46 = Utf8               java/lang/System
+  #47 = Utf8               out
+  #48 = Utf8               Ljava/io/PrintStream;
+  #49 = Utf8               java/io/PrintStream
+  #50 = Utf8               println
+  #51 = Utf8               (Ljava/lang/String;)V
+  #52 = Utf8               getMessage
+  #53 = Utf8               ()Ljava/lang/String;
+{
+  public org.cmjava2023.Main();
+    descriptor: ()V
+    flags: ACC_PUBLIC
+    Code:
+      stack=1, locals=1, args_size=1
+         0: aload_0
+         1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+         4: return
+      LineNumberTable:
+        line 3: 0
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       5     0  this   Lorg/cmjava2023/Main;
+
+  public static void main(java.lang.String[]);
+    descriptor: ([Ljava/lang/String;)V
+    flags: ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=2, locals=3, args_size=1
+         0: invokestatic  #2                  // Method oops:()V
+         3: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+         6: ldc           #4                  // String anyway
+         8: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        11: goto          55
+        14: astore_1
+        15: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        18: ldc           #7                  // String caught e:
+        20: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        23: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        26: aload_1
+        27: invokevirtual #8                  // Method java/lang/Throwable.getMessage:()Ljava/lang/String;
+        30: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        33: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        36: ldc           #4                  // String anyway
+        38: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        41: goto          55
+        44: astore_2
+        45: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        48: ldc           #4                  // String anyway
+        50: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        53: aload_2
+        54: athrow
+        55: return
+      Exception table:
+         from    to  target type
+             0     3    14   Class java/lang/Throwable
+             0     3    44   any
+            14    33    44   any
+      LineNumberTable:
+        line 6: 0
+        line 11: 3
+        line 12: 11
+        line 7: 14
+        line 8: 15
+        line 9: 23
+        line 11: 33
+        line 12: 41
+        line 11: 44
+        line 12: 53
+        line 13: 55
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+           15      18     1     e   Ljava/lang/Throwable;
+            0      56     0  args   [Ljava/lang/String;
+      StackMapTable: number_of_entries = 3
+        frame_type = 78 /* same_locals_1_stack_item */
+          stack = [ class java/lang/Throwable ]
+        frame_type = 93 /* same_locals_1_stack_item */
+          stack = [ class java/lang/Throwable ]
+        frame_type = 10 /* same */
+
+  public static void oops() throws java.lang.Throwable;
+    descriptor: ()V
+    flags: ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=3, locals=0, args_size=0
+         0: new           #6                  // class java/lang/Throwable
+         3: dup
+         4: ldc           #9                  // String Oops
+         6: invokespecial #10                 // Method java/lang/Throwable."<init>":(Ljava/lang/String;)V
+         9: athrow
+      LineNumberTable:
+        line 16: 0
+    Exceptions:
+      throws java.lang.Throwable
+}
+SourceFile: "Main.java"
