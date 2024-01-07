@@ -113,6 +113,10 @@ impl FrameStack {
     pub fn pop(&mut self) -> Option<StackValue> {
         self.values.pop()
     }
+
+    pub fn clear(&mut self) {
+        self.values.clear()
+    }
 }
 
 impl From<FieldValue> for StackValue {

@@ -5,7 +5,7 @@ use predicates::prelude::predicate;
 fn try_catch_finally_throwable() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin("cmjava")?;
 
-    cmd.arg("tests/data/exceptions/simple/Main.class");
+    cmd.arg("tests/data/exceptions/nested/Main.class");
     cmd.assert()
         .success()
         .stdout(predicate::str::contains("caught e:\nOops\nanyway\n"));

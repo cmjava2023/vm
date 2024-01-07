@@ -32,7 +32,7 @@ impl ThrowableClass {
                 }),
                 Rc::new(Method {
                     code: MethodCode::Rust(get_message),
-                    name: "get_message".to_owned(),
+                    name: "getMessage".to_owned(),
                     parameters: vec![],
                     return_type: Some(ArgumentKind::Simple(
                         SimpleArgumentKind::Class(
