@@ -36,7 +36,7 @@ pub fn run(code: &Code, heap: &mut Heap) {
     let mut current_pc: ProgramCounter =
         ProgramCounter::new(code.byte_code.clone());
 
-    loop {
+    'executor_loop: loop {
         match current_pc.current().0.execute(&mut current_frame, heap) {
             Update::None => current_pc.next(1).unwrap(),
             Update::MethodCall { method, is_static } => match &method.code {
@@ -158,6 +158,60 @@ pub fn run(code: &Code, heap: &mut Heap) {
                     current_pc.previous(offset).unwrap()
                 },
             },
+            Update::Exception(e) => {
+                // allow the while-loop to handle the current method
+                // without special casing the first iteration
+                frame_stack.push(ExecutorFrame {
+                    frame: current_frame,
+                    pc: current_pc,
+                });
+                // search the call stack for an exception handler
+                // matching the current exception
+                while let Some(ExecutorFrame { frame, pc }) = frame_stack.pop()
+                {
+                    current_frame = frame;
+                    current_pc = pc;
+                    // check all exception handler of the current method
+                    // expectation: the order is 'correct', i.e.
+                    // the first matching handler is the one that's supposed
+                    // to handle the current exception
+                    // (i.e. this code does NOT search the most specific
+                    // matching handler)
+                    for exception in code.exception_table.iter() {
+                        // is the exception handler active in the region
+                        // that is currently executed?
+                        if exception.active.contains(&current_pc.current().1) {
+                            // does the exception handler handle the
+                            // class of the thrown exception?
+                            // TODO: inheritance
+                            // (i.e. is e.class().class_identifier()
+                            //  could also be a subclass of identifer)
+                            let catch_type_match = match &exception.catch_type {
+                                // exception handler handles all exceptions
+                                None => true,
+                                Some(identifier) => {
+                                    e.class().class_identifier() == identifier
+                                },
+                            };
+                            if catch_type_match {
+                                current_frame.operand_stack.clear();
+                                current_frame
+                                    .operand_stack
+                                    .push(StackValue::Reference(Some(
+                                        e.clone(),
+                                    )))
+                                    .unwrap();
+                                current_pc
+                                    .set(exception.handler_position)
+                                    .unwrap();
+                                continue 'executor_loop;
+                            }
+                        }
+                    }
+                }
+                // no handler has been found: terminate
+                panic!("Uncaught exception: {:?}", e);
+            },
         }
     }
 }
@@ -209,6 +263,7 @@ pub enum Update {
     Return(ReturnValue),
     GoTo(usize, OffsetDirection),
     MethodCall { method: Rc<Method>, is_static: bool },
+    Exception(Rc<dyn ClassInstance>),
 }
 
 pub enum ReturnValue {
