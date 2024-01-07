@@ -1,6 +1,6 @@
 pub mod signature_parser;
 
-use std::{ops::Range, rc::Rc};
+use std::{cell::RefCell, ops::Range, rc::Rc};
 
 use super::parse_class_identifier;
 use crate::{
@@ -162,6 +162,7 @@ fn create_bytecode_fields(
                 "Z" => FieldValue::boolean(),
                 _ => FieldValue::reference(),
             };
+            let value = RefCell::new(value);
             static_fields.push(Rc::new(Field { name, value }));
         } else {
             let name = class_file

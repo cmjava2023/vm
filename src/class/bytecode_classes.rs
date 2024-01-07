@@ -1,4 +1,4 @@
-use std::{any::Any, rc::Rc};
+use std::{any::Any, cell::RefCell, rc::Rc};
 
 use crate::class::{
     BytecodeClass, Class, ClassInstance, Field, FieldDescriptor, FieldKind,
@@ -56,7 +56,7 @@ impl Class for BytecodeClass {
                 };
                 Rc::new(Field {
                     name: f.name.clone(),
-                    value: default_val,
+                    value: RefCell::new(default_val),
                 })
             })
             .collect();

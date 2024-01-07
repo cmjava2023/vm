@@ -3,7 +3,7 @@ pub mod builtin_classes;
 pub mod bytecode_classes;
 
 use core::fmt;
-use std::{any::Any, borrow::Cow, ops::Range, rc::Rc};
+use std::{any::Any, borrow::Cow, cell::RefCell, ops::Range, rc::Rc};
 
 use crate::executor::{
     frame_stack::StackValue, local_variables::VariableValueOrValue, Frame,
@@ -398,7 +398,7 @@ pub struct Field {
     // TODO flags
     // TODO attributes
     // TODO data type
-    pub value: FieldValue,
+    pub value: RefCell<FieldValue>,
 }
 
 #[derive(Debug, Clone)]

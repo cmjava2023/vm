@@ -10,7 +10,7 @@ use crate::{
             ShortArray, ShortArrayInstance,
         },
         ArgumentKind, ArrayName, Class, ClassIdentifier, ClassInstance,
-        ClassName, Field, Method,
+        ClassName, Field, FieldValue, Method,
     },
     executor::{
         frame_stack::StackValue, local_variables::VariableValueOrValue, Frame,
@@ -1165,10 +1165,27 @@ got: {:?}",
                 Update::None
             },
 
+            Self::GetField { field_name, .. } => {
+                let objectref: Rc<dyn ClassInstance> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+
+                let field = objectref
+                    .instance_fields()
+                    .iter()
+                    .find(|f| &f.name == field_name)
+                    .unwrap();
+                frame
+                    .operand_stack
+                    .push(field.value.clone().into_inner().into())
+                    .unwrap();
+
+                Update::None
+            },
+
             Self::GetStatic(field) => {
                 frame
                     .operand_stack
-                    .push(field.value.clone().into())
+                    .push(field.value.clone().into_inner().into())
                     .unwrap();
                 Update::None
             },
@@ -2454,6 +2471,59 @@ got: {:?}",
             },
 
             Self::Nop => Update::None,
+
+            Self::PutField { field_name, .. } => {
+                let value: StackValue = frame.operand_stack.pop().unwrap();
+                let objectref: Rc<dyn ClassInstance> =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+
+                let field = objectref
+                    .instance_fields()
+                    .iter()
+                    .find(|f| &f.name == field_name)
+                    .unwrap();
+
+                field.value.replace_with(|old| match old {
+                    FieldValue::Byte(_) => match value {
+                        StackValue::Byte(b) => FieldValue::Byte(b),
+                        _ => panic!(),
+                    },
+                    FieldValue::Short(_) => match value {
+                        StackValue::Short(s) => FieldValue::Short(s),
+                        _ => panic!(),
+                    },
+                    FieldValue::Int(_) => match value {
+                        StackValue::Int(i) => FieldValue::Int(i),
+                        _ => panic!(),
+                    },
+                    FieldValue::Long(_) => match value {
+                        StackValue::Long(l) => FieldValue::Long(l),
+                        _ => panic!(),
+                    },
+                    FieldValue::Char(_) => match value {
+                        StackValue::Char(c) => FieldValue::Char(c),
+                        _ => panic!(),
+                    },
+                    FieldValue::Float(_) => match value {
+                        StackValue::Float(f) => FieldValue::Float(f),
+                        _ => panic!(),
+                    },
+                    FieldValue::Double(_) => match value {
+                        StackValue::Double(d) => FieldValue::Double(d),
+                        _ => panic!(),
+                    },
+                    FieldValue::Boolean(_) => match value {
+                        StackValue::Boolean(b) => FieldValue::Boolean(b),
+                        _ => panic!(),
+                    },
+                    FieldValue::Reference(_) => match value {
+                        StackValue::Reference(r) => FieldValue::Reference(r),
+                        _ => panic!(),
+                    },
+                });
+
+                Update::None
+            },
 
             Self::Return => Update::Return(ReturnValue::Void),
 
