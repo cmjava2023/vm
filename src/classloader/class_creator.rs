@@ -1,6 +1,6 @@
 pub mod signature_parser;
 
-use std::rc::Rc;
+use std::{ops::Range, rc::Rc};
 
 use super::parse_class_identifier;
 use crate::{
@@ -26,6 +26,8 @@ fn create_bytecode_method(
     let mut byte_code = Vec::new();
     let mut stack_depth = 0;
     let mut local_variable_count = 0;
+    let mut opcode_sizes;
+    let mut exeption_table = Vec::new();
     let name = class_file
         .get_java_cp_entry(method.name_index as usize)
         .expect("Valid CP Reference in MethodInfo")
@@ -36,13 +38,61 @@ fn create_bytecode_method(
         if let Some(code_attribute) = attribute {
             stack_depth = code_attribute.max_stack;
             local_variable_count = code_attribute.max_locals;
-            (_, byte_code) = parse_opcodes(
+            (_, (byte_code, opcode_sizes)) = parse_opcodes(
                 &code_attribute.code,
                 class_file,
                 runtime_cp,
                 heap,
             )
             .unwrap();
+
+            for exception in &code_attribute.exception_table {
+                let mut bytes_count = 0;
+                let mut start_pc_code = 0;
+                let mut end_pc_code = 0;
+                let mut handler_pc_code = 0;
+                for (i, code_size) in opcode_sizes.iter_mut().enumerate() {
+                    if bytes_count > exception.start_pc
+                        && bytes_count > exception.end_pc
+                        && bytes_count > exception.handler_pc
+                    {
+                        break;
+                    }
+                    if bytes_count == exception.start_pc {
+                        start_pc_code = i;
+                    }
+                    if bytes_count == exception.end_pc {
+                        end_pc_code = i;
+                    }
+                    if bytes_count == exception.handler_pc {
+                        handler_pc_code = i;
+                    }
+                    bytes_count += u16::from(*code_size);
+                }
+                let identifier = if exception.catch_type == 0 {
+                    None
+                } else {
+                    let name_index = class_file
+                        .get_java_cp_entry(exception.catch_type as usize)
+                        .unwrap()
+                        .as_class_info()
+                        .unwrap();
+                    let name = class_file
+                        .get_java_cp_entry(name_index as usize)
+                        .unwrap()
+                        .as_utf8_info()
+                        .unwrap();
+                    Some(parse_class_identifier(name))
+                };
+                exeption_table.push(crate::class::ExceptionTable {
+                    active: Range {
+                        start: start_pc_code,
+                        end: end_pc_code,
+                    },
+                    handler_position: handler_pc_code,
+                    catch_type: identifier,
+                });
+            }
         }
     }
     let desc_string = class_file
@@ -51,11 +101,12 @@ fn create_bytecode_method(
         .as_utf8_info()
         .unwrap();
     let (parameters, return_type) = parse_method_arguments(desc_string);
+
     Rc::new(Method {
         code: MethodCode::Bytecode(Code {
             stack_depth: stack_depth.into(),
             local_variable_count: local_variable_count.into(),
-            exception_table: Vec::new(),
+            exception_table: exeption_table,
             byte_code,
         }),
         name: name.to_string(),
