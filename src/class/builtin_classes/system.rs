@@ -1,4 +1,4 @@
-use std::{any::Any, rc::Rc};
+use std::{any::Any, cell::RefCell, rc::Rc};
 
 use crate::class::{
     builtin_classes::{InputStream, PrintStream},
@@ -20,15 +20,15 @@ impl SystemClass {
         let fields = vec![
             Rc::new(Field {
                 name: "out".into(),
-                value: FieldValue::Reference(Some(Rc::new(
+                value: RefCell::new(FieldValue::Reference(Some(Rc::new(
                     print_stream_class.new_instance(),
-                ))),
+                )))),
             }),
             Rc::new(Field {
                 name: "in".into(),
-                value: FieldValue::Reference(Some(Rc::new(
+                value: RefCell::new(FieldValue::Reference(Some(Rc::new(
                     file_input_stream_class.new_instance(),
-                ))),
+                )))),
             }),
         ];
         Self {
