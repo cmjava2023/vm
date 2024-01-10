@@ -210,14 +210,19 @@ pub fn create_bytecode_class(
         &runtime_cp[remove_cp_offset(class_file.this_class as usize)];
     let class_identifier = parse_class_identifier(class.as_class().unwrap());
 
-    let super_class = None;
+    let super_class_name: &RuntimeCPEntry =
+        &runtime_cp[remove_cp_offset(class_file.super_class as usize)];
+    let super_class_identifier =
+        parse_class_identifier(super_class_name.as_class().unwrap());
+    let super_class = heap.find_class(&super_class_identifier).unwrap();
+    // let super_class = None;
     let interfaces = Vec::new();
     BytecodeClass {
         methods,
         static_fields,
         instance_fields,
         class_identifier,
-        super_class,
+        super_class: super_class.clone(),
         interfaces,
     }
 }
