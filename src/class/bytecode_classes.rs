@@ -1,5 +1,6 @@
 use std::{any::Any, cell::RefCell, rc::Rc};
 
+use super::access_flags::ClassAccessFlag;
 use crate::class::{
     BytecodeClass, Class, ClassInstance, Field, FieldDescriptor, FieldKind,
     FieldValue, Method,
@@ -32,6 +33,10 @@ impl Class for BytecodeClass {
 
     fn as_any(&self) -> &dyn Any {
         self
+    }
+
+    fn has_acc_super(&self) -> bool {
+        self.access_flags.contains(ClassAccessFlag::Super)
     }
 
     fn new_instance(&self, cls: Rc<dyn Class>) -> Rc<dyn ClassInstance> {

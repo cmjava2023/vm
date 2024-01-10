@@ -121,8 +121,9 @@ fn main() -> anyhow::Result<()> {
         .get_method(
             "main",
             (main_descriptor.0.as_ref(), main_descriptor.1.as_ref()),
+            false,
         )
-        .unwrap()
+        .0
         .code;
     let main = if let MethodCode::Bytecode(code) = main {
         code

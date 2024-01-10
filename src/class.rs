@@ -134,6 +134,9 @@ macro_rules! class_identifier {
 }
 
 pub(crate) use class_identifier;
+use enumflags2::BitFlags;
+
+use self::access_flags::ClassAccessFlag;
 
 #[derive(Eq, Hash, PartialEq, Clone, Debug)]
 pub struct ClassIdentifier {
@@ -326,22 +329,42 @@ pub trait Class {
 
     /// self and cls must be the same!
     fn new_instance(&self, cls: Rc<dyn Class>) -> Rc<dyn ClassInstance>;
+
+    fn has_acc_super(&self) -> bool {
+        // true for any class version java 8 or higher
+        // assumption: builtin classes are written against java 8 behavior
+        // on invokevirtual,
+        // while BytecodeClass overrides this
+        true
+    }
 }
 
 impl dyn Class {
+    /// (Recursively) lookup method in self (and superclasses/interfaces).
+    ///
+    /// Returns the resolved method and the class this method is declared in.
     pub fn get_method(
-        &self,
+        self: &Rc<Self>,
         method_name: &str,
         method_descriptor: (&[ArgumentKind], Option<&ArgumentKind>),
-    ) -> Option<Rc<Method>> {
-        self.methods()
-            .iter()
-            .find(|element| {
-                element.name == method_name
-                    && element.parameters == method_descriptor.0
-                    && element.return_type.as_ref() == method_descriptor.1
-            })
-            .cloned()
+        recurse: bool,
+    ) -> (Rc<Method>, Rc<dyn Class>) {
+        match self.methods().iter().find(|element| {
+            element.name == method_name
+                && element.parameters == method_descriptor.0
+                && element.return_type.as_ref() == method_descriptor.1
+        }) {
+            Some(m) => (m.clone(), self.clone()),
+            None => match self.super_class() {
+                Some(c) if recurse => {
+                    c.get_method(method_name, method_descriptor, recurse)
+                },
+                _ => panic!(
+                    "could not resolve method {} {:?}",
+                    method_name, method_descriptor
+                ),
+            },
+        }
     }
 
     pub fn get_static_field(&self, field_name: &str) -> Option<Rc<Field>> {
@@ -349,6 +372,22 @@ impl dyn Class {
             .iter()
             .find(|element| element.name == field_name)
             .cloned()
+    }
+
+    pub fn is_super_class_of(&self, other: &Rc<dyn Class>) -> bool {
+        // idea: if self is superclass of other,
+        // at some point other's parent must be self
+        match other.super_class() {
+            // other must be Object, so self cannot be superclass
+            None => false,
+            Some(other) => {
+                if other.class_identifier() == self.class_identifier() {
+                    true
+                } else {
+                    self.is_super_class_of(&other)
+                }
+            },
+        }
     }
 }
 
@@ -368,7 +407,7 @@ pub struct BytecodeClass {
     pub super_class: Rc<dyn Class>,
     // TODO how are interfaces represented?
     pub interfaces: Vec<Rc<dyn std::any::Any>>,
-    // TODO attributes
+    pub access_flags: BitFlags<ClassAccessFlag>,
 }
 
 #[derive(Debug)]

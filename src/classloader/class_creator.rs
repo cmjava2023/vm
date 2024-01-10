@@ -224,5 +224,6 @@ pub fn create_bytecode_class(
         class_identifier,
         super_class: super_class.clone(),
         interfaces,
+        access_flags: class_file.access_flags,
     }
 }

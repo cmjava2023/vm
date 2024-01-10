@@ -281,7 +281,7 @@ impl OpCode {
         &self,
         frame: &mut Frame,
         heap: &mut Heap,
-        _current_class: &Rc<dyn Class>,
+        current_class: &Rc<dyn Class>,
     ) -> Update {
         match self {
             Self::Aaload => {
@@ -1472,38 +1472,49 @@ got: {:?}",
             },
 
             Self::InvokeSpecial(method) => {
-                let class =
+                let method_class =
                     heap.find_class(&method.class_name).unwrap_or_else(|| {
                         panic!("class for method call {:?} exists", method)
                     });
-                let method = class
-                    .get_method(
-                        &method.descriptor.name,
-                        (
-                            &method.descriptor.descriptor.0,
-                            method.descriptor.descriptor.1.as_ref(),
-                        ),
-                    )
-                    .unwrap();
+                // note: is_super_class only applies,
+                // if method_class is a class, not an interface.
+                // This distinction is currently unnecessary since
+                // interfaces are not implemented.
+                let resolution_root = if method.descriptor.name != "<init>"
+                    && method_class.is_super_class_of(current_class)
+                    && method_class.has_acc_super()
+                {
+                    current_class.super_class().unwrap()
+                } else {
+                    method_class.clone()
+                };
+
+                let (method, defining_class) = resolution_root.get_method(
+                    &method.descriptor.name,
+                    (
+                        &method.descriptor.descriptor.0,
+                        method.descriptor.descriptor.1.as_ref(),
+                    ),
+                    true,
+                );
 
                 Update::MethodCall {
                     method,
                     is_static: false,
-                    defining_class: class.clone(),
+                    defining_class,
                 }
             },
 
             Self::InvokeStatic(method) => {
                 let class = heap.find_class(&method.class_name).unwrap();
-                let method = class
-                    .get_method(
-                        &method.descriptor.name,
-                        (
-                            &method.descriptor.descriptor.0,
-                            method.descriptor.descriptor.1.as_ref(),
-                        ),
-                    )
-                    .unwrap();
+                let (method, _) = class.get_method(
+                    &method.descriptor.name,
+                    (
+                        &method.descriptor.descriptor.0,
+                        method.descriptor.descriptor.1.as_ref(),
+                    ),
+                    false,
+                );
 
                 Update::MethodCall {
                     method,
@@ -1513,21 +1524,27 @@ got: {:?}",
             },
 
             Self::InvokeVirtual(method) => {
-                let class = heap.find_class(&method.class_name).unwrap();
-                let method = class
-                    .get_method(
-                        &method.descriptor.name,
-                        (
-                            &method.descriptor.descriptor.0,
-                            method.descriptor.descriptor.1.as_ref(),
-                        ),
-                    )
+                let objectref: Rc<dyn ClassInstance> = frame
+                    .operand_stack
+                    .peek(method.descriptor.descriptor.0.len())
+                    .unwrap()
+                    .try_into()
                     .unwrap();
+                let resolution_root = objectref.class();
+
+                let (method, defining_class) = resolution_root.get_method(
+                    &method.descriptor.name,
+                    (
+                        &method.descriptor.descriptor.0,
+                        method.descriptor.descriptor.1.as_ref(),
+                    ),
+                    true,
+                );
 
                 Update::MethodCall {
                     method,
                     is_static: false,
-                    defining_class: class.clone(),
+                    defining_class,
                 }
             },
 

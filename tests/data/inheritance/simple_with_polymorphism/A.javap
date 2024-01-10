@@ -1,0 +1,90 @@
+Classfile /home/florian/Documents/fh/WS23_24/Compilerbau/vm/main/tests/data/inheritance/simple_with_polymorphism/A.class
+  Last modified 10.01.2024; size 565 bytes
+  MD5 checksum b8b7c23a875efe0bbb88ced243f6db90
+  Compiled from "A.java"
+public class A
+  minor version: 0
+  major version: 52
+  flags: ACC_PUBLIC, ACC_SUPER
+Constant pool:
+   #1 = Methodref          #7.#19         // java/lang/Object."<init>":()V
+   #2 = Fieldref           #20.#21        // java/lang/System.out:Ljava/io/PrintStream;
+   #3 = String             #22            // (A) doStuff()
+   #4 = Methodref          #23.#24        // java/io/PrintStream.println:(Ljava/lang/String;)V
+   #5 = String             #25            // (A) doOtherStuff()
+   #6 = Class              #26            // A
+   #7 = Class              #27            // java/lang/Object
+   #8 = Utf8               <init>
+   #9 = Utf8               ()V
+  #10 = Utf8               Code
+  #11 = Utf8               LineNumberTable
+  #12 = Utf8               LocalVariableTable
+  #13 = Utf8               this
+  #14 = Utf8               LA;
+  #15 = Utf8               doStuff
+  #16 = Utf8               doOtherStuff
+  #17 = Utf8               SourceFile
+  #18 = Utf8               A.java
+  #19 = NameAndType        #8:#9          // "<init>":()V
+  #20 = Class              #28            // java/lang/System
+  #21 = NameAndType        #29:#30        // out:Ljava/io/PrintStream;
+  #22 = Utf8               (A) doStuff()
+  #23 = Class              #31            // java/io/PrintStream
+  #24 = NameAndType        #32:#33        // println:(Ljava/lang/String;)V
+  #25 = Utf8               (A) doOtherStuff()
+  #26 = Utf8               A
+  #27 = Utf8               java/lang/Object
+  #28 = Utf8               java/lang/System
+  #29 = Utf8               out
+  #30 = Utf8               Ljava/io/PrintStream;
+  #31 = Utf8               java/io/PrintStream
+  #32 = Utf8               println
+  #33 = Utf8               (Ljava/lang/String;)V
+{
+  public A();
+    descriptor: ()V
+    flags: ACC_PUBLIC
+    Code:
+      stack=1, locals=1, args_size=1
+         0: aload_0
+         1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+         4: return
+      LineNumberTable:
+        line 1: 0
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       5     0  this   LA;
+
+  public void doStuff();
+    descriptor: ()V
+    flags: ACC_PUBLIC
+    Code:
+      stack=2, locals=1, args_size=1
+         0: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+         3: ldc           #3                  // String (A) doStuff()
+         5: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+         8: return
+      LineNumberTable:
+        line 3: 0
+        line 4: 8
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       9     0  this   LA;
+
+  public void doOtherStuff();
+    descriptor: ()V
+    flags: ACC_PUBLIC
+    Code:
+      stack=2, locals=1, args_size=1
+         0: getstatic     #2                  // Field java/lang/System.out:Ljava/io/PrintStream;
+         3: ldc           #5                  // String (A) doOtherStuff()
+         5: invokevirtual #4                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+         8: return
+      LineNumberTable:
+        line 7: 0
+        line 8: 8
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       9     0  this   LA;
+}
+SourceFile: "A.java"
