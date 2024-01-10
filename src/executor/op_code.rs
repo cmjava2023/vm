@@ -159,7 +159,7 @@ pub enum OpCode {
     Fstore(usize),
     Fsub,
     GetField {
-        class: String,
+        class: ClassIdentifier,
         field_name: String,
     },
     GetStatic(Rc<Field>),
@@ -259,7 +259,7 @@ pub enum OpCode {
     Pop,
     Pop2,
     PutField {
-        class: String,
+        class: ClassIdentifier,
         field_name: String,
     },
     PutStatic(Rc<Field>),
@@ -1132,15 +1132,11 @@ got: {:?}",
                 Update::None
             },
 
-            Self::GetField { field_name, .. } => {
+            Self::GetField { field_name, class } => {
                 let objectref: Rc<dyn ClassInstance> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
 
-                let field = objectref
-                    .instance_fields()
-                    .iter()
-                    .find(|f| &f.name == field_name)
-                    .unwrap();
+                let field = objectref.get_field(class, field_name);
                 frame
                     .operand_stack
                     .push(field.value.clone().into_inner().into())
@@ -2241,16 +2237,12 @@ got: {:?}",
 
             Self::Nop => Update::None,
 
-            Self::PutField { field_name, .. } => {
+            Self::PutField { field_name, class } => {
                 let value: StackValue = frame.operand_stack.pop().unwrap();
                 let objectref: Rc<dyn ClassInstance> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
 
-                let field = objectref
-                    .instance_fields()
-                    .iter()
-                    .find(|f| &f.name == field_name)
-                    .unwrap();
+                let field = objectref.get_field(class, field_name);
 
                 field.value.replace_with(|old| match old {
                     FieldValue::Byte(_) => match value {

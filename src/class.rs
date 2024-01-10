@@ -488,6 +488,21 @@ pub trait ClassInstance {
     fn parent_instance(&self) -> Option<Rc<dyn ClassInstance>>;
 }
 
+impl dyn ClassInstance {
+    pub fn get_field(&self, class: &ClassIdentifier, name: &str) -> Rc<Field> {
+        let self_field = self.instance_fields().iter().find(|f| f.name == name);
+        match self_field {
+            Some(field) if self.class().class_identifier() == class => {
+                field.clone()
+            },
+            _ => match self.parent_instance() {
+                None => panic!("NoSuchFieldError"),
+                Some(i) => i.get_field(class, name),
+            },
+        }
+    }
+}
+
 impl fmt::Debug for dyn ClassInstance {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "instance of Class '{}'", self.class().class_identifier())

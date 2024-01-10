@@ -1,0 +1,55 @@
+Classfile /home/florian/Documents/fh/WS23_24/Compilerbau/vm/main/tests/data/inheritance/shadowed_field/A.class
+  Last modified 10.01.2024; size 288 bytes
+  MD5 checksum 9ec6a326f05bac5832069bc4f7ab84ed
+  Compiled from "A.java"
+public class A
+  minor version: 0
+  major version: 52
+  flags: ACC_PUBLIC, ACC_SUPER
+Constant pool:
+   #1 = Methodref          #4.#16         // java/lang/Object."<init>":()V
+   #2 = Fieldref           #3.#17         // A.thing:I
+   #3 = Class              #18            // A
+   #4 = Class              #19            // java/lang/Object
+   #5 = Utf8               thing
+   #6 = Utf8               I
+   #7 = Utf8               <init>
+   #8 = Utf8               (I)V
+   #9 = Utf8               Code
+  #10 = Utf8               LineNumberTable
+  #11 = Utf8               LocalVariableTable
+  #12 = Utf8               this
+  #13 = Utf8               LA;
+  #14 = Utf8               SourceFile
+  #15 = Utf8               A.java
+  #16 = NameAndType        #7:#20         // "<init>":()V
+  #17 = NameAndType        #5:#6          // thing:I
+  #18 = Utf8               A
+  #19 = Utf8               java/lang/Object
+  #20 = Utf8               ()V
+{
+  protected int thing;
+    descriptor: I
+    flags: ACC_PROTECTED
+
+  public A(int);
+    descriptor: (I)V
+    flags: ACC_PUBLIC
+    Code:
+      stack=2, locals=2, args_size=2
+         0: aload_0
+         1: invokespecial #1                  // Method java/lang/Object."<init>":()V
+         4: aload_0
+         5: iload_1
+         6: putfield      #2                  // Field thing:I
+         9: return
+      LineNumberTable:
+        line 4: 0
+        line 5: 4
+        line 6: 9
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0      10     0  this   LA;
+            0      10     1 thing   I
+}
+SourceFile: "A.java"
