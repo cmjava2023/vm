@@ -365,7 +365,7 @@ pub struct BytecodeClass {
     pub instance_fields: Vec<FieldDescriptor>,
     // TODO flags
     pub class_identifier: ClassIdentifier,
-    pub super_class: Option<Rc<dyn Class>>,
+    pub super_class: Rc<dyn Class>,
     // TODO how are interfaces represented?
     pub interfaces: Vec<Rc<dyn std::any::Any>>,
     // TODO attributes

@@ -23,7 +23,7 @@ impl Class for BytecodeClass {
     }
 
     fn super_class(&self) -> Option<Rc<dyn Class>> {
-        self.super_class.clone()
+        Some(self.super_class.clone())
     }
 
     fn interfaces(&self) -> &[Rc<dyn std::any::Any>] {
