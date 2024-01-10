@@ -129,9 +129,9 @@ fn println(frame: &mut Frame) -> RustMethodReturn {
 
 fn println_boolean(frame: &mut Frame) -> RustMethodReturn {
     let boolean = frame.local_variables.get(1);
-    let boolean: u8 = match boolean {
-        VariableValueOrValue::Boolean(b) => b,
-        _ => panic!("local variables have boolean to print at index 1"),
+    let boolean = match boolean {
+        VariableValueOrValue::Int(b) => b,
+        _ => panic!("local variables have int (boolean) to print at index 1"),
     };
     match boolean {
         0 => println!("false"),
@@ -144,13 +144,13 @@ fn println_boolean(frame: &mut Frame) -> RustMethodReturn {
 
 fn println_char(frame: &mut Frame) -> RustMethodReturn {
     let c = frame.local_variables.get(1);
-    let c: u16 = match c {
-        VariableValueOrValue::Char(c) => c,
-        _ => panic!("local variables have char to print at index 1"),
+    let c = match c {
+        VariableValueOrValue::Int(c) => c,
+        _ => panic!("local variables have int (char) to print at index 1"),
     };
     println!(
         "{}",
-        char::from_u32(c.into()).unwrap_or(char::REPLACEMENT_CHARACTER)
+        char::from_u32(c as u32).unwrap_or(char::REPLACEMENT_CHARACTER)
     );
 
     RustMethodReturn::Void
@@ -180,7 +180,7 @@ fn println_float(frame: &mut Frame) -> RustMethodReturn {
 
 fn println_int(frame: &mut Frame) -> RustMethodReturn {
     let int = frame.local_variables.get(1);
-    let int: i32 = int.as_computation_int().unwrap();
+    let int: i32 = int.try_into().unwrap();
     println!("{}", int);
 
     RustMethodReturn::Void
