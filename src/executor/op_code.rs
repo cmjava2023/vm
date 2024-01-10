@@ -280,12 +280,8 @@ impl OpCode {
     pub fn execute(&self, frame: &mut Frame, heap: &mut Heap) -> Update {
         match self {
             Self::Aaload => {
-                let index = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let index: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let array: Rc<dyn ClassInstance> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
                 match array.as_any().downcast_ref::<ObjectArrayInstance>() {
@@ -308,12 +304,8 @@ on top of the stack, got: {:?}",
             Self::Aastore => {
                 let value: Option<Rc<dyn ClassInstance>> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
-                let index = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let index: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let array: Rc<dyn ClassInstance> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let array: &ObjectArrayInstance =
@@ -329,12 +321,8 @@ on top of the stack, got: {:?}",
                 Update::None
             },
             Self::AnewArray(array_cls) => {
-                let size = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let size: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
 
                 // construct new array and put on stack
                 let array_cls_for_ref = array_cls.clone();
@@ -439,12 +427,8 @@ on top of the stack, got: {:?}",
             },
 
             Self::Baload => {
-                let index = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let index: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let array: Rc<dyn ClassInstance> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
 
@@ -453,7 +437,10 @@ on top of the stack, got: {:?}",
                 {
                     let obj =
                         byte_array.get(index.try_into().unwrap()).unwrap();
-                    frame.operand_stack.push(StackValue::Byte(obj)).unwrap();
+                    frame
+                        .operand_stack
+                        .push(StackValue::Int(obj.into()))
+                        .unwrap();
                 } else if let Some(bool_array) =
                     array.as_any().downcast_ref::<BoolArrayInstance>()
                 {
@@ -461,7 +448,7 @@ on top of the stack, got: {:?}",
                         bool_array.get(index.try_into().unwrap()).unwrap();
                     frame
                         .operand_stack
-                        .push(StackValue::Boolean(if obj { 1 } else { 0 }))
+                        .push(StackValue::Int(if obj { 1 } else { 0 }))
                         .unwrap();
                 } else {
                     panic!(
@@ -475,18 +462,10 @@ got: {:?}",
             },
 
             Self::Bastore => {
-                let value: i32 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
-                let index = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let value: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let index: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let array: Rc<dyn ClassInstance> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
 
@@ -522,42 +501,34 @@ got: {:?}",
             },
 
             Self::Caload => {
-                let index = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let index: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let array: Rc<dyn ClassInstance> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let char_array: &CharArrayInstance =
                     array.as_ref().try_into().unwrap();
 
                 let obj = char_array.get(index.try_into().unwrap()).unwrap();
-                frame.operand_stack.push(StackValue::Char(obj)).unwrap();
+                frame
+                    .operand_stack
+                    .push(StackValue::Int(obj.into()))
+                    .unwrap();
 
                 Update::None
             },
 
             Self::Castore => {
-                let value: StackValue = frame.operand_stack.pop().unwrap();
-                let index = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let value: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let index: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let array: Rc<dyn ClassInstance> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
 
-                let char_value = value.as_computation_int().unwrap();
                 let char_array: &CharArrayInstance =
                     array.as_ref().try_into().unwrap();
                 char_array
-                    .set(
-                        index.try_into().unwrap(),
-                        char_value.try_into().unwrap(),
-                    )
+                    .set(index.try_into().unwrap(), value.try_into().unwrap())
                     .unwrap();
                 Update::None
             },
@@ -638,12 +609,8 @@ got: {:?}",
             },
 
             Self::Daload => {
-                let index = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let index: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let array: Rc<dyn ClassInstance> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let array: &DoubleArrayInstance =
@@ -657,12 +624,8 @@ got: {:?}",
 
             Self::Dastore => {
                 let value: StackValue = frame.operand_stack.pop().unwrap();
-                let index = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let index: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let array: Rc<dyn ClassInstance> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
 
@@ -959,12 +922,8 @@ got: {:?}",
             },
 
             Self::Faload => {
-                let index = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let index: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let array: Rc<dyn ClassInstance> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let array: &FloatArrayInstance =
@@ -978,12 +937,8 @@ got: {:?}",
 
             Self::Fastore => {
                 let value: StackValue = frame.operand_stack.pop().unwrap();
-                let index = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let index: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let array: Rc<dyn ClassInstance> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
 
@@ -1202,12 +1157,8 @@ got: {:?}",
             },
 
             Self::Iaload => {
-                let index = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let index: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let array: Rc<dyn ClassInstance> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let array: &IntArrayInstance =
@@ -1220,18 +1171,10 @@ got: {:?}",
             },
 
             Self::Iadd => {
-                let op2 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
-                let op1 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op2: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let op1: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
 
                 let result: i32 = op1.wrapping_add(op2);
 
@@ -1245,17 +1188,13 @@ got: {:?}",
             },
 
             Self::Iastore => {
-                let value: StackValue = frame.operand_stack.pop().unwrap();
-                let index = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let value: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let index: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let array: Rc<dyn ClassInstance> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
 
-                let value = value.as_computation_int().unwrap();
                 let array: &IntArrayInstance =
                     array.as_ref().try_into().unwrap();
                 array.set(index.try_into().unwrap(), value).unwrap();
@@ -1263,18 +1202,10 @@ got: {:?}",
             },
 
             Self::Iand => {
-                let op2 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
-                let op1 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op2: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let op1: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
 
                 let result: i32 = op1 & op2;
 
@@ -1293,18 +1224,10 @@ got: {:?}",
             },
 
             Self::Idiv => {
-                let op2 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
-                let op1 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op2: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let op1: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
 
                 // TODO(FW): this panics for division by 0
                 let result: i32 = op1.wrapping_div(op2);
@@ -1356,18 +1279,10 @@ got: {:?}",
             },
 
             Self::IficmpEq(size, direction) => {
-                let op2 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
-                let op1 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op2: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let op1: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 if op1 == op2 {
                     Update::GoTo(*size, *direction)
                 } else {
@@ -1376,18 +1291,10 @@ got: {:?}",
             },
 
             Self::IficmpNe(size, direction) => {
-                let op2 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
-                let op1 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op2: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let op1: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 if op1 != op2 {
                     Update::GoTo(*size, *direction)
                 } else {
@@ -1396,18 +1303,10 @@ got: {:?}",
             },
 
             Self::IficmpLt(size, direction) => {
-                let op2 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
-                let op1 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op2: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let op1: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 if op1 < op2 {
                     Update::GoTo(*size, *direction)
                 } else {
@@ -1416,18 +1315,10 @@ got: {:?}",
             },
 
             Self::IficmpGt(size, direction) => {
-                let op2 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
-                let op1 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op2: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let op1: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 if op1 > op2 {
                     Update::GoTo(*size, *direction)
                 } else {
@@ -1436,18 +1327,10 @@ got: {:?}",
             },
 
             Self::IficmpLe(size, direction) => {
-                let op2 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
-                let op1 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op2: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let op1: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 if op1 <= op2 {
                     Update::GoTo(*size, *direction)
                 } else {
@@ -1456,18 +1339,10 @@ got: {:?}",
             },
 
             Self::IficmpGe(size, direction) => {
-                let op2 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
-                let op1 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op2: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let op1: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 if op1 >= op2 {
                     Update::GoTo(*size, *direction)
                 } else {
@@ -1476,12 +1351,8 @@ got: {:?}",
             },
 
             Self::IfEq(size, direction) => {
-                let op1 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op1: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 if op1 == 0 {
                     Update::GoTo(*size, *direction)
                 } else {
@@ -1490,12 +1361,8 @@ got: {:?}",
             },
 
             Self::IfNe(size, direction) => {
-                let op1 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op1: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 if op1 != 0 {
                     Update::GoTo(*size, *direction)
                 } else {
@@ -1504,12 +1371,8 @@ got: {:?}",
             },
 
             Self::IfLt(size, direction) => {
-                let op1 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op1: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 if op1 < 0 {
                     Update::GoTo(*size, *direction)
                 } else {
@@ -1518,12 +1381,8 @@ got: {:?}",
             },
 
             Self::IfGt(size, direction) => {
-                let op1 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op1: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 if op1 > 0 {
                     Update::GoTo(*size, *direction)
                 } else {
@@ -1532,12 +1391,8 @@ got: {:?}",
             },
 
             Self::IfLe(size, direction) => {
-                let op1 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op1: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 if op1 <= 0 {
                     Update::GoTo(*size, *direction)
                 } else {
@@ -1546,12 +1401,8 @@ got: {:?}",
             },
 
             Self::IfGe(size, direction) => {
-                let op1 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op1: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 if op1 >= 0 {
                     Update::GoTo(*size, *direction)
                 } else {
@@ -1596,18 +1447,10 @@ got: {:?}",
             },
 
             Self::Imul => {
-                let op2 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
-                let op1 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op2: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let op1: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
 
                 let result: i32 = op1.wrapping_mul(op2);
 
@@ -1617,12 +1460,8 @@ got: {:?}",
             },
 
             Self::Ineg => {
-                let op1 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op1: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
 
                 let result: i32 = op1.neg();
 
@@ -1689,18 +1528,10 @@ got: {:?}",
             },
 
             Self::Ior => {
-                let op2 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
-                let op1 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op2: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let op1: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
 
                 let result: i32 = op1 | op2;
 
@@ -1710,18 +1541,10 @@ got: {:?}",
             },
 
             Self::Irem => {
-                let op2 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
-                let op1 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op2: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let op1: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
 
                 let result: i32 = op1.wrapping_rem(op2);
 
@@ -1731,29 +1554,17 @@ got: {:?}",
             },
 
             Self::Ireturn => {
-                let retval = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let retval: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
 
                 Update::Return(ReturnValue::Int(retval))
             },
 
             Self::Ishl => {
-                let op2 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
-                let op1 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op2: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let op1: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
 
                 let result: i32 = op1 << (op2 & 0x1f);
 
@@ -1763,18 +1574,10 @@ got: {:?}",
             },
 
             Self::Ishr => {
-                let op2 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
-                let op1 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op2: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let op1: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
 
                 let result: i32 = op1 >> (op2 & 0x1f);
 
@@ -1784,18 +1587,10 @@ got: {:?}",
             },
 
             Self::Isub => {
-                let op2 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
-                let op1 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op2: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let op1: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
 
                 let result: i32 = op1.wrapping_sub(op2);
 
@@ -1805,18 +1600,10 @@ got: {:?}",
             },
 
             Self::Iushr => {
-                let op2 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
-                let op1 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op2: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let op1: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
 
                 // perform shift with zero extension
                 // by casting to an unsigned value before the shift
@@ -1828,18 +1615,10 @@ got: {:?}",
             },
 
             Self::Ixor => {
-                let op2 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
-                let op1 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op2: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
+                let op1: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
 
                 let result: i32 = op1 ^ op2;
 
@@ -1906,7 +1685,10 @@ got: {:?}",
                     _ => panic!("expect int stack value, got '{:?}'", int),
                 };
                 let byte: i8 = int as i8;
-                frame.operand_stack.push(StackValue::Byte(byte)).unwrap();
+                frame
+                    .operand_stack
+                    .push(StackValue::Int(byte.into()))
+                    .unwrap();
                 Update::None
             },
             Self::I2c => {
@@ -1916,7 +1698,7 @@ got: {:?}",
                     _ => panic!("expect int stack value, got '{:?}'", int),
                 };
                 let c: u16 = int as u16;
-                frame.operand_stack.push(StackValue::Char(c)).unwrap();
+                frame.operand_stack.push(StackValue::Int(c as i32)).unwrap();
                 Update::None
             },
             Self::I2d => {
@@ -1959,7 +1741,10 @@ got: {:?}",
                     _ => panic!("expect int stack value, got '{:?}'", int),
                 };
                 let short: i16 = int as i16;
-                frame.operand_stack.push(StackValue::Short(short)).unwrap();
+                frame
+                    .operand_stack
+                    .push(StackValue::Int(short.into()))
+                    .unwrap();
                 Update::None
             },
 
@@ -1970,16 +1755,9 @@ got: {:?}",
                 // stack contains as many counts as there are dimensions
                 // inner most dimension is on top of stack, outer most on bottom
                 for _ in 0..dimensions {
-                    array_lens.push(
-                        frame
-                            .operand_stack
-                            .pop()
-                            .unwrap()
-                            .as_computation_int()
-                            .unwrap()
-                            .try_into()
-                            .unwrap(),
-                    );
+                    let dim: i32 =
+                        frame.operand_stack.pop().unwrap().try_into().unwrap();
+                    array_lens.push(dim.try_into().unwrap());
                 }
 
                 let outer_array = init_array(
@@ -2040,12 +1818,8 @@ got: {:?}",
             },
 
             Self::Laload => {
-                let index = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let index: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let array: Rc<dyn ClassInstance> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let array: &LongArrayInstance =
@@ -2083,12 +1857,8 @@ got: {:?}",
 
             Self::Lastore => {
                 let value: StackValue = frame.operand_stack.pop().unwrap();
-                let index = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let index: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let array: Rc<dyn ClassInstance> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
 
@@ -2294,12 +2064,8 @@ got: {:?}",
             },
 
             Self::Lshl => {
-                let op2 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op2: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let op1 = if let StackValue::Long(l) =
                     frame.operand_stack.pop().unwrap()
                 {
@@ -2317,12 +2083,8 @@ got: {:?}",
             },
 
             Self::Lshr => {
-                let op2 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op2: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let op1 = if let StackValue::Long(l) =
                     frame.operand_stack.pop().unwrap()
                 {
@@ -2364,12 +2126,8 @@ got: {:?}",
             },
 
             Self::Lushr => {
-                let op2 = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let op2: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let op1 = if let StackValue::Long(l) =
                     frame.operand_stack.pop().unwrap()
                 {
@@ -2412,12 +2170,8 @@ got: {:?}",
             },
 
             Self::NewArray(array_type) => {
-                let size = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let size: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
 
                 let array: Rc<dyn ClassInstance> = match array_type {
                     ArrayType::Boolean => {
@@ -2492,11 +2246,11 @@ got: {:?}",
 
                 field.value.replace_with(|old| match old {
                     FieldValue::Byte(_) => match value {
-                        StackValue::Byte(b) => FieldValue::Byte(b),
+                        StackValue::Int(b) => FieldValue::Byte(b as i8),
                         _ => panic!(),
                     },
                     FieldValue::Short(_) => match value {
-                        StackValue::Short(s) => FieldValue::Short(s),
+                        StackValue::Int(s) => FieldValue::Short(s as i16),
                         _ => panic!(),
                     },
                     FieldValue::Int(_) => match value {
@@ -2508,7 +2262,7 @@ got: {:?}",
                         _ => panic!(),
                     },
                     FieldValue::Char(_) => match value {
-                        StackValue::Char(c) => FieldValue::Char(c),
+                        StackValue::Int(c) => FieldValue::Char(c as u16),
                         _ => panic!(),
                     },
                     FieldValue::Float(_) => match value {
@@ -2520,7 +2274,7 @@ got: {:?}",
                         _ => panic!(),
                     },
                     FieldValue::Boolean(_) => match value {
-                        StackValue::Boolean(b) => FieldValue::Boolean(b),
+                        StackValue::Int(b) => FieldValue::Boolean(b as u8),
                         _ => panic!(),
                     },
                     FieldValue::Reference(_) => match value {
@@ -2535,35 +2289,30 @@ got: {:?}",
             Self::Return => Update::Return(ReturnValue::Void),
 
             Self::Saload => {
-                let index = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let index: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let array: Rc<dyn ClassInstance> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let array: &ShortArrayInstance =
                     array.as_ref().try_into().unwrap();
 
                 let obj = array.get(index.try_into().unwrap()).unwrap();
-                frame.operand_stack.push(StackValue::Short(obj)).unwrap();
+                frame
+                    .operand_stack
+                    .push(StackValue::Int(obj.into()))
+                    .unwrap();
 
                 Update::None
             },
 
             Self::Sastore => {
                 let value: StackValue = frame.operand_stack.pop().unwrap();
-                let index = frame
-                    .operand_stack
-                    .pop()
-                    .unwrap()
-                    .as_computation_int()
-                    .unwrap();
+                let index: i32 =
+                    frame.operand_stack.pop().unwrap().try_into().unwrap();
                 let array: Rc<dyn ClassInstance> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
 
-                let value = value.as_computation_int().unwrap();
+                let value: i32 = value.try_into().unwrap();
                 let array: &ShortArrayInstance =
                     array.as_ref().try_into().unwrap();
                 array

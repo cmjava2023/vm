@@ -9,23 +9,13 @@ use crate::{
 pub enum StackValue {
     // Primitive Types
     //   Integral Types
-    Byte(i8),
-    Short(i16),
+    /// Covers int, byte, short, bool, char
     Int(i32),
     Long(i64),
-    // UTF-16 encoded Unicode Code point in the Basic Multilingual Plane
-    Char(u16),
     //    Floating-Point Types
     Float(f32),
     Double(f64),
     //    Other
-    /// Encodes false as 0, true as 1.
-    ///
-    /// This is according to [the Java VM Spec](
-    /// https://docs.oracle.com/javase/specs/jvms/se8/html/
-    /// jvms-2.html#jvms-2.3.4
-    /// )
-    Boolean(u8),
     /// used for in-method jumps,
     /// therefor an offset works.
     /// Encodes an absolute position.
@@ -54,34 +44,13 @@ impl StackValue {
 
     pub fn type_name(&self) -> &'static str {
         match self {
-            StackValue::Byte(_) => "byte",
-            StackValue::Short(_) => "short",
             StackValue::Int(_) => "int",
             StackValue::Long(_) => "long",
-            StackValue::Char(_) => "char",
             StackValue::Float(_) => "float",
             StackValue::Double(_) => "double",
-            StackValue::Boolean(_) => "boolean",
             StackValue::ReturnAddress(_) => "return_address",
             StackValue::Reference(_) => "reference",
         }
-    }
-
-    pub fn as_computation_int(&self) -> Result<i32, RuntimeError> {
-        // int computional types according to
-        // https://docs.oracle.com/javase/specs/jvms/se8/html
-        // /jvms-2.html#jvms-2.11.1-320
-        Ok(match *self {
-            StackValue::Boolean(b) => b.into(),
-            StackValue::Byte(b) => b.into(),
-            StackValue::Char(c) => c.into(),
-            StackValue::Short(s) => s.into(),
-            StackValue::Int(i) => i,
-            _ => Err(RuntimeError::InvalidType {
-                expected: "int (computational type",
-                actual: self.type_name(),
-            })?,
-        })
     }
 }
 
@@ -122,14 +91,14 @@ impl FrameStack {
 impl From<FieldValue> for StackValue {
     fn from(value: FieldValue) -> Self {
         match value {
-            FieldValue::Byte(v) => StackValue::Byte(v),
-            FieldValue::Short(v) => StackValue::Short(v),
+            FieldValue::Byte(v) => StackValue::Int(v.into()),
+            FieldValue::Short(v) => StackValue::Int(v.into()),
             FieldValue::Int(v) => StackValue::Int(v),
             FieldValue::Long(v) => StackValue::Long(v),
-            FieldValue::Char(v) => StackValue::Char(v),
+            FieldValue::Char(v) => StackValue::Int(v.into()),
             FieldValue::Float(v) => StackValue::Float(v),
             FieldValue::Double(v) => StackValue::Double(v),
-            FieldValue::Boolean(v) => StackValue::Boolean(v),
+            FieldValue::Boolean(v) => StackValue::Int(v.into()),
             FieldValue::Reference(v) => StackValue::Reference(v),
         }
     }
@@ -138,14 +107,10 @@ impl From<FieldValue> for StackValue {
 impl From<VariableValueOrValue> for StackValue {
     fn from(value: VariableValueOrValue) -> Self {
         match value {
-            VariableValueOrValue::Byte(b) => StackValue::Byte(b),
-            VariableValueOrValue::Short(s) => StackValue::Short(s),
             VariableValueOrValue::Int(i) => StackValue::Int(i),
             VariableValueOrValue::Long(l) => StackValue::Long(l),
-            VariableValueOrValue::Char(c) => StackValue::Char(c),
             VariableValueOrValue::Float(f) => StackValue::Float(f),
             VariableValueOrValue::Double(d) => StackValue::Double(d),
-            VariableValueOrValue::Boolean(b) => StackValue::Boolean(b),
             VariableValueOrValue::Reference(r) => StackValue::Reference(r),
             VariableValueOrValue::ReturnAddress(a) => {
                 StackValue::ReturnAddress(a)
@@ -153,6 +118,62 @@ impl From<VariableValueOrValue> for StackValue {
             VariableValueOrValue::Invalid => {
                 panic!("cannot convert invalid local variable value")
             },
+        }
+    }
+}
+
+impl TryFrom<StackValue> for i32 {
+    type Error = RuntimeError;
+
+    fn try_from(value: StackValue) -> Result<Self, Self::Error> {
+        match value {
+            StackValue::Int(i) => Ok(i),
+            _ => Err(RuntimeError::InvalidType {
+                expected: "int",
+                actual: value.type_name(),
+            }),
+        }
+    }
+}
+
+impl TryFrom<StackValue> for i64 {
+    type Error = RuntimeError;
+
+    fn try_from(value: StackValue) -> Result<Self, Self::Error> {
+        match value {
+            StackValue::Long(l) => Ok(l),
+            _ => Err(RuntimeError::InvalidType {
+                expected: "long",
+                actual: value.type_name(),
+            }),
+        }
+    }
+}
+
+impl TryFrom<StackValue> for f32 {
+    type Error = RuntimeError;
+
+    fn try_from(value: StackValue) -> Result<Self, Self::Error> {
+        match value {
+            StackValue::Float(f) => Ok(f),
+            _ => Err(RuntimeError::InvalidType {
+                expected: "float",
+                actual: value.type_name(),
+            }),
+        }
+    }
+}
+
+impl TryFrom<StackValue> for f64 {
+    type Error = RuntimeError;
+
+    fn try_from(value: StackValue) -> Result<Self, Self::Error> {
+        match value {
+            StackValue::Double(d) => Ok(d),
+            _ => Err(RuntimeError::InvalidType {
+                expected: "double",
+                actual: value.type_name(),
+            }),
         }
     }
 }
