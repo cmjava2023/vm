@@ -277,7 +277,12 @@ pub enum OpCode {
 }
 
 impl OpCode {
-    pub fn execute(&self, frame: &mut Frame, heap: &mut Heap) -> Update {
+    pub fn execute(
+        &self,
+        frame: &mut Frame,
+        heap: &mut Heap,
+        _current_class: &Rc<dyn Class>,
+    ) -> Update {
         match self {
             Self::Aaload => {
                 let index: i32 =
@@ -1488,6 +1493,7 @@ got: {:?}",
                 Update::MethodCall {
                     method,
                     is_static: false,
+                    defining_class: class.clone(),
                 }
             },
 
@@ -1506,6 +1512,7 @@ got: {:?}",
                 Update::MethodCall {
                     method,
                     is_static: true,
+                    defining_class: class.clone(),
                 }
             },
 
@@ -1524,6 +1531,7 @@ got: {:?}",
                 Update::MethodCall {
                     method,
                     is_static: false,
+                    defining_class: class.clone(),
                 }
             },
 
