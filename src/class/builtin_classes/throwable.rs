@@ -53,10 +53,30 @@ fn get_message(frame: &mut Frame) -> RustMethodReturn {
         VariableValueOrValue::Reference(s) => s.expect("null pointer"),
         _ => panic!("local variables have reference at index 0"),
     };
-    let instance = match instance.as_any().downcast_ref::<ThrowableInstance>() {
-        Some(i) => i,
-        None => panic!("got {:?} expected Throwable", instance),
+
+    let instance = {
+        let orig_instance = instance.clone();
+        let mut instance = instance.clone();
+        loop {
+            match instance.as_any().downcast_ref::<ThrowableInstance>() {
+                Some(_) => break instance,
+                None => {
+                    instance = match instance.parent_instance() {
+                        Some(p) => p,
+                        None => panic!(
+                            "expected (sub)class instance of throwable, \
+got: {:?}",
+                            orig_instance
+                        ),
+                    };
+                },
+            }
+        }
     };
+    let instance = instance
+        .as_any()
+        .downcast_ref::<ThrowableInstance>()
+        .unwrap();
 
     let message = instance
         .message
@@ -77,10 +97,34 @@ fn init(frame: &mut Frame) -> RustMethodReturn {
             _ => panic!("local variables have message at index 1"),
         };
 
-    let instance = match instance.as_any().downcast_ref::<ThrowableInstance>() {
-        Some(i) => i,
-        None => panic!("got {:?} expected Throwable", instance),
+    let instance = {
+        let orig_instance = instance.clone();
+        let mut instance = instance.clone();
+        loop {
+            match instance.as_any().downcast_ref::<ThrowableInstance>() {
+                Some(_) => break instance,
+                None => {
+                    instance = match instance.parent_instance() {
+                        Some(p) => p,
+                        None => panic!(
+                            "expected (sub)class instance of throwable, \
+got: {:?}",
+                            orig_instance
+                        ),
+                    };
+                },
+            }
+        }
     };
+
+    // instance has been checked in the loop above,
+    // and I currently can't figure out a way that doesn't
+    // involve returning a reference to the instance
+    // that only exists inside the loop
+    let instance = instance
+        .as_any()
+        .downcast_ref::<ThrowableInstance>()
+        .unwrap();
 
     instance
         .message
