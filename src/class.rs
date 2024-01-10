@@ -485,6 +485,7 @@ pub trait ClassInstance {
     fn as_any(&self) -> &dyn Any;
     fn class(&self) -> Rc<dyn Class>;
     fn instance_fields(&self) -> &[Rc<Field>];
+    fn parent_instance(&self) -> Option<Rc<dyn ClassInstance>>;
 }
 
 impl fmt::Debug for dyn ClassInstance {

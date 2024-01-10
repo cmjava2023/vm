@@ -319,28 +319,29 @@ pub trait ArrayKind {
 
 pub struct Array<K> {
     kind: K,
+    object_class: Rc<dyn Class>,
 }
 
 pub struct ArrayInstance<K: ArrayKind> {
     class: Rc<dyn Class>,
     values: RefCell<Vec<K::Value>>,
-}
-
-impl<K: ArrayKind + Default + 'static> Default for Array<K> {
-    fn default() -> Self {
-        Array::new(K::default())
-    }
+    // all array classes directly inherit object
+    // (JLS 10.8)
+    object_instance: Rc<dyn ClassInstance>,
 }
 
 impl<K: ArrayKind + 'static> Array<K> {
-    pub fn new(kind: K) -> Array<K> {
-        Array { kind }
+    pub fn new(kind: K, object_class: Rc<dyn Class>) -> Array<K> {
+        Array { kind, object_class }
     }
 
     pub fn new_instance(self: &Rc<Self>, length: usize) -> ArrayInstance<K> {
         ArrayInstance {
             class: self.clone(),
             values: RefCell::new(vec![self.kind.default_val(); length]),
+            object_instance: self
+                .object_class
+                .new_instance(self.object_class.clone()),
         }
     }
 
@@ -357,6 +358,9 @@ impl<K: ArrayKind + 'static> Array<K> {
         Ok(ArrayInstance {
             class: cls,
             values: RefCell::new(vec![self.kind.default_val(); length]),
+            object_instance: self
+                .object_class
+                .new_instance(self.object_class.clone()),
         })
     }
 }
@@ -379,7 +383,7 @@ impl<K: ArrayKind + 'static> Class for Array<K> {
     }
 
     fn super_class(&self) -> Option<Rc<dyn Class>> {
-        None
+        Some(self.object_class.clone())
     }
 
     fn interfaces(&self) -> &[Rc<dyn std::any::Any>] {
@@ -409,6 +413,10 @@ impl<K: ArrayKind + 'static> ClassInstance for ArrayInstance<K> {
 
     fn instance_fields(&self) -> &[Rc<Field>] {
         &[]
+    }
+
+    fn parent_instance(&self) -> Option<Rc<dyn ClassInstance>> {
+        Some(self.object_instance.clone())
     }
 }
 

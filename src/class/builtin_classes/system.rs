@@ -8,6 +8,7 @@ use crate::class::{
 
 pub struct SystemClass {
     class_identifier: ClassIdentifier,
+    object_class: Rc<dyn Class>,
     fields: Vec<Rc<Field>>,
 }
 
@@ -16,6 +17,7 @@ impl SystemClass {
         print_stream_class: &Rc<PrintStream>,
         // TODO: replace with FileInputStream when InputStream becomes abstract
         file_input_stream_class: &Rc<InputStream>,
+        object_class: Rc<dyn Class>,
     ) -> Self {
         let fields = vec![
             Rc::new(Field {
@@ -34,6 +36,7 @@ impl SystemClass {
         Self {
             class_identifier: class_identifier!(java / lang, System),
             fields,
+            object_class,
         }
     }
 }
@@ -56,7 +59,7 @@ impl Class for SystemClass {
     }
 
     fn super_class(&self) -> Option<Rc<dyn Class>> {
-        None
+        Some(self.object_class.clone())
     }
 
     fn interfaces(&self) -> &[Rc<dyn std::any::Any>] {

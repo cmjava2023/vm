@@ -17,6 +17,7 @@ use crate::class::{
 
 pub struct Heap {
     string_class: Rc<StringClass>,
+    object_class: Rc<ObjectClass>,
     boolean_array_class: Rc<BoolArray>,
     byte_array_class: Rc<ByteArray>,
     char_array_class: Rc<CharArray>,
@@ -30,23 +31,39 @@ pub struct Heap {
 
 impl Heap {
     pub fn new() -> Heap {
-        let boolean_array_class = Rc::new(BoolArray::default());
-        let byte_array_class = Rc::new(ByteArray::default());
-        let char_array_class = Rc::new(CharArray::default());
-        let double_array_class = Rc::new(DoubleArray::default());
-        let float_array_class = Rc::new(FloatArray::default());
-        let long_array_class = Rc::new(LongArray::default());
-        let int_array_class = Rc::new(IntArray::default());
-        let short_array_class = Rc::new(ShortArray::default());
-
-        let string_class = Rc::new(StringClass::default());
-        let print_stream_class = Rc::new(PrintStream::default());
-        let input_stream_class = Rc::new(InputStream::default());
-        let file_input_stream_class = Rc::new(FileInputStream::default());
-        let system_class =
-            Rc::new(SystemClass::new(&print_stream_class, &input_stream_class));
         let object_class = Rc::new(ObjectClass::default());
-        let throwable_class = Rc::new(ThrowableClass::default());
+
+        let boolean_array_class =
+            Rc::new(BoolArray::new(Default::default(), object_class.clone()));
+        let byte_array_class =
+            Rc::new(ByteArray::new(Default::default(), object_class.clone()));
+        let char_array_class =
+            Rc::new(CharArray::new(Default::default(), object_class.clone()));
+        let double_array_class =
+            Rc::new(DoubleArray::new(Default::default(), object_class.clone()));
+        let float_array_class =
+            Rc::new(FloatArray::new(Default::default(), object_class.clone()));
+        let long_array_class =
+            Rc::new(LongArray::new(Default::default(), object_class.clone()));
+        let int_array_class =
+            Rc::new(IntArray::new(Default::default(), object_class.clone()));
+        let short_array_class =
+            Rc::new(ShortArray::new(Default::default(), object_class.clone()));
+
+        let string_class = Rc::new(StringClass::new(object_class.clone()));
+        let print_stream_class =
+            Rc::new(PrintStream::new(object_class.clone()));
+        let input_stream_class =
+            Rc::new(InputStream::new(object_class.clone()));
+        let file_input_stream_class =
+            Rc::new(FileInputStream::new(object_class.clone()));
+        let system_class = Rc::new(SystemClass::new(
+            &print_stream_class,
+            &input_stream_class,
+            object_class.clone(),
+        ));
+        let throwable_class =
+            Rc::new(ThrowableClass::new(object_class.clone()));
 
         let mut classes: HashMap<ClassIdentifier, Rc<dyn Class>> =
             HashMap::new();
@@ -67,7 +84,10 @@ impl Heap {
             file_input_stream_class,
         );
         classes.insert(system_class.class_identifier().clone(), system_class);
-        classes.insert(object_class.class_identifier().clone(), object_class);
+        classes.insert(
+            object_class.class_identifier().clone(),
+            object_class.clone(),
+        );
         classes.insert(
             throwable_class.class_identifier().clone(),
             throwable_class,
@@ -107,6 +127,7 @@ impl Heap {
 
         Heap {
             string_class,
+            object_class,
             boolean_array_class,
             byte_array_class,
             char_array_class,
@@ -230,8 +251,10 @@ would create a 2 dimensional array here!",
             };
 
             // step 2
-            let array_class =
-                Rc::new(Array::new(ObjectArrayKind::new(scalar_class)));
+            let array_class = Rc::new(Array::new(
+                ObjectArrayKind::new(scalar_class),
+                self.object_class.clone(),
+            ));
             // step 3
             self.classes.insert(
                 array_class.class_identifier().clone(),

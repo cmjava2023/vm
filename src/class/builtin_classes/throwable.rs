@@ -11,12 +11,14 @@ use crate::{
 
 pub struct ThrowableClass {
     class_identifier: ClassIdentifier,
+    object_class: Rc<dyn Class>,
     methods: Vec<Rc<Method>>,
 }
 
 impl ThrowableClass {
-    pub fn new() -> Self {
+    pub fn new(object_class: Rc<dyn Class>) -> Self {
         Self {
+            object_class,
             class_identifier: class_identifier!(java / lang, Throwable),
             methods: vec![
                 Rc::new(Method {
@@ -43,12 +45,6 @@ impl ThrowableClass {
                 }),
             ],
         }
-    }
-}
-
-impl Default for ThrowableClass {
-    fn default() -> Self {
-        Self::new()
     }
 }
 
@@ -130,6 +126,9 @@ impl Class for ThrowableClass {
 
         Rc::new(ThrowableInstance {
             class: cls.clone(),
+            object_instance: self
+                .object_class
+                .new_instance(self.object_class.clone()),
             message: OnceCell::new(),
         })
     }
@@ -137,6 +136,7 @@ impl Class for ThrowableClass {
 
 pub struct ThrowableInstance {
     class: Rc<dyn Class>,
+    object_instance: Rc<dyn ClassInstance>,
     message: OnceCell<Option<Rc<dyn ClassInstance>>>,
 }
 
@@ -151,5 +151,9 @@ impl ClassInstance for ThrowableInstance {
 
     fn instance_fields(&self) -> &[Rc<Field>] {
         &[]
+    }
+
+    fn parent_instance(&self) -> Option<Rc<dyn ClassInstance>> {
+        Some(self.object_instance.clone())
     }
 }

@@ -61,9 +61,13 @@ impl Class for BytecodeClass {
             })
             .collect();
 
+        let parent_instance =
+            self.super_class.new_instance(self.super_class.clone());
+
         Rc::new(BytecodeClassInstance {
             class: cls,
             instance_fields,
+            parent_instance,
         })
     }
 }
@@ -80,9 +84,14 @@ impl ClassInstance for BytecodeClassInstance {
     fn as_any(&self) -> &dyn Any {
         self
     }
+
+    fn parent_instance(&self) -> Option<Rc<dyn ClassInstance>> {
+        Some(self.parent_instance.clone())
+    }
 }
 
 pub struct BytecodeClassInstance {
     pub class: Rc<dyn Class>,
     pub instance_fields: Vec<Rc<Field>>,
+    pub parent_instance: Rc<dyn ClassInstance>,
 }
