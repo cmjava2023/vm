@@ -206,6 +206,10 @@ pub fn run(code: &Code, heap: &mut Heap, initial_class: Rc<dyn Class>) {
                                 None => true,
                                 Some(identifier) => {
                                     e.class().class_identifier() == identifier
+                                        || e.class().is_sub_class_of(
+                                            heap.find_class(identifier)
+                                                .unwrap(),
+                                        )
                                 },
                             };
                             if catch_type_match {

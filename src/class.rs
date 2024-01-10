@@ -389,6 +389,22 @@ impl dyn Class {
             },
         }
     }
+
+    pub fn is_sub_class_of(&self, other: &Rc<dyn Class>) -> bool {
+        // idea: if self is subclass of other,
+        // at some point self's parent must be other
+        match self.super_class() {
+            // self must be Object, so cannot be subclass
+            None => false,
+            Some(self_parent) => {
+                if self_parent.class_identifier() == other.class_identifier() {
+                    true
+                } else {
+                    self_parent.is_sub_class_of(other)
+                }
+            },
+        }
+    }
 }
 
 impl std::fmt::Debug for dyn Class {
