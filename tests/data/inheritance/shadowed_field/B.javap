@@ -1,0 +1,108 @@
+Classfile /home/florian/Documents/fh/WS23_24/Compilerbau/vm/main/tests/data/inheritance/shadowed_field/B.class
+  Last modified 10.01.2024; size 571 bytes
+  MD5 checksum 45c038609e0b6040347f215cc892bc7c
+  Compiled from "B.java"
+public class B extends A
+  minor version: 0
+  major version: 52
+  flags: ACC_PUBLIC, ACC_SUPER
+Constant pool:
+   #1 = Methodref          #10.#24        // A."<init>":(I)V
+   #2 = Fieldref           #9.#25         // B.thing:I
+   #3 = Fieldref           #26.#27        // java/lang/System.out:Ljava/io/PrintStream;
+   #4 = String             #28            // (B) thing
+   #5 = Methodref          #29.#30        // java/io/PrintStream.println:(Ljava/lang/String;)V
+   #6 = Methodref          #29.#31        // java/io/PrintStream.println:(I)V
+   #7 = String             #32            // (A) thing
+   #8 = Fieldref           #10.#25        // A.thing:I
+   #9 = Class              #33            // B
+  #10 = Class              #34            // A
+  #11 = Utf8               thing
+  #12 = Utf8               I
+  #13 = Utf8               <init>
+  #14 = Utf8               (I)V
+  #15 = Utf8               Code
+  #16 = Utf8               LineNumberTable
+  #17 = Utf8               LocalVariableTable
+  #18 = Utf8               this
+  #19 = Utf8               LB;
+  #20 = Utf8               printIt
+  #21 = Utf8               ()V
+  #22 = Utf8               SourceFile
+  #23 = Utf8               B.java
+  #24 = NameAndType        #13:#14        // "<init>":(I)V
+  #25 = NameAndType        #11:#12        // thing:I
+  #26 = Class              #35            // java/lang/System
+  #27 = NameAndType        #36:#37        // out:Ljava/io/PrintStream;
+  #28 = Utf8               (B) thing
+  #29 = Class              #38            // java/io/PrintStream
+  #30 = NameAndType        #39:#40        // println:(Ljava/lang/String;)V
+  #31 = NameAndType        #39:#14        // println:(I)V
+  #32 = Utf8               (A) thing
+  #33 = Utf8               B
+  #34 = Utf8               A
+  #35 = Utf8               java/lang/System
+  #36 = Utf8               out
+  #37 = Utf8               Ljava/io/PrintStream;
+  #38 = Utf8               java/io/PrintStream
+  #39 = Utf8               println
+  #40 = Utf8               (Ljava/lang/String;)V
+{
+  public int thing;
+    descriptor: I
+    flags: ACC_PUBLIC
+
+  public B(int);
+    descriptor: (I)V
+    flags: ACC_PUBLIC
+    Code:
+      stack=3, locals=2, args_size=2
+         0: aload_0
+         1: iload_1
+         2: iconst_2
+         3: imul
+         4: invokespecial #1                  // Method A."<init>":(I)V
+         7: aload_0
+         8: iload_1
+         9: putfield      #2                  // Field thing:I
+        12: return
+      LineNumberTable:
+        line 5: 0
+        line 6: 7
+        line 7: 12
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0      13     0  this   LB;
+            0      13     1 thing   I
+
+  public void printIt();
+    descriptor: ()V
+    flags: ACC_PUBLIC
+    Code:
+      stack=2, locals=1, args_size=1
+         0: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+         3: ldc           #4                  // String (B) thing
+         5: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+         8: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        11: aload_0
+        12: getfield      #2                  // Field thing:I
+        15: invokevirtual #6                  // Method java/io/PrintStream.println:(I)V
+        18: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        21: ldc           #7                  // String (A) thing
+        23: invokevirtual #5                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        26: getstatic     #3                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        29: aload_0
+        30: getfield      #8                  // Field A.thing:I
+        33: invokevirtual #6                  // Method java/io/PrintStream.println:(I)V
+        36: return
+      LineNumberTable:
+        line 10: 0
+        line 11: 8
+        line 12: 18
+        line 13: 26
+        line 14: 36
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0      37     0  this   LB;
+}
+SourceFile: "B.java"

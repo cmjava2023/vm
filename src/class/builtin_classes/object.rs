@@ -72,7 +72,7 @@ impl Class for ObjectClass {
         let _cls_ref: &Self =
             cls.as_ref().as_any().downcast_ref::<Self>().unwrap();
 
-        todo!()
+        Rc::new(ObjectInstance { class: cls })
     }
 }
 
@@ -91,5 +91,9 @@ impl ClassInstance for ObjectInstance {
 
     fn instance_fields(&self) -> &[Rc<Field>] {
         &[]
+    }
+
+    fn parent_instance(&self) -> Option<Rc<dyn ClassInstance>> {
+        None
     }
 }

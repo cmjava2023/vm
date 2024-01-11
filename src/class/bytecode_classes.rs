@@ -1,5 +1,6 @@
 use std::{any::Any, cell::RefCell, rc::Rc};
 
+use super::access_flags::ClassAccessFlag;
 use crate::class::{
     BytecodeClass, Class, ClassInstance, Field, FieldDescriptor, FieldKind,
     FieldValue, Method,
@@ -34,6 +35,10 @@ impl Class for BytecodeClass {
         self
     }
 
+    fn has_acc_super(&self) -> bool {
+        self.access_flags.contains(ClassAccessFlag::Super)
+    }
+
     fn new_instance(&self, cls: Rc<dyn Class>) -> Rc<dyn ClassInstance> {
         // make sure that self and cls really are equal
         let _cls_ref: &Self =
@@ -61,9 +66,13 @@ impl Class for BytecodeClass {
             })
             .collect();
 
+        let parent_instance =
+            self.super_class.new_instance(self.super_class.clone());
+
         Rc::new(BytecodeClassInstance {
             class: cls,
             instance_fields,
+            parent_instance,
         })
     }
 }
@@ -80,9 +89,14 @@ impl ClassInstance for BytecodeClassInstance {
     fn as_any(&self) -> &dyn Any {
         self
     }
+
+    fn parent_instance(&self) -> Option<Rc<dyn ClassInstance>> {
+        Some(self.parent_instance.clone())
+    }
 }
 
 pub struct BytecodeClassInstance {
     pub class: Rc<dyn Class>,
     pub instance_fields: Vec<Rc<Field>>,
+    pub parent_instance: Rc<dyn ClassInstance>,
 }

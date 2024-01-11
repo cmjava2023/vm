@@ -15,12 +15,15 @@ use crate::{
 
 pub struct FileInputStream {
     class_identifier: ClassIdentifier,
+    // TODO inherit InputStream
+    object_class: Rc<dyn Class>,
     methods: Vec<Rc<Method>>,
 }
 
 impl FileInputStream {
-    pub fn new() -> FileInputStream {
+    pub fn new(object_class: Rc<dyn Class>) -> FileInputStream {
         FileInputStream {
+            object_class,
             class_identifier: class_identifier!(java / io, FileInputStream),
             methods: vec![Rc::new(Method {
                 code: MethodCode::Rust(read),
@@ -37,13 +40,10 @@ impl FileInputStream {
     pub fn new_instance(self: &Rc<Self>) -> FileInputStreamInstance {
         FileInputStreamInstance {
             class: self.clone(),
+            object_instance: self
+                .object_class
+                .new_instance(self.object_class.clone()),
         }
-    }
-}
-
-impl Default for FileInputStream {
-    fn default() -> Self {
-        FileInputStream::new()
     }
 }
 
@@ -74,8 +74,7 @@ impl Class for FileInputStream {
     }
 
     fn super_class(&self) -> Option<Rc<dyn Class>> {
-        // TODO inherit InputStream
-        None
+        Some(self.object_class.clone())
     }
 
     fn interfaces(&self) -> &[Rc<dyn std::any::Any>] {
@@ -97,6 +96,7 @@ impl Class for FileInputStream {
 
 pub struct FileInputStreamInstance {
     class: Rc<dyn Class>,
+    object_instance: Rc<dyn ClassInstance>,
 }
 
 impl ClassInstance for FileInputStreamInstance {
@@ -110,5 +110,9 @@ impl ClassInstance for FileInputStreamInstance {
 
     fn instance_fields(&self) -> &[Rc<Field>] {
         &[]
+    }
+
+    fn parent_instance(&self) -> Option<Rc<dyn ClassInstance>> {
+        Some(self.object_instance.clone())
     }
 }

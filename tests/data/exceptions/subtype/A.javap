@@ -1,0 +1,45 @@
+Classfile /home/florian/Documents/fh/WS23_24/Compilerbau/vm/main/tests/data/exceptions/subtype/A.class
+  Last modified 11.01.2024; size 291 bytes
+  MD5 checksum cb7e3285477bacd5b17de93ebd94b7d6
+  Compiled from "A.java"
+class A extends java.lang.Throwable
+  minor version: 0
+  major version: 52
+  flags: ACC_SUPER
+Constant pool:
+   #1 = Methodref          #3.#15         // java/lang/Throwable."<init>":(Ljava/lang/String;)V
+   #2 = Class              #16            // A
+   #3 = Class              #17            // java/lang/Throwable
+   #4 = Utf8               <init>
+   #5 = Utf8               (Ljava/lang/String;)V
+   #6 = Utf8               Code
+   #7 = Utf8               LineNumberTable
+   #8 = Utf8               LocalVariableTable
+   #9 = Utf8               this
+  #10 = Utf8               LA;
+  #11 = Utf8               msg
+  #12 = Utf8               Ljava/lang/String;
+  #13 = Utf8               SourceFile
+  #14 = Utf8               A.java
+  #15 = NameAndType        #4:#5          // "<init>":(Ljava/lang/String;)V
+  #16 = Utf8               A
+  #17 = Utf8               java/lang/Throwable
+{
+  public A(java.lang.String);
+    descriptor: (Ljava/lang/String;)V
+    flags: ACC_PUBLIC
+    Code:
+      stack=2, locals=2, args_size=2
+         0: aload_0
+         1: aload_1
+         2: invokespecial #1                  // Method java/lang/Throwable."<init>":(Ljava/lang/String;)V
+         5: return
+      LineNumberTable:
+        line 3: 0
+        line 4: 5
+      LocalVariableTable:
+        Start  Length  Slot  Name   Signature
+            0       6     0  this   LA;
+            0       6     1   msg   Ljava/lang/String;
+}
+SourceFile: "A.java"

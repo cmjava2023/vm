@@ -11,12 +11,14 @@ use crate::{
 
 pub struct ThrowableClass {
     class_identifier: ClassIdentifier,
+    object_class: Rc<dyn Class>,
     methods: Vec<Rc<Method>>,
 }
 
 impl ThrowableClass {
-    pub fn new() -> Self {
+    pub fn new(object_class: Rc<dyn Class>) -> Self {
         Self {
+            object_class,
             class_identifier: class_identifier!(java / lang, Throwable),
             methods: vec![
                 Rc::new(Method {
@@ -46,28 +48,24 @@ impl ThrowableClass {
     }
 }
 
-impl Default for ThrowableClass {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
 fn get_message(frame: &mut Frame) -> RustMethodReturn {
     let instance: Rc<dyn ClassInstance> = match frame.local_variables.get(0) {
         VariableValueOrValue::Reference(s) => s.expect("null pointer"),
         _ => panic!("local variables have reference at index 0"),
     };
-    let instance = match instance.as_any().downcast_ref::<ThrowableInstance>() {
-        Some(i) => i,
-        None => panic!("got {:?} expected Throwable", instance),
-    };
 
-    let message = instance
-        .message
-        .get()
-        .expect("message has been initialized");
+    let message = instance.with_parent_instance(
+        "Throwable",
+        |instance: &ThrowableInstance| {
+            instance
+                .message
+                .get()
+                .expect("message has been initialized")
+                .clone()
+        },
+    );
 
-    RustMethodReturn::Value(FieldValue::Reference(message.clone()))
+    RustMethodReturn::Value(FieldValue::Reference(message))
 }
 
 fn init(frame: &mut Frame) -> RustMethodReturn {
@@ -81,15 +79,15 @@ fn init(frame: &mut Frame) -> RustMethodReturn {
             _ => panic!("local variables have message at index 1"),
         };
 
-    let instance = match instance.as_any().downcast_ref::<ThrowableInstance>() {
-        Some(i) => i,
-        None => panic!("got {:?} expected Throwable", instance),
-    };
-
-    instance
-        .message
-        .set(message)
-        .expect("message has not been set");
+    instance.with_parent_instance(
+        "Throwable",
+        |instance: &ThrowableInstance| {
+            instance
+                .message
+                .set(message.clone())
+                .expect("message has not been set");
+        },
+    );
 
     RustMethodReturn::Void
 }
@@ -130,6 +128,9 @@ impl Class for ThrowableClass {
 
         Rc::new(ThrowableInstance {
             class: cls.clone(),
+            object_instance: self
+                .object_class
+                .new_instance(self.object_class.clone()),
             message: OnceCell::new(),
         })
     }
@@ -137,6 +138,7 @@ impl Class for ThrowableClass {
 
 pub struct ThrowableInstance {
     class: Rc<dyn Class>,
+    object_instance: Rc<dyn ClassInstance>,
     message: OnceCell<Option<Rc<dyn ClassInstance>>>,
 }
 
@@ -151,5 +153,9 @@ impl ClassInstance for ThrowableInstance {
 
     fn instance_fields(&self) -> &[Rc<Field>] {
         &[]
+    }
+
+    fn parent_instance(&self) -> Option<Rc<dyn ClassInstance>> {
+        Some(self.object_instance.clone())
     }
 }

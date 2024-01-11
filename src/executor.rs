@@ -11,7 +11,7 @@ use self::{frame_stack::StackValue, op_code::OffsetDirection};
 pub use crate::executor::op_code::OpCode;
 use crate::{
     class::{
-        ArgumentKind, ClassInstance, Code, Method, MethodCode,
+        ArgumentKind, Class, ClassInstance, Code, Method, MethodCode,
         RustMethodReturn, SimpleArgumentKind,
     },
     executor::{
@@ -25,9 +25,10 @@ use crate::{
 pub struct ExecutorFrame {
     frame: Frame,
     pc: ProgramCounter,
+    class: Rc<dyn Class>,
 }
 
-pub fn run(code: &Code, heap: &mut Heap) {
+pub fn run(code: &Code, heap: &mut Heap, initial_class: Rc<dyn Class>) {
     let mut frame_stack: Vec<ExecutorFrame> = Vec::new();
     let mut current_frame: Frame = Frame {
         local_variables: LocalVariables::new(code.local_variable_count),
@@ -35,11 +36,20 @@ pub fn run(code: &Code, heap: &mut Heap) {
     };
     let mut current_pc: ProgramCounter =
         ProgramCounter::new(code.byte_code.clone());
+    let mut current_class = initial_class;
 
     'executor_loop: loop {
-        match current_pc.current().0.execute(&mut current_frame, heap) {
+        match current_pc.current().0.execute(
+            &mut current_frame,
+            heap,
+            &current_class,
+        ) {
             Update::None => current_pc.next(1).unwrap(),
-            Update::MethodCall { method, is_static } => match &method.code {
+            Update::MethodCall {
+                method,
+                is_static,
+                defining_class,
+            } => match &method.code {
                 MethodCode::Bytecode(c) => {
                     let mut new_frame = Frame {
                         local_variables: LocalVariables::new(
@@ -64,9 +74,11 @@ pub fn run(code: &Code, heap: &mut Heap) {
                     frame_stack.push(ExecutorFrame {
                         frame: current_frame,
                         pc: current_pc,
+                        class: current_class,
                     });
                     current_frame = new_frame;
                     current_pc = pc;
+                    current_class = defining_class;
                 },
                 MethodCode::Rust(code) => {
                     // Calculate number of local variable slots needed
@@ -164,13 +176,16 @@ pub fn run(code: &Code, heap: &mut Heap) {
                 frame_stack.push(ExecutorFrame {
                     frame: current_frame,
                     pc: current_pc,
+                    class: current_class,
                 });
                 // search the call stack for an exception handler
                 // matching the current exception
-                while let Some(ExecutorFrame { frame, pc }) = frame_stack.pop()
+                while let Some(ExecutorFrame { frame, pc, class }) =
+                    frame_stack.pop()
                 {
                     current_frame = frame;
                     current_pc = pc;
+                    current_class = class;
                     // check all exception handler of the current method
                     // expectation: the order is 'correct', i.e.
                     // the first matching handler is the one that's supposed
@@ -191,6 +206,10 @@ pub fn run(code: &Code, heap: &mut Heap) {
                                 None => true,
                                 Some(identifier) => {
                                     e.class().class_identifier() == identifier
+                                        || e.class().is_sub_class_of(
+                                            heap.find_class(identifier)
+                                                .unwrap(),
+                                        )
                                 },
                             };
                             if catch_type_match {
@@ -262,7 +281,11 @@ pub enum Update {
     None,
     Return(ReturnValue),
     GoTo(usize, OffsetDirection),
-    MethodCall { method: Rc<Method>, is_static: bool },
+    MethodCall {
+        method: Rc<Method>,
+        is_static: bool,
+        defining_class: Rc<dyn Class>,
+    },
     Exception(Rc<dyn ClassInstance>),
 }
 

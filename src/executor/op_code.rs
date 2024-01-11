@@ -159,7 +159,7 @@ pub enum OpCode {
     Fstore(usize),
     Fsub,
     GetField {
-        class: String,
+        class: ClassIdentifier,
         field_name: String,
     },
     GetStatic(Rc<Field>),
@@ -259,7 +259,7 @@ pub enum OpCode {
     Pop,
     Pop2,
     PutField {
-        class: String,
+        class: ClassIdentifier,
         field_name: String,
     },
     PutStatic(Rc<Field>),
@@ -277,7 +277,12 @@ pub enum OpCode {
 }
 
 impl OpCode {
-    pub fn execute(&self, frame: &mut Frame, heap: &mut Heap) -> Update {
+    pub fn execute(
+        &self,
+        frame: &mut Frame,
+        heap: &mut Heap,
+        current_class: &Rc<dyn Class>,
+    ) -> Update {
         match self {
             Self::Aaload => {
                 let index: i32 =
@@ -1127,15 +1132,11 @@ got: {:?}",
                 Update::None
             },
 
-            Self::GetField { field_name, .. } => {
+            Self::GetField { field_name, class } => {
                 let objectref: Rc<dyn ClassInstance> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
 
-                let field = objectref
-                    .instance_fields()
-                    .iter()
-                    .find(|f| &f.name == field_name)
-                    .unwrap();
+                let field = objectref.get_field(class, field_name);
                 frame
                     .operand_stack
                     .push(field.value.clone().into_inner().into())
@@ -1471,59 +1472,79 @@ got: {:?}",
             },
 
             Self::InvokeSpecial(method) => {
-                let class =
+                let method_class =
                     heap.find_class(&method.class_name).unwrap_or_else(|| {
                         panic!("class for method call {:?} exists", method)
                     });
-                let method = class
-                    .get_method(
-                        &method.descriptor.name,
-                        (
-                            &method.descriptor.descriptor.0,
-                            method.descriptor.descriptor.1.as_ref(),
-                        ),
-                    )
-                    .unwrap();
+                // note: is_super_class only applies,
+                // if method_class is a class, not an interface.
+                // This distinction is currently unnecessary since
+                // interfaces are not implemented.
+                let resolution_root = if method.descriptor.name != "<init>"
+                    && method_class.is_super_class_of(current_class)
+                    && method_class.has_acc_super()
+                {
+                    current_class.super_class().unwrap()
+                } else {
+                    method_class.clone()
+                };
+
+                let (method, defining_class) = resolution_root.get_method(
+                    &method.descriptor.name,
+                    (
+                        &method.descriptor.descriptor.0,
+                        method.descriptor.descriptor.1.as_ref(),
+                    ),
+                    true,
+                );
 
                 Update::MethodCall {
                     method,
                     is_static: false,
+                    defining_class,
                 }
             },
 
             Self::InvokeStatic(method) => {
                 let class = heap.find_class(&method.class_name).unwrap();
-                let method = class
-                    .get_method(
-                        &method.descriptor.name,
-                        (
-                            &method.descriptor.descriptor.0,
-                            method.descriptor.descriptor.1.as_ref(),
-                        ),
-                    )
-                    .unwrap();
+                let (method, _) = class.get_method(
+                    &method.descriptor.name,
+                    (
+                        &method.descriptor.descriptor.0,
+                        method.descriptor.descriptor.1.as_ref(),
+                    ),
+                    false,
+                );
 
                 Update::MethodCall {
                     method,
                     is_static: true,
+                    defining_class: class.clone(),
                 }
             },
 
             Self::InvokeVirtual(method) => {
-                let class = heap.find_class(&method.class_name).unwrap();
-                let method = class
-                    .get_method(
-                        &method.descriptor.name,
-                        (
-                            &method.descriptor.descriptor.0,
-                            method.descriptor.descriptor.1.as_ref(),
-                        ),
-                    )
+                let objectref: Rc<dyn ClassInstance> = frame
+                    .operand_stack
+                    .peek(method.descriptor.descriptor.0.len())
+                    .unwrap()
+                    .try_into()
                     .unwrap();
+                let resolution_root = objectref.class();
+
+                let (method, defining_class) = resolution_root.get_method(
+                    &method.descriptor.name,
+                    (
+                        &method.descriptor.descriptor.0,
+                        method.descriptor.descriptor.1.as_ref(),
+                    ),
+                    true,
+                );
 
                 Update::MethodCall {
                     method,
                     is_static: false,
+                    defining_class,
                 }
             },
 
@@ -2233,16 +2254,12 @@ got: {:?}",
 
             Self::Nop => Update::None,
 
-            Self::PutField { field_name, .. } => {
+            Self::PutField { field_name, class } => {
                 let value: StackValue = frame.operand_stack.pop().unwrap();
                 let objectref: Rc<dyn ClassInstance> =
                     frame.operand_stack.pop().unwrap().try_into().unwrap();
 
-                let field = objectref
-                    .instance_fields()
-                    .iter()
-                    .find(|f| &f.name == field_name)
-                    .unwrap();
+                let field = objectref.get_field(class, field_name);
 
                 field.value.replace_with(|old| match old {
                     FieldValue::Byte(_) => match value {

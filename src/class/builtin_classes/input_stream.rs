@@ -10,21 +10,17 @@ use crate::class::{
 
 pub struct InputStream {
     class_identifier: ClassIdentifier,
+    object_class: Rc<dyn Class>,
     file_input_stream: FileInputStream,
 }
 
 impl InputStream {
-    pub fn new() -> Self {
+    pub fn new(object_class: Rc<dyn Class>) -> Self {
         InputStream {
             class_identifier: class_identifier!(java / io, InputStream),
-            file_input_stream: FileInputStream::default(),
+            file_input_stream: FileInputStream::new(object_class.clone()),
+            object_class,
         }
-    }
-}
-
-impl Default for InputStream {
-    fn default() -> Self {
-        InputStream::new()
     }
 }
 
@@ -32,6 +28,9 @@ impl InputStream {
     pub fn new_instance(self: &Rc<Self>) -> InputStreamInstance {
         InputStreamInstance {
             class: self.clone(),
+            object_instance: self
+                .object_class
+                .new_instance(self.object_class.clone()),
         }
     }
 }
@@ -54,7 +53,7 @@ impl Class for InputStream {
     }
 
     fn super_class(&self) -> Option<Rc<dyn Class>> {
-        None
+        Some(self.object_class.clone())
     }
 
     fn interfaces(&self) -> &[Rc<dyn std::any::Any>] {
@@ -76,6 +75,7 @@ impl Class for InputStream {
 
 pub struct InputStreamInstance {
     class: Rc<dyn Class>,
+    object_instance: Rc<dyn ClassInstance>,
 }
 
 impl ClassInstance for InputStreamInstance {
@@ -89,5 +89,9 @@ impl ClassInstance for InputStreamInstance {
 
     fn instance_fields(&self) -> &[Rc<Field>] {
         &[]
+    }
+
+    fn parent_instance(&self) -> Option<Rc<dyn ClassInstance>> {
+        Some(self.object_instance.clone())
     }
 }

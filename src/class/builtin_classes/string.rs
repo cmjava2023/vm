@@ -7,26 +7,25 @@ use crate::class::{
 
 pub struct StringClass {
     class_identifier: ClassIdentifier,
+    object_class: Rc<dyn Class>,
 }
 
 impl StringClass {
-    pub fn new() -> StringClass {
+    pub fn new(object_class: Rc<dyn Class>) -> StringClass {
         StringClass {
             class_identifier: class_identifier!(java / lang, String),
+            object_class,
         }
     }
 
     pub fn new_instance(self: &Rc<Self>, string: String) -> StringInstance {
         StringInstance {
             class: self.clone(),
+            object_instance: self
+                .object_class
+                .new_instance(self.object_class.clone()),
             string,
         }
-    }
-}
-
-impl Default for StringClass {
-    fn default() -> Self {
-        StringClass::new()
     }
 }
 
@@ -48,7 +47,7 @@ impl Class for StringClass {
     }
 
     fn super_class(&self) -> Option<Rc<dyn Class>> {
-        None
+        Some(self.object_class.clone())
     }
 
     fn interfaces(&self) -> &[Rc<dyn std::any::Any>] {
@@ -70,6 +69,7 @@ impl Class for StringClass {
 
 pub struct StringInstance {
     class: Rc<dyn Class>,
+    object_instance: Rc<dyn ClassInstance>,
     pub string: String,
 }
 
@@ -84,5 +84,9 @@ impl ClassInstance for StringInstance {
 
     fn as_any(&self) -> &dyn std::any::Any {
         self
+    }
+
+    fn parent_instance(&self) -> Option<Rc<dyn ClassInstance>> {
+        Some(self.object_instance.clone())
     }
 }

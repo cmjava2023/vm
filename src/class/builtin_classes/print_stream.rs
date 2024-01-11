@@ -11,12 +11,14 @@ use crate::{
 
 pub struct PrintStream {
     class_identifier: ClassIdentifier,
+    object_class: Rc<dyn Class>,
     methods: Vec<Rc<Method>>,
 }
 
 impl PrintStream {
-    pub fn new() -> PrintStream {
+    pub fn new(object_class: Rc<dyn Class>) -> PrintStream {
         PrintStream {
+            object_class,
             class_identifier: class_identifier!(java / io, PrintStream),
             methods: vec![
                 Rc::new(Method {
@@ -102,13 +104,10 @@ impl PrintStream {
     pub fn new_instance(self: &Rc<Self>) -> PrintStreamInstance {
         PrintStreamInstance {
             class: self.clone(),
+            object_instance: self
+                .object_class
+                .new_instance(self.object_class.clone()),
         }
-    }
-}
-
-impl Default for PrintStream {
-    fn default() -> Self {
-        PrintStream::new()
     }
 }
 
@@ -250,6 +249,7 @@ impl Class for PrintStream {
 
 pub struct PrintStreamInstance {
     class: Rc<dyn Class>,
+    object_instance: Rc<dyn ClassInstance>,
 }
 
 impl ClassInstance for PrintStreamInstance {
@@ -263,5 +263,9 @@ impl ClassInstance for PrintStreamInstance {
 
     fn instance_fields(&self) -> &[Rc<Field>] {
         &[]
+    }
+
+    fn parent_instance(&self) -> Option<Rc<dyn ClassInstance>> {
+        Some(self.object_instance.clone())
     }
 }

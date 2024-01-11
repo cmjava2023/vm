@@ -1119,7 +1119,7 @@ pub fn parse_opcodes<'a>(
                 let (field_name, class, _descriptor) =
                     cp_entry.as_field_ref().unwrap();
                 opcodes.push(OpCode::GetField {
-                    class: (class.to_string()),
+                    class: parse_class_identifier(class),
                     field_name: field_name.to_string(),
                 })
             },
@@ -1131,7 +1131,7 @@ pub fn parse_opcodes<'a>(
                 let (field_name, class, _descriptor) =
                     cp_entry.as_field_ref().unwrap();
                 opcodes.push(OpCode::PutField {
-                    class: (class.to_string()),
+                    class: parse_class_identifier(class),
                     field_name: field_name.to_string(),
                 })
             },

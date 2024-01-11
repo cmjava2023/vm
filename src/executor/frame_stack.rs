@@ -83,6 +83,14 @@ impl FrameStack {
         self.values.pop()
     }
 
+    /// Retrieve the value at [depth] from the top off the stack.
+    ///
+    /// I.e., peek(0) retrieves the top element.
+    pub fn peek(&self, depth: usize) -> Option<StackValue> {
+        // -1: len() is last valid index + 1, but depth==0 must be valid
+        self.values.get(self.values.len() - 1 - depth).cloned()
+    }
+
     pub fn clear(&mut self) {
         self.values.clear()
     }

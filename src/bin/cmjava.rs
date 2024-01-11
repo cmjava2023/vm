@@ -116,21 +116,21 @@ fn main() -> anyhow::Result<()> {
         }],
         None,
     );
-    let main = &bytecode_classes
-        .last()
-        .unwrap()
+    let main_class = bytecode_classes.last().unwrap().clone();
+    let main = &main_class
         .get_method(
             "main",
             (main_descriptor.0.as_ref(), main_descriptor.1.as_ref()),
+            false,
         )
-        .unwrap()
+        .0
         .code;
     let main = if let MethodCode::Bytecode(code) = main {
         code
     } else {
         panic!("main method is not bytecode");
     };
-    run(main, &mut heap);
+    run(main, &mut heap, main_class);
 
     Ok(())
 }
