@@ -556,6 +556,46 @@ impl dyn ClassInstance {
             },
         }
     }
+
+    /// Execute f with self (or one of its parent instances) casted to PCI.
+    ///
+    /// This allows builtin classes
+    /// to elegantly access their own custom data structure.
+    pub fn with_parent_instance<
+        PCI: ClassInstance + 'static,
+        T,
+        F: Fn(&PCI) -> T,
+    >(
+        &self,
+        class_name: &str,
+        f: F,
+    ) -> T {
+        if let Some(instance) = self.as_any().downcast_ref::<PCI>() {
+            f(instance)
+        } else {
+            let mut instance = self.parent_instance().unwrap_or_else(|| {
+                panic!(
+                    "expected self to be instance of {} or have superclass, \
+got {:?}",
+                    class_name, self
+                )
+            });
+            loop {
+                match instance.as_any().downcast_ref::<PCI>() {
+                    Some(i) => break f(i),
+                    None => {
+                        instance = match instance.parent_instance() {
+                            Some(p) => p,
+                            None => panic!(
+                                "expected (sub)class instance of {}, got: {:?}",
+                                class_name, self
+                            ),
+                        };
+                    },
+                }
+            }
+        }
+    }
 }
 
 impl fmt::Debug for dyn ClassInstance {

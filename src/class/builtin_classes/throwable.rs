@@ -54,36 +54,18 @@ fn get_message(frame: &mut Frame) -> RustMethodReturn {
         _ => panic!("local variables have reference at index 0"),
     };
 
-    let instance = {
-        let orig_instance = instance.clone();
-        let mut instance = instance.clone();
-        loop {
-            match instance.as_any().downcast_ref::<ThrowableInstance>() {
-                Some(_) => break instance,
-                None => {
-                    instance = match instance.parent_instance() {
-                        Some(p) => p,
-                        None => panic!(
-                            "expected (sub)class instance of throwable, \
-got: {:?}",
-                            orig_instance
-                        ),
-                    };
-                },
-            }
-        }
-    };
-    let instance = instance
-        .as_any()
-        .downcast_ref::<ThrowableInstance>()
-        .unwrap();
+    let message = instance.with_parent_instance(
+        "Throwable",
+        |instance: &ThrowableInstance| {
+            instance
+                .message
+                .get()
+                .expect("message has been initialized")
+                .clone()
+        },
+    );
 
-    let message = instance
-        .message
-        .get()
-        .expect("message has been initialized");
-
-    RustMethodReturn::Value(FieldValue::Reference(message.clone()))
+    RustMethodReturn::Value(FieldValue::Reference(message))
 }
 
 fn init(frame: &mut Frame) -> RustMethodReturn {
@@ -97,39 +79,15 @@ fn init(frame: &mut Frame) -> RustMethodReturn {
             _ => panic!("local variables have message at index 1"),
         };
 
-    let instance = {
-        let orig_instance = instance.clone();
-        let mut instance = instance.clone();
-        loop {
-            match instance.as_any().downcast_ref::<ThrowableInstance>() {
-                Some(_) => break instance,
-                None => {
-                    instance = match instance.parent_instance() {
-                        Some(p) => p,
-                        None => panic!(
-                            "expected (sub)class instance of throwable, \
-got: {:?}",
-                            orig_instance
-                        ),
-                    };
-                },
-            }
-        }
-    };
-
-    // instance has been checked in the loop above,
-    // and I currently can't figure out a way that doesn't
-    // involve returning a reference to the instance
-    // that only exists inside the loop
-    let instance = instance
-        .as_any()
-        .downcast_ref::<ThrowableInstance>()
-        .unwrap();
-
-    instance
-        .message
-        .set(message)
-        .expect("message has not been set");
+    instance.with_parent_instance(
+        "Throwable",
+        |instance: &ThrowableInstance| {
+            instance
+                .message
+                .set(message.clone())
+                .expect("message has not been set");
+        },
+    );
 
     RustMethodReturn::Void
 }
