@@ -52,6 +52,7 @@
     packages = forSystems ({
       pkgs,
       fenix-channel,
+      fenix-pkgs,
       system,
       ...
     }: {
@@ -65,6 +66,24 @@
         };
       };
       default = self.packages.${system}.${packageName};
+      "${packageName}-static" = let
+        pkgsCross = pkgs.pkgsStatic;
+        toolchain = with fenix-pkgs;
+          combine [
+            minimal.cargo
+            minimal.rustc
+            targets.${pkgsCross.rust.lib.toRustTarget pkgsCross.stdenv.targetPlatform}.latest.rust-std
+          ];
+      in
+        pkgsCross.callPackage (./. + "/nix/packages/${packageName}.nix") {
+          inherit packageName;
+          flake-self = self;
+          nix-filter = import nix-filter;
+          rustPlatform = pkgsCross.makeRustPlatform {
+            cargo = toolchain;
+            rustc = toolchain;
+          };
+        };
     });
 
     devShells = forSystems ({
