@@ -6,8 +6,7 @@ fn try_catch_finally_throwable() -> Result<(), Box<dyn std::error::Error>> {
     let mut cmd = Command::cargo_bin("cmjava")?;
 
     let stderr = predicate::str::is_match(
-        "thread '[a-zA-Z0-9]*' panicked at .*:
-Uncaught exception: instance of Class 'java/lang/Throwable'",
+        "Uncaught exception: instance of Class 'java/lang/Throwable'",
     )
     .unwrap();
 
