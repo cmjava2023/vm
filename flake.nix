@@ -84,6 +84,24 @@
             rustc = toolchain;
           };
         };
+      "${packageName}-cross-mingwW64-static" = let
+        pkgsCross = pkgs.pkgsCross.mingwW64.pkgsStatic;
+        toolchain = with fenix-pkgs;
+          combine [
+            minimal.cargo
+            minimal.rustc
+            targets.${pkgsCross.rust.lib.toRustTarget pkgsCross.stdenv.targetPlatform}.latest.rust-std
+          ];
+      in
+        pkgsCross.callPackage (./. + "/nix/packages/${packageName}.nix") {
+          inherit packageName;
+          flake-self = self;
+          nix-filter = import nix-filter;
+          rustPlatform = pkgsCross.makeRustPlatform {
+            cargo = toolchain;
+            rustc = toolchain;
+          };
+        };
     });
 
     devShells = forSystems ({
